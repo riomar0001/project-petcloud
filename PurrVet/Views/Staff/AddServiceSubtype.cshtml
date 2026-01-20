@@ -1,0 +1,112 @@
+﻿@model PurrVet.Models.ServiceSubtype
+
+@{
+    ViewBag.Title = "Service Subtypes";
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+}
+
+<div class="p-4">
+    <h5 class="mb-4 fw-bold">Services / Add Subtype</h5>
+    <div class="card shadow-sm p-4">
+
+        <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
+            <div id="messageToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body"></div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="mb-3 fw-bold">Add Service Subtype</h4>
+        <hr class="mb-4">
+
+        <form id="addSubtypeForm" method="post" action="@Url.Action("AddServiceSubtype","Staff")">
+            @Html.AntiForgeryToken()
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Service Category</label>
+                    <select name="CategoryID" class="form-select">
+                        <option value="">-- Select Category --</option>
+                        @foreach (var category in ViewBag.ServiceCategories)
+                        {
+                            <option value="@category.CategoryID">@category.ServiceType</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Subtype Name</label>
+                    <input type="text" name="ServiceSubType" class="form-control" placeholder="Enter subtype name" />
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Description</label>
+                    <textarea name="Description" class="form-control" placeholder="Enter description"></textarea>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-end gap-2">
+                <button type="submit" class="btn btn-primary px-4">Save</button>
+                <a href="@Url.Action("ServiceType", "Staff")" class="btn btn-secondary px-4">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmSaveModal" tabindex="-1" aria-labelledby="confirmSaveModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h6 class="modal-title fw-bold" id="confirmSaveModalLabel">Confirm Save</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mb-0 fw-semibold">Are you sure you want to add this service subtype?</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-end">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirmSaveBtn" class="btn btn-success px-4">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('select[name="CategoryID"]').select2({
+                placeholder: "-- Select Category --",
+                allowClear: true,
+                width: '100%'
+            });
+
+            $('#addSubtypeForm').on('submit', function (e) {
+                e.preventDefault();
+                const form = this;
+                const modal = new bootstrap.Modal('#confirmSaveModal');
+                modal.show();
+
+                $('#confirmSaveBtn').off('click').on('click', function () {
+                    modal.hide();
+                    $.post('@Url.Action("AddServiceSubtype", "Staff")', $(form).serialize())
+                        .done(res => {
+                            const toastEl = $('#messageToast');
+                            const toastBody = toastEl.find('.toast-body');
+                            toastBody.text(res.message);
+                            toastEl.removeClass('bg-success bg-danger')
+                                .addClass(res.success ? 'bg-success' : 'bg-danger');
+                            new bootstrap.Toast(toastEl[0]).show();
+
+                            if (res.success) setTimeout(() =>
+                                window.location.href = '@Url.Action("ServiceType", "Staff")', 1200);
+                        });
+                });
+            });
+        });
+    </script>
+}

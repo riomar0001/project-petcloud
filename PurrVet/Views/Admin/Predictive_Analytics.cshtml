@@ -1,0 +1,245 @@
+﻿@model PurrVet.Models.DashboardViewModel
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewBag.Title = "Predictive Analytics";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+<link href="~/css/cards.css" rel="stylesheet" />
+
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="note">🔄 Forecast resets every <strong>28th</strong> of the month.</div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="metric-card-new">
+                <div class="filter-header d-flex align-items-center px-3 pt-2">
+                </div>
+                <div class="divider-line"></div>
+                <div class="metric-body">
+                    <div class="metric-left">
+                        <i class="bi bi-collection card-icon"></i>
+                        <div class="metric-label">Total Categories</div>
+                    </div>
+                    <div class="metric-value ">@Model.TotalCategory</div>
+                </div>
+                <div class="orange-bar"></div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="metric-card-new">
+                <div class="filter-header d-flex align-items-center px-3 pt-2">
+                </div>
+                <div class="divider-line"></div>
+                <div class="metric-body">
+                    <div class="metric-left">
+                        <i class="bi bi-heart-pulse card-icon"></i>
+                        <div class="metric-label">Total Types</div>
+                    </div>
+                    <div class="metric-value">@Model.TotalType</div>
+                </div>
+                <div class="orange-bar"></div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="metric-card-new">
+                <div class="filter-header d-flex align-items-center px-3 pt-2">
+                </div>
+                <div class="divider-line"></div>
+                <div class="metric-body">
+                    <div class="metric-left">
+                        <i class="bi bi-calendar-check card-icon"></i>
+                        <div class="metric-label">Total Appointments</div>
+                    </div>
+                    <div class="metric-value">@Model.TotalAppointments</div>
+                </div>
+                <div class="orange-bar"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row g-4">
+        <div class="col-lg-9">
+            <div class="chart-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <strong>Predictive Analytics</strong>
+                        <div class="text-muted small">Regression + predicted values</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <select id="serviceFilter" class="filter-select">
+                            <option value="All">All</option>
+                            <option value="Consultation">Consultation</option>
+                            <option value="Vaccination">Vaccination</option>
+                            <option value="Grooming">Grooming</option>
+                            <option value="Deworming">Deworming</option>
+                            <option value="Surgery">Surgery</option>
+                            <option value="Medication">Medication</option>
+                            <option value="SpecialtyTests">Specialty Tests</option>
+                            <option value="EndOfLifeCare">End of Life Care</option>
+                            <option value="Confinement">Confinement</option>
+                            <option value="Diagnostics">Diagnostics</option>
+                        </select>
+
+                        <select id="yearFilter" class="filter-select">
+                            <option value="All">All</option>
+                            @foreach (var year in Model.Years)
+                            {
+                                <option>@year</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div style="height:500px;">
+                    <canvas id="predictChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3">
+            <div class="forecast-card mb-3">
+                <div class="forecast-header">Monthly Forecast</div>
+                <div class="divider-line"></div>
+                <div class="px-3 forecast-list" id="forecastList"></div>
+            </div>
+
+            <div class="forecast-card">
+                <div class="forecast-header">Forecast for Upcoming Months</div>
+                <div class="px-3 forecast-list" id="forecastList2"></div>
+            </div>
+            <div class="forecast-card mt-3">
+                <div class="forecast-header">Next Month – Service Demand Ranking</div>
+                <div class="px-3 forecast-list" id="nextMonthServiceRanking"></div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            let chart;
+
+            function loadForecast(service, year) {
+                $.getJSON('/Admin/GetForecastData', { service: service, year: year }, function (data) {
+                    const ctx = document.getElementById('predictChart').getContext('2d');
+                    if (chart) chart.destroy();
+
+                    const labels = data.months.concat(
+                        data.futureForecasts.map((_, i) => "Forecast " + (i + 1))
+                    );
+
+                    const predictionLine = data.predictedCounts.concat(data.futureForecasts);
+
+                    chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: 'Actual Counts',
+                                    data: data.counts,
+                                    borderColor: '#F0AB33',
+                                    backgroundColor: '#F0AB33',
+                                    borderWidth: 2,
+                                    tension: 0.2
+                                },
+                                {
+                                    label: 'Prediction Line',
+                                    data: predictionLine,
+                                    borderColor: '#004085',
+                                    borderWidth: 2,
+                                    tension: 0.3,
+                                    fill: false
+                                },
+                                {
+                                    label: 'Future Forecasts',
+                                    data: Array(data.counts.length).fill(null).concat(data.futureForecasts),
+                                    borderColor: '#004085',
+                                    borderWidth: 2,
+                                    borderDash: [6, 4],
+                                    tension: 0.3,
+                                    fill: false
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: { type: 'category' },
+                                y: { beginAtZero: true }
+                            }
+                        }
+                    });
+
+                    $("#forecastMonth, #forecastMonth2").text(data.nextMonth);
+                    $("#forecastValue").text((data.nextForecastValue ?? 0).toFixed(2));
+                    $("#forecastSeverity").text(data.severity);
+
+                $("#forecastList").empty();
+                $("#forecastList2").empty();
+
+                if (data.forecastMonths && data.globalFutureForecasts) {
+                    data.forecastMonths.forEach((month, i) => {
+                        const val = data.globalFutureForecasts[i]?.toFixed(2) ?? "0.00";
+                        $("#forecastList").append(
+                            `<div class="d-flex justify-content-between align-items-center py-2">
+                                <h6 class="mb-0 fw-semibold">${month}</h6>
+                                <h6 class="mb-0 fw-bold">${val}</h6>
+                            </div>`
+                        );
+                    });
+                }
+
+                if (data.forecastMonths && data.globalSeverities) {
+                    data.forecastMonths.forEach((month, i) => {
+                        const sev = data.globalSeverities[i] ?? "";
+                        $("#forecastList2").append(
+                            `<div class="d-flex justify-content-between align-items-center py-2">
+                                <h6 class="mb-0 fw-semibold">${month}</h6>
+                                <h6 class="mb-0 fw-bold">${sev}</h6>
+                            </div>`
+                        );
+                    });
+                    }
+                $("#nextMonthServiceRanking").empty();
+
+                if (data.nextMonthServiceRanking) {
+                    data.nextMonthServiceRanking.forEach(item => {
+                        $("#nextMonthServiceRanking").append(`
+                            <div class="d-flex justify-content-between align-items-center py-2">
+                                <h6 class="mb-0 fw-semibold">${item.service}</h6>
+                                <h6 class="mb-0 fw-bold">${item.count.toFixed(2)}</h6>
+                            </div>
+                        `);
+                    });
+                }
+
+                });
+            }
+
+            function loadTotals(year) {
+                $.getJSON('/Admin/GetTotalsData', { year: year }, function (data) {
+                    $("#usersCount").text(data.users);
+                    $("#petsCount").text(data.pets);
+                    $("#appointmentsCount").text(data.appointments);
+                });
+            }
+
+            $("#serviceFilter, #yearFilter").change(function () {
+                loadForecast($("#serviceFilter").val(), $("#yearFilter").val());
+            });
+            $("#usersYear, #petsYear, #appointmentsYear").change(function () {
+                loadTotals($(this).val());
+            });
+
+            loadForecast($("#serviceFilter").val(), $("#yearFilter").val());
+        });
+    </script>

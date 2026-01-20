@@ -1,0 +1,93 @@
+﻿@{
+    ViewBag.Title = "Two-Factor Authentication";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="hero-section d-flex flex-column justify-content-center">
+    <div class="hero-wave"></div>
+
+    <div class="container">
+        <div class="row align-items-center justify-content-center text-center text-md-start">
+            <div class="col-md-3 mb-4 mb-md-0 slogan-col">
+                <h1 class="fw-bold forgot">
+                    Healthy Pets,<br />Happy Homes.
+                </h1>
+            </div>
+
+            <div class="col-md-2 mb-4 mb-md-0 paws-col d-flex justify-content-center">
+                <img src="~/images/paws.png" alt="Paws" class="forgot-paws" />
+            </div>
+
+            <div class="col-md-5 d-flex justify-content-end">
+                <div class="login-card shadow p-4 w-100" style="max-width: 400px; position: relative;">
+                    <a href="/Account/Login" class="text-decoration-none d-flex align-items-center text-muted btn-back">
+                        <i class="bi bi-arrow-left me-2"></i>
+                    </a>
+
+                    <h6 class="mb-3 text-center fw-bold">Two-Factor Authentication</h6>
+                    <hr class="mb-4">
+
+                    <form id="verify2FAForm">
+                        <input type="hidden" id="userId" value="@ViewBag.UserId" />
+
+                        <div class="mb-3">
+                            <input type="text" id="twoFACode" name="twoFACode" class="form-control" placeholder="Enter 6-digit code" maxlength="6" required />
+                        </div>
+                        <div class="text-center my-1">
+                            <img src="~/images/golden.png" alt="Golden Dog" class="dog-img" style="max-height:120px;" />
+                        </div>
+
+                        <button type="submit" class="btn-skyblue w-100">Verify Code</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+    <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    $("#verify2FAForm").on("submit", function (e) {
+        e.preventDefault();
+
+        const userId = $("#userId").val();
+        const code = $("#twoFACode").val();
+        const rememberMe = $("#rememberMe").is(":checked");
+
+        $.ajax({
+            url: "/Account/Verify2FA",
+            type: "POST",
+            data: { userId: userId, code: code, rememberMe: rememberMe },
+            success: function (response) {
+                const toast = new bootstrap.Toast($('#toastMessage'));
+                const toastBody = $('#toastMessage .toast-body');
+
+                if (response.success) {
+                    $('#toastMessage').removeClass('bg-danger').addClass('bg-success');
+                    toastBody.text("Two-Factor Verification successful! Redirecting...");
+                    toast.show();
+                    setTimeout(() => window.location.href = response.redirectUrl, 1500);
+                } else {
+                    $('#toastMessage').removeClass('bg-success').addClass('bg-danger');
+                    toastBody.text("❌ Invalid or expired code. Please try again.");
+                    toast.show();
+                }
+            },
+            error: function () {
+                $('#toastMessage').removeClass('bg-success').addClass('bg-danger');
+                $('#toastMessage .toast-body').text("Something went wrong. Please try again.");
+                new bootstrap.Toast($('#toastMessage')).show();
+            }
+        });
+    });
+</script>
+

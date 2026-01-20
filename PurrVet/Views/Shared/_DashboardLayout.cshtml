@@ -1,0 +1,458 @@
+﻿@{
+    var role = Context.Session.GetString("UserRole");
+    var name = Context.Session.GetString("UserName");
+    var profileImage = Context.Session.GetString("ProfileImage");
+    var connectedEmail = Context.Session.GetString("MicrosoftEmail");
+
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@role | @ViewBag.Title</title>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="~/css/site.css" rel="stylesheet" />
+    <link href="~/css/sidebar.css" rel="stylesheet" />
+    <link href="~/css/owner.css" rel="stylesheet" />
+    <link href="~/css/pets.css" rel="stylesheet" />
+    <link href="~/css/notification.css" rel="stylesheet" />
+    <link href="~/css/dashboard.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+</head>
+
+<body>
+    <div class="d-flex">
+        <div class="sidebar">
+            <div class="sidebar-logo">
+                <img src="~/images/PurrVet.png" alt="PurrVet Logo" />
+                <h4>PurrVet</h4>
+                <button id="sidebarToggle" class="sidebar-toggle ms-auto me-1">
+                    <i class="bi bi-list fs-3"></i>
+                </button>
+            </div>
+
+            <div class="sidebar-header">
+                <img src="@Url.Content("~/uploads/profiles/" + (string.IsNullOrEmpty(profileImage) ? "pet.png" : profileImage))"
+                     alt="Profile Image"
+                     class="rounded-circle shadow-sm"
+                     style="width:50px; height:50px; object-fit:cover;"
+                     onerror="this.onerror=null;this.src='@Url.Content("~/uploads/profiles/pet.png")';" />
+
+                <div>
+                    <div>@name</div>
+                    <small>@role</small>
+                </div>
+            </div>
+
+            <div class="sidebar-menu">
+                @if (role == "Owner")
+                {
+                    <a href="~/Owner/Dashboard" class="@(ViewBag.Title == "Dashboard" ? "active" : "")"><i class="bi bi-house"></i> Dashboard</a>
+                    <a href="~/Owner/Pets" class="@(ViewBag.Title == "My Pets" ? "active" : "")"><i class="fa fa-paw"></i> My Pets</a>
+                    <a href="~/Owner/Appointments" class="@(ViewBag.Title == "My Appointments" ? "active" : "")"><i class="bi bi-clock"></i> My Appointments</a>
+                }
+                @if (role == "Admin")
+                {
+                    <a href="~/Admin/Dashboard" class="@(ViewBag.Title == "Dashboard" ? "active" : "")"><i class="bi bi-house"></i> Dashboard</a>
+
+                    <a class="d-flex align-items-center justify-content-between" data-bs-toggle="collapse" href="#appointmentsMenu" role="button" aria-expanded="false" aria-controls="appointmentsMenu">
+                        <span><i class="bi bi-calendar-check"></i> Appointments</span>
+                        <i class="bi bi-caret-down-fill rotate-icon"></i>
+                    </a>
+                    <div class="collapse" id="appointmentsMenu">
+                        <a href="~/Admin/ManageAppointments" class="@(ViewBag.Title == "Manage Appointments" ? "active" : "")"><i class="bi bi-gear"></i> Manage Appointments</a>
+                        <a href="~/Admin/Appointments" class="@(ViewBag.Title == "Appointments" ? "active" : "")"><i class="bi bi-clock"></i> Schedule</a>
+                    </div>
+                    <a class="d-flex align-items-center justify-content-between" data-bs-toggle="collapse" href="#serviceRecordsMenu" role="button" aria-expanded="false" aria-controls="serviceRecordsMenu">
+                        <span><i class="bi bi-clipboard-heart"></i> Service & Analytics</span>
+                        <i class="bi bi-caret-down-fill rotate-icon"></i>
+                    </a>
+                    <div class="collapse" id="serviceRecordsMenu">
+                        <a href="~/Admin/Predictive_Analytics" class="@(ViewBag.Title == "Predictive Analytics" ? "active" : "")">
+                            <i class="bi bi-graph-up-arrow"></i> Predictive Analytics
+                        </a>
+
+                        <a href="~/Admin/Professional_Fee" class="@(ViewBag.Title == "Professional Fee / Consultation" ? "active" : "")">
+                            <i class="bi bi-person-lines-fill"></i> Professional Fee / Consultation
+                        </a>
+
+                        <a href="~/Admin/Vaccination" class="@(ViewBag.Title == "Vaccination" ? "active" : "")">
+                            <i class="bi bi-capsule"></i> Vaccination
+                        </a>
+
+                        <a href="~/Admin/Deworming_Preventives" class="@(ViewBag.Title == "Deworming & Preventives" ? "active" : "")">
+                            <i class="bi bi-bug"></i> Deworming & Preventives
+                        </a>
+
+                        <a href="~/Admin/Diagnostics_Laboratory" class="@(ViewBag.Title == "Diagnostics & Laboratory Tests" ? "active" : "")">
+                            <i class="bi bi-eyedropper"></i> Diagnostics & Laboratory Tests
+                        </a>
+
+                        <a href="~/Admin/Medication_Treatment" class="@(ViewBag.Title == "Medication & Treatment" ? "active" : "")">
+                            <i class="bi bi-capsule-pill"></i> Medication & Treatment
+                        </a>
+
+                        <a href="~/Admin/Surgery" class="@(ViewBag.Title == "Surgery" ? "active" : "")">
+                            <i class="bi bi-heart-pulse"></i> Surgery
+                        </a>
+
+                        <a href="~/Admin/Grooming_Wellness" class="@(ViewBag.Title == "Grooming & Wellness" ? "active" : "")">
+                            <i class="bi bi-scissors"></i> Grooming & Wellness
+                        </a>
+
+                        <a href="~/Admin/SpecialtyTests" class="@(ViewBag.Title == "Specialty Tests / Rare Cases" ? "active" : "")">
+                            <i class="bi bi-clipboard-pulse"></i> Specialty Tests / Rare Cases
+                        </a>
+
+                        <a href="~/Admin/Confinement_Hospitalization" class="@(ViewBag.Title == "Confinement / Hospitalization" ? "active" : "")">
+                            <i class="bi bi-hospital"></i> Confinement / Hospitalization
+                        </a>
+
+                        <a href="~/Admin/EndLife" class="@(ViewBag.Title == "End of Life Care" ? "active" : "")">
+                            <i class="bi bi-cloud-rain"></i> End of Life Care
+                        </a>
+                    </div>
+                    <a class="d-flex align-items-center justify-content-between" data-bs-toggle="collapse" href="#serviceTypeMenu" role="button" aria-expanded="false" aria-controls="serviceTypeMenu">
+                        <span><i class="bi bi-gear"></i> Service Management</span>
+                        <i class="bi bi-caret-down-fill rotate-icon"></i>
+                    </a>
+                    <div class="collapse" id="serviceTypeMenu">
+                        <a href="~/Admin/ServiceCategory" class="@(ViewBag.Title == "Service Categories" ? "active" : "")"><i class="bi bi-tags"></i> Service Category</a>
+                        <a href="~/Admin/ServiceType" class="@(ViewBag.Title == "Service Types" ? "active" : "")"><i class="bi bi-list-task"></i> Service Type</a>
+                    </div>
+                    <a href="~/Admin/Pets" class="@(ViewBag.Title == "Pets" ? "active" : "")"><i class="bi bi-gear"></i> Manage Pets</a>
+                    <a href="~/Admin/Users" class="@(ViewBag.Title == "Users" ? "active" : "")"><i class="bi bi-people"></i> Users</a>
+                    <a href="~/Admin/Owners" class="@(ViewBag.Title == "Owners" ? "active" : "")"><i class="bi bi-person-vcard"></i> Owners</a>
+                    <a href="~/Admin/Reports" class="@(ViewBag.Title == "Reports" ? "active" : "")"><i class="bi bi-bar-chart"></i> Reports</a>
+                    <a href="~/Admin/Logs" class="@(ViewBag.Title == "Logs" ? "active" : "")"><i class="bi bi-activity"></i> Logs</a>
+                }
+                else if (role == "Staff")
+                {
+                    <a href="~/Staff/Dashboard" class="@(ViewBag.Title == "Dashboard" ? "active" : "")"><i class="bi bi-house"></i> Dashboard</a>
+
+                    <a class="d-flex align-items-center justify-content-between" data-bs-toggle="collapse" href="#appointmentsMenu" role="button" aria-expanded="false" aria-controls="appointmentsMenu">
+                        <span><i class="bi bi-calendar-check"></i> Appointments</span>
+                        <i class="bi bi-caret-down-fill rotate-icon"></i>
+                    </a>
+                    <div class="collapse" id="appointmentsMenu">
+                        <a href="~/Staff/ManageAppointments" class="@(ViewBag.Title == "Manage Appointments" ? "active" : "")"><i class="bi bi-gear"></i> Manage Appointments</a>
+                        <a href="~/Staff/Appointments" class="@(ViewBag.Title == "Appointments" ? "active" : "")"><i class="bi bi-clock"></i> Schedule</a>
+                    </div>
+                    <a class="d-flex align-items-center justify-content-between" data-bs-toggle="collapse" href="#serviceRecordsMenu" role="button" aria-expanded="false" aria-controls="serviceRecordsMenu">
+                        <span><i class="bi bi-clipboard-heart"></i> Service & Analytics</span>
+                        <i class="bi bi-caret-down-fill rotate-icon"></i>
+                    </a>
+                    <div class="collapse" id="serviceRecordsMenu">
+                        <a href="~/Staff/Predictive_Analytics" class="@(ViewBag.Title == "Predictive Analytics" ? "active" : "")">
+                            <i class="bi bi-graph-up-arrow"></i> Predictive Analytics
+                        </a>
+
+                        <a href="~/Staff/Professional_Fee" class="@(ViewBag.Title == "Professional Fee / Consultation" ? "active" : "")">
+                            <i class="bi bi-person-lines-fill"></i> Professional Fee / Consultation
+                        </a>
+
+                        <a href="~/Staff/Vaccination" class="@(ViewBag.Title == "Vaccination" ? "active" : "")">
+                            <i class="bi bi-capsule"></i> Vaccination
+                        </a>
+
+                        <a href="~/Staff/Deworming_Preventives" class="@(ViewBag.Title == "Deworming & Preventives" ? "active" : "")">
+                            <i class="bi bi-bug"></i> Deworming & Preventives
+                        </a>
+
+                        <a href="~/Staff/Diagnostics_Laboratory" class="@(ViewBag.Title == "Diagnostics & Laboratory Tests" ? "active" : "")">
+                            <i class="bi bi-eyedropper"></i> Diagnostics & Laboratory Tests
+                        </a>
+
+                        <a href="~/Staff/Medication_Treatment" class="@(ViewBag.Title == "Medication & Treatment" ? "active" : "")">
+                            <i class="bi bi-capsule-pill"></i> Medication & Treatment
+                        </a>
+
+                        <a href="~/Staff/Surgery" class="@(ViewBag.Title == "Surgery" ? "active" : "")">
+                            <i class="bi bi-heart-pulse"></i> Surgery
+                        </a>
+
+                        <a href="~/Staff/Grooming_Wellness" class="@(ViewBag.Title == "Grooming & Wellness" ? "active" : "")">
+                            <i class="bi bi-scissors"></i> Grooming & Wellness
+                        </a>
+
+                        <a href="~/Staff/SpecialtyTests" class="@(ViewBag.Title == "Specialty Tests / Rare Cases" ? "active" : "")">
+                            <i class="bi bi-clipboard-pulse"></i> Specialty Tests / Rare Cases
+                        </a>
+
+                        <a href="~/Staff/Confinement_Hospitalization" class="@(ViewBag.Title == "Confinement / Hospitalization" ? "active" : "")">
+                            <i class="bi bi-hospital"></i> Confinement / Hospitalization
+                        </a>
+
+                        <a href="~/Staff/EndLife" class="@(ViewBag.Title == "End of Life Care" ? "active" : "")">
+                            <i class="bi bi-cloud-rain"></i> End of Life Care
+                        </a>
+                    </div>
+                    <a class="d-flex align-items-center justify-content-between" data-bs-toggle="collapse" href="#serviceTypeMenu" role="button" aria-expanded="false" aria-controls="serviceTypeMenu">
+                        <span><i class="bi bi-gear"></i> Service Management</span>
+                        <i class="bi bi-caret-down-fill rotate-icon"></i>
+                    </a>
+                    <div class="collapse" id="serviceTypeMenu">
+                        <a href="~/Staff/ServiceCategory" class="@(ViewBag.Title == "Service Categories" ? "active" : "")"><i class="bi bi-tags"></i> Service Category</a>
+                        <a href="~/Staff/ServiceType" class="@(ViewBag.Title == "Service Types" ? "active" : "")"><i class="bi bi-list-task"></i> Service Type</a>
+                    </div>
+                    <a href="~/Staff/Pets" class="@(ViewBag.Title == "Pets" ? "active" : "")"><i class="bi bi-gear"></i> Manage Pets</a>
+                    <a href="~/Staff/Users" class="@(ViewBag.Title == "Users" ? "active" : "")"><i class="bi bi-people"></i> Users</a>
+                    <a href="~/Staff/Owners" class="@(ViewBag.Title == "Owners" ? "active" : "")"><i class="bi bi-person-vcard"></i> Owners</a>
+                    <a href="~/Staff/Reports" class="@(ViewBag.Title == "Reports" ? "active" : "")"><i class="bi bi-bar-chart"></i> Reports</a>
+                }
+            </div>
+
+            <div class="sidebar-support">
+                <!--   <a href="~/Support" class="text-dark"><i class="bi bi-question-circle"></i> Get Technical Help</a> -->
+                </div>
+            </div>
+
+            <div class="main-content flex-grow-1">
+                <header class="navbar navbar-expand-lg navbar-light bg-white shadow-sm border-bottom">
+                    <div class="container-fluid">
+                        <h5 class="fw-bold mb-0">@ViewBag.Title</h5>
+                        <div class="ms-auto d-flex align-items-center gap-3">
+                            <div class="dropdown notif-bell">
+                                <a href="#" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-bell-fill fs-4 text-warning"></i>
+                                    <span id="notifCount" class="notif-dot d-none"></span>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end shadow dropdown-menu-notif" aria-labelledby="notifDropdown">
+                                    <ul class="notif-body list-unstyled mb-0" id="notifList">
+                                        <li class="dropdown-header fw-bold text-center">Notifications</li>
+                                        <li><hr class="dropdown-divider"></li>
+                                    </ul>
+                                    <div class="notif-footer">
+                                        <a href="#" id="markAllRead" class="text-primary small text-decoration-none">Mark all as read</a>
+                                        <a href="@(role == "Admin" || role == "Staff" ? "/Admin/AdminNotification" : "/Owner/OwnerNotification")"
+                                           class="text-primary fw-semibold small text-decoration-none">
+                                            See all
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="dropdown">
+                                <a class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle fs-3 text-warning"></i>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
+                                    <li>
+                                        @{
+                                            var profileUrl = role switch
+                                            {
+                                                "Owner" => Url.Content("~/Owner/Profile"),
+                                                "Admin" => Url.Content("~/Admin/Profile"),
+                                                "Staff" => Url.Content("~/Staff/Profile"),
+                                                _ => Url.Content("~/Account/Profile")
+                                            };
+                                        }
+                                        <a class="dropdown-item fw-bold" href="@profileUrl"><i class="bi bi-person me-2"></i> Profile</a>
+                                    </li>
+
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger fw-bold" href="~/Account/Logout"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <main>
+                    @RenderBody()
+                </main>
+            </div>
+            <div class="sidebar-overlay"></div>
+        </div>
+
+        <button id="mobileSidebarToggle" class="floating-sidebar-btn d-lg-none">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+        @RenderSection("Scripts", required: false)
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+        <script>
+            (function () {
+                const root = document.documentElement;
+                const toggleBtn = document.getElementById("sidebarToggle");
+                const mobileSidebarBtn = document.getElementById("mobileSidebarToggle");
+                const overlay = document.querySelector(".sidebar-overlay");
+                const notifList = document.getElementById("notifList");
+                const notifCount = document.getElementById("notifCount");
+                const markAllBtn = document.getElementById("markAllRead");
+                const MOBILE_BREAKPOINT = 991;
+
+                try {
+                    const collapsed = localStorage.getItem("sidebar-collapsed");
+                    if (collapsed === "true") root.classList.add("sidebar-collapsed");
+                } catch { }
+
+                      toggleBtn.addEventListener("click", () => {
+                if (window.innerWidth > MOBILE_BREAKPOINT) return;
+
+                root.classList.toggle("sidebar-open");
+
+                mobileSidebarBtn.classList.toggle("hidden", root.classList.contains("sidebar-open"));
+            });
+
+
+                mobileSidebarBtn.addEventListener("click", () => {
+                    root.classList.toggle("sidebar-open");
+                    mobileSidebarBtn.classList.toggle("hidden", root.classList.contains("sidebar-open"));
+                });
+
+                if (overlay) overlay.addEventListener("click", () => {
+                    root.classList.remove("sidebar-open");
+                    mobileSidebarBtn.classList.remove("hidden");
+                });
+
+                document.addEventListener("keydown", e => {
+                    if (e.key === "Escape") {
+                        root.classList.remove("sidebar-open");
+                        mobileSidebarBtn.classList.remove("hidden");
+                    }
+                });
+
+                window.addEventListener("resize", () => {
+                    if (window.innerWidth > MOBILE_BREAKPOINT) {
+                        root.classList.remove("sidebar-open");
+                        mobileSidebarBtn.classList.remove("hidden");
+                    }
+                });
+
+                document.querySelectorAll('.collapse').forEach(c => {
+                    const caret = c.previousElementSibling.querySelector(".rotate-icon");
+                    if (caret) {
+                        c.addEventListener("show.bs.collapse", () => caret.classList.add("up"));
+                        c.addEventListener("hide.bs.collapse", () => caret.classList.remove("up"));
+                    }
+                });
+
+                    const role = '@role';
+                    const notifEndpoint = role === "Owner"
+                        ? '/Owner/GetOwnerNotifications'
+                        : '/Admin/GetNotifications';
+
+                    fetch(notifEndpoint)
+                        .then(res => res.json())
+                        .then(data => {
+                            notifList.innerHTML = `
+                                <li class="dropdown-header fw-bold text-center">Notifications</li>
+                                <li><hr class="dropdown-divider"></li>
+                            `;
+
+                            const notifications = data.notifications || [];
+                            const unread = data.totalUnread || 0;
+
+                            if (unread > 0) {
+                                notifCount.textContent = unread > 9 ? "9+" : unread;
+                                notifCount.classList.remove("d-none");
+                            } else {
+                                notifCount.classList.add("d-none");
+                            }
+
+                            if (notifications.length === 0) {
+                                notifList.innerHTML += `<li class="text-center text-muted p-2">No notifications</li>`;
+                                return;
+                            }
+
+                            notifications.slice(0, 3).forEach(n => {
+                                notifList.innerHTML += `
+                                    <li>
+                                        <a href="#"
+                                           class="dropdown-item notif-item ${!n.isRead ? 'unread' : ''}"
+                                           data-id="${n.notificationID}"
+                                           data-url="${n.redirectUrl}">
+                                            <div class="text-truncate">[${n.type}] ${n.message}</div>
+                                            <small class="text-muted">${n.createdAt}</small>
+                                        </a>
+                                    </li>
+                                `;
+                            });
+                        })
+                        .catch(err => console.error("Error loading notifications:", err));
+
+
+                markAllBtn.addEventListener("click", function (e) {
+                    e.preventDefault();
+
+                    fetch('/Admin/MarkAllNotificationsRead', { method: 'POST' })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                notifCount.classList.add("d-none");
+                                document.querySelectorAll(".notif-item").forEach(i => {
+                                    i.classList.remove("unread");
+                                });
+                            }
+                        })
+                        .catch(err => console.error("Error marking all read:", err));
+                });
+                document.addEventListener("click", function (e) {
+                    const item = e.target.closest(".notif-item");
+                    if (!item) return;
+
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const id = item.dataset.id;
+                    const url = item.dataset.url;
+
+                    fetch(`/Admin/MarkNotificationRead/${id}`, { method: "POST" })
+                        .finally(() => {
+                            if (url && url !== "null") {
+                                window.location.href = url;
+                            }
+                        });
+                });
+
+                        document.addEventListener("DOMContentLoaded", () => {
+                const navbar = document.querySelector("header.navbar");
+                const mainContent = document.querySelector(".main-content");
+                const containers = document.querySelectorAll(".container-fluid, main");
+
+                function handleMobileNavbar() {
+                    if (window.innerWidth <= 768) {
+                        if (navbar) {
+                            navbar.style.position = "fixed";
+                            navbar.style.top = "0";
+                            navbar.style.left = "0";
+                            navbar.style.right = "0";
+                            navbar.style.zIndex = "1055";
+                            navbar.style.background = "none";
+                            navbar.style.border = "none";
+                            navbar.style.boxShadow = "none";
+                        }
+                        if (mainContent) mainContent.style.paddingTop = "50px";
+                        containers.forEach(c => c.style.paddingTop = "0");
+                    } else {
+                        if (navbar) {
+                            navbar.style.position = "";
+                            navbar.style.top = "";
+                            navbar.style.left = "";
+                            navbar.style.right = "";
+                            navbar.style.zIndex = "";
+                            navbar.style.background = "";
+                            navbar.style.border = "";
+                            navbar.style.boxShadow = "";
+                        }
+                        if (mainContent) mainContent.style.paddingTop = "";
+                        containers.forEach(c => c.style.paddingTop = "");
+                    }
+                }
+
+                handleMobileNavbar();
+                window.addEventListener("resize", handleMobileNavbar);
+            });
+
+            })();
+        </script>
+
+    </body>
+    </html>

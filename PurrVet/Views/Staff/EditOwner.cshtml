@@ -1,0 +1,128 @@
+﻿@model PurrVet.Models.Owner
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewBag.Title = "Edit Owner";
+}
+
+<div class="p-4">
+    <h5 class="mb-4 fw-bold">Owners / Edit Owner</h5>
+    <div class="card shadow-sm p-4">
+
+        <!-- Toast -->
+        <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
+            <div id="messageToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body"></div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="mb-3 fw-bold">Edit Owner</h4>
+        <hr class="mb-4">
+
+        <form id="editOwnerForm" method="post" action="@Url.Action("EditOwner","Owner")">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="OwnerID" value="@Model.OwnerID" />
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Name</label>
+                    <input type="text" name="Name" value="@Model.Name" class="form-control" required />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Email</label>
+                    <input type="email" name="Email" value="@Model.Email" class="form-control" required />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Phone</label>
+                    <input type="tel"
+                           name="Phone"
+                           id="Phone"
+                           class="form-control"
+                           value="@Model.Phone"
+                           placeholder="e.g. 09123456789"
+                           inputmode="numeric"
+                           pattern="[0-9]{11}"
+                           minlength="11"
+                           maxlength="11"
+                           required />
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-end gap-2">
+                <button type="submit" class="btn btn-primary px-4">Update</button>
+                <a href="@Url.Action("Owners", "Admin")" class="btn btn-secondary px-4">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmSaveModal" tabindex="-1" aria-labelledby="confirmSaveModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-white">
+                    <h6 class="modal-title fw-bold" id="confirmSaveModalLabel">Owners</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p class="mb-0 fw-semibold">Are you sure you want to save changes?</p>
+                </div>
+                <div class="modal-footer d-flex justify-content-end">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirmSaveBtn" class="btn btn-success px-4">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var toastEl = $('#messageToast');
+            var toastBody = toastEl.find('.toast-body');
+
+            $('#editOwnerForm').submit(function (e) {
+                e.preventDefault();
+                const form = this;
+
+                const modal = new bootstrap.Modal(document.getElementById('confirmSaveModal'));
+                modal.show();
+
+                $('#confirmSaveBtn').off('click').on('click', function () {
+                    modal.hide();
+                    var formData = $(form).serialize();
+
+                    $.ajax({
+                        url: '@Url.Action("EditOwner", "Admin")',
+                        type: 'POST',
+                        data: formData,
+                        success: function (res) {
+                            toastBody.text(res.message);
+                            toastEl.removeClass('bg-success bg-danger')
+                                    .addClass(res.success ? 'bg-success' : 'bg-danger');
+                            new bootstrap.Toast(toastEl[0], { delay: 3000 }).show();
+
+                            if (res.success) {
+                                setTimeout(() => {
+                                    window.location.href = '@Url.Action("Owners", "Admin")';
+                                }, 1200);
+                            }
+                        }
+                    });
+                });
+            });
+        });
+        document.getElementById("Phone").addEventListener("input", function () {
+            this.value = this.value.replace(/\D/g, '');
+
+            if (this.value.length > 11) {
+                this.value = this.value.slice(0, 11);
+            }
+        });
+    </script>
+}

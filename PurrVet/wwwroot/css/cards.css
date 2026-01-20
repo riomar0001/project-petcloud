@@ -1,0 +1,231 @@
+﻿body {
+    font-family: 'Baloo 2', sans-serif;
+}
+
+h4.fw-bold {
+    font-weight: 700;
+    color: #212529;
+}
+
+.note {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.metric-card {
+    background: #F0AB33;
+    border-radius: 12px;
+    padding: 20px;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.metric-card-new {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    overflow: hidden;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 10px;
+}
+
+.filter-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #444;
+}
+
+.filter-select-top {
+    border-radius: 7px;
+    background: transparent;
+    font-size: 0.8rem;
+    color: #333;
+    outline: none;
+    margin-left: 6px;
+    border: none;
+}
+
+.divider-line {
+    border-top: 1px solid #ccc;
+    margin: 6px 0;
+}
+
+.metric-body {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+}
+
+.metric-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 5px;
+}
+
+.card-icon {
+    font-size: 1.8rem;
+    color: #4C6EF5;
+}
+
+.metric-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card-icon {
+    font-size: 28px;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+.fa-paw {
+    position: relative;
+    top: 2px;
+}
+
+.metric-label {
+    font-size: 0.95rem;
+    color: #333;
+    font-weight: 500;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.metric-value {
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: #093232;
+    text-align: center; 
+    margin:  auto;
+    display: block; 
+    line-height: 1;
+    padding: 0;
+}
+
+.orange-bar {
+    background: #F0AB33;
+    height: 35px;
+    width: 100%;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.filter-select {
+    background: #fff;
+    border-radius: 6px;
+    border: none;
+    padding: 5px 10px;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.chart-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.card-forecast {
+    background: #F0AB33;
+    border-radius: 12px;
+    padding: 18px;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.forecast-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+    .forecast-box .icon {
+        width: 50px;
+        height: 50px;
+        background: #F0AB33;
+        color: #fff;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+
+.forecast-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #ddd;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.forecast-header {
+    background: #F0AB33;
+    color: #000;
+    font-weight: 600;
+    text-align: center;
+    padding: 8px 0;
+    font-size: 0.95rem;
+}
+
+.forecast-body {
+    background: #fff;
+    color: #212529;
+    font-size: 1rem;
+}
+
+.divider-line {
+    border-top: 1px solid #ddd;
+    margin: 0;
+}
+
+#forecastMonth, #forecastMonth2 {
+    font-weight: 600;
+    color: #212529;
+}
+
+#forecastValue {
+    font-size: 1.5rem;
+    color: #212529;
+    font-weight: 700;
+}
+
+.forecast-list {
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+#forecastSeverity {
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+    #forecastSeverity.text-success {
+        color: #28a745 !important;
+    }
+
+    #forecastSeverity.text-warning {
+        color: #ffc107 !important;
+    }
+
+    #forecastSeverity.text-danger {
+        color: #dc3545 !important;
+    }

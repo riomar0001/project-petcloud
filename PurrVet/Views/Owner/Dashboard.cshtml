@@ -1,0 +1,247 @@
+﻿@model PurrVet.Models.OwnerDashboardViewModel
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewBag.Title = "Dashboard";
+
+    var name = Model.UserName;
+    var pets = Model.Pets ?? new List<dynamic>();
+    var upcoming = Model.UpcomingAppointments ?? new List<dynamic>();
+    var vaccineDue = Model.VaccineDue ?? new List<dynamic>();
+    var dewormDue = Model.DewormDue ?? new List<dynamic>();
+    string defaultPhoto = Url.Content("~/uploads/profiles/pet.png");
+}
+
+<link href="~/css/owner.css" rel="stylesheet" />
+
+<div class="p-4">
+    <h4 class="fw-bold mb-4">Welcome Back, @name!</h4>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">My Pets</h5>
+        <a href="@Url.Action("Pets", "Owner")" class="text-primary fw-semibold text-decoration-none">
+            View All <i class="bi bi-arrow-right-short"></i>
+        </a>
+    </div>
+
+    <div class="carousel-row mb-4 d-flex align-items-center">
+        <button id="petsPrev" class="carousel-arrow"><i class="bi bi-chevron-left"></i></button>
+        <div id="petsTrack" class="carousel-track flex-grow-1" aria-live="polite"></div>
+        <button id="petsNext" class="carousel-arrow"><i class="bi bi-chevron-right"></i></button>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-4 p-3 h-100">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-calendar-event text-primary fs-4 me-2"></i>
+                    <h6 class="fw-bold mb-0">Upcoming Appointments</h6>
+                    <div class="ms-auto d-flex align-items-center">
+                        <button id="apptPrev" class="carousel-arrow me-2"><i class="bi bi-chevron-left"></i></button>
+                        <button id="apptNext" class="carousel-arrow"><i class="bi bi-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div id="upcomingTrack" class="carousel-track" style="gap:12px; padding:8px 0;"></div>
+                <div class="text-center text-muted small mt-1" id="apptCount"></div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-4 p-3 h-100">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-heart-pulse text-primary fs-4 me-2"></i>
+                    <h6 class="fw-bold mb-0">Vaccination Reminders</h6>
+                    <div class="ms-auto d-flex align-items-center">
+                        <button id="vaccPrev" class="carousel-arrow me-2"><i class="bi bi-chevron-left"></i></button>
+                        <button id="vaccNext" class="carousel-arrow"><i class="bi bi-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div id="vaccineTrack" class="carousel-track" style="gap:12px; padding:8px 0;"></div>
+                <div class="text-center text-muted small mt-1" id="vaccCount"></div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-4 p-3 h-100">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-bug text-primary fs-4 me-2"></i>
+                    <h6 class="fw-bold mb-0">Deworming Reminders</h6>
+                    <div class="ms-auto d-flex align-items-center">
+                        <button id="dewormPrev" class="carousel-arrow me-2"><i class="bi bi-chevron-left"></i></button>
+                        <button id="dewormNext" class="carousel-arrow"><i class="bi bi-chevron-right"></i></button>
+                    </div>
+                </div>
+                <div id="dewormTrack" class="carousel-track" style="gap:12px; padding:8px 0;"></div>
+                <div class="text-center text-muted small mt-1" id="dewormCount"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@using System.Text.Json
+
+<script>
+    const petsData = @Html.Raw(JsonSerializer.Serialize(pets));
+    const upcomingData = @Html.Raw(JsonSerializer.Serialize(upcoming));
+    const vaccineData = @Html.Raw(JsonSerializer.Serialize(vaccineDue));
+    const dewormData = @Html.Raw(JsonSerializer.Serialize(dewormDue));
+    const defaultPhoto = "@defaultPhoto";
+
+        function getPetPageSize() {
+        if (window.innerWidth <= 576) return 1; 
+        if (window.innerWidth <= 992) return 2; 
+        return 3; 
+    }
+
+    let PAGE_SIZES = {
+        pets: getPetPageSize(),
+        appt: 1,
+        vacc: 1,
+        deworm: 1
+    };
+
+    const pageState = { pets: 0, appt: 0, vacc: 0, deworm: 0 };
+
+    function formatDateB(dateStr) {
+        if (!dateStr) return "—";
+        const d = new Date(dateStr);
+        return isNaN(d) ? dateStr : d.toLocaleString('en-US', {
+            month: 'short', day: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', hour12: true
+        });
+    }
+
+    function petTemplate(p) {
+        const photo = p.PhotoPath && p.PhotoPath.length ? p.PhotoPath : defaultPhoto;
+        const ageYears = p.Birthdate ? Math.max(0, Math.floor((new Date() - new Date(p.Birthdate)) / (365.25*24*60*60*1000))) : 0;
+        return `
+            <img src="${photo}" onerror="this.src='${defaultPhoto}'" style="width:100%; height:220px; object-fit:cover; border-radius:0.75rem;" />
+            <div class="card-body text-center">
+                <h6 class="fw-bold mb-1">${escapeHtml(p.Name)}</h6>
+                <p class="text-muted small mb-1">${escapeHtml(p.Breed ?? '')}</p>
+                <p class="text-muted small mb-3">Age: ${ageYears} year${ageYears !== 1 ? 's' : ''}</p>
+                <a href="/Owner/ViewPet?id=${p.PetID}" class="btn btn-outline-primary btn-sm px-4">View Pet Card</a>
+            </div>
+        `;
+    }
+
+    function appointmentTemplate(a) {
+        const petName = a.Pet?.Name ?? 'Unknown';
+        const svc = a.ServiceCategory?.ServiceType ?? 'Service';
+        const dt = a.AppointmentDate ? formatDateB(a.AppointmentDate) : '—';
+        return `
+            <div class="p-3">
+                <h6 class="fw-semibold mb-1">${petName}</h6>
+                <div class="text-muted small mb-2">${svc}</div>
+                <div class="fw-semibold mb-2">${dt}</div>
+                <a href="/Owner/Appointments" class="btn btn-sm btn-outline-primary">View</a>
+            </div>
+        `;
+    }
+
+    function dueTemplate(d) {
+        const petName = d.Pet?.Name ?? 'Unknown';
+        const svc = d.ServiceCategory?.ServiceType ?? 'Service';
+        const dt = d.DueDate ? new Date(d.DueDate).toLocaleDateString('en-US', {
+        month: 'short', day: '2-digit', year: 'numeric'
+    }) : '—';
+        return `
+            <div class="p-3">
+                <h6 class="fw-semibold mb-1">${petName}</h6>
+                <div class="text-muted small mb-2">${svc}</div>
+                <div class="fw-semibold mb-2">Due Date: ${dt}</div>
+                <a href="/Owner/ViewPet?id=${d.Pet?.PetID ?? '#'}" class="btn btn-sm btn-outline-primary">View Pet</a>
+            </div>
+        `;
+    }
+
+    function renderGeneric(containerId, data, templateFn, pageIndex, pageSize) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+        if (!data || data.length === 0) {
+            container.innerHTML = `<div class="empty-note text-center text-muted">No items found.</div>`;
+            return;
+        }
+
+        const totalPages = Math.ceil(data.length / pageSize);
+        const page = Math.min(pageIndex, totalPages - 1);   
+        const start = page * pageSize;
+        const slice = data.slice(start, start + pageSize);
+
+        slice.forEach(item => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'app-card card rounded-3';
+            wrapper.innerHTML = templateFn(item);
+            container.appendChild(wrapper);
+        });
+    }
+
+    function updateCount(section, pageIndex, totalItems, pageSize) {
+        const countEl = document.getElementById(section + 'Count');
+        if (!countEl) return;
+
+        const totalPages = Math.ceil(totalItems / pageSize);
+        if (totalItems === 0) {
+            countEl.textContent = 'No reminders';
+        } else {
+            countEl.textContent = `${pageIndex + 1} of ${totalPages}`;
+        }
+
+        const prevBtn = document.getElementById(section + 'Prev');
+        const nextBtn = document.getElementById(section + 'Next');
+        if (prevBtn && nextBtn) {
+            prevBtn.disabled = pageIndex === 0;
+            nextBtn.disabled = pageIndex >= totalPages - 1;
+            prevBtn.style.opacity = prevBtn.disabled ? "0.5" : "1";
+            nextBtn.style.opacity = nextBtn.disabled ? "0.5" : "1";
+        }
+    }
+        window.addEventListener('resize', () => {
+        const newPetSize = getPetPageSize();
+        if (newPetSize !== PAGE_SIZES.pets) {
+            PAGE_SIZES.pets = newPetSize;
+            pageState.pets = 0; 
+            renderAll();
+        }
+    });
+
+    function renderAll() {
+        renderGeneric('petsTrack', petsData, petTemplate, pageState.pets, PAGE_SIZES.pets);
+        renderGeneric('upcomingTrack', upcomingData, appointmentTemplate, pageState.appt, PAGE_SIZES.appt);
+        renderGeneric('vaccineTrack', vaccineData, dueTemplate, pageState.vacc, PAGE_SIZES.vacc);
+        renderGeneric('dewormTrack', dewormData, dueTemplate, pageState.deworm, PAGE_SIZES.deworm);
+
+        updateCount('appt', pageState.appt, upcomingData.length, PAGE_SIZES.appt);
+        updateCount('vacc', pageState.vacc, vaccineData.length, PAGE_SIZES.vacc);
+        updateCount('deworm', pageState.deworm, dewormData.length, PAGE_SIZES.deworm);
+    }
+
+    function gotoPage(section, delta) {
+        const dataLen = {
+            pets: petsData.length,
+            appt: upcomingData.length,
+            vacc: vaccineData.length,
+            deworm: dewormData.length
+        }[section];
+
+        const pageSize = PAGE_SIZES[section];
+        const totalPages = Math.ceil(dataLen / pageSize);
+        pageState[section] = Math.min(Math.max(pageState[section] + delta, 0), totalPages - 1);
+        renderAll();
+    }
+
+    function escapeHtml(str) {
+        return str ? String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])) : '';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const sections = ['pets', 'appt', 'vacc', 'deworm'];
+        sections.forEach(sec => {
+            const prev = document.getElementById(sec + 'Prev');
+            const next = document.getElementById(sec + 'Next');
+            if (prev) prev.onclick = () => gotoPage(sec, -1);
+            if (next) next.onclick = () => gotoPage(sec, +1);
+        });
+        renderAll();
+    });
+</script>

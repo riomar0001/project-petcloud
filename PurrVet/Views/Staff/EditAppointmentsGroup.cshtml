@@ -1,0 +1,528 @@
+﻿@model PurrVet.Models.AppointmentGroup
+@using System.Text.Json
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewBag.Title = "Edit Group Appointments";
+
+    var simpleSubtypes = ((IEnumerable<PurrVet.Models.ServiceSubtype>)ViewBag.ServiceSubtypes)
+        .Select(s => new { s.SubtypeID, s.ServiceSubType, s.CategoryID })
+        .ToList();
+
+    var subtypesJson = JsonSerializer.Serialize(simpleSubtypes);
+}
+
+<div class="p-4">
+    <h5 class="fw-bold mb-4">Appointments / Edit Group #@Model.GroupID</h5>
+
+    <div class="card shadow-sm p-4">
+
+        <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
+            <div id="messageToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body"></div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        </div>
+
+        <form id="editGroupForm" method="post" action="@Url.Action("EditAppointmentsGroup", "Admin")">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="groupId" value="@Model.GroupID" />
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Owner</label>
+                    <select id="ownerSelect" class="form-select select2">
+                        <option value="">Select Owner</option>
+                        @foreach (var owner in ViewBag.Owners)
+                        {
+                            var isSelected = Model.Appointments.First().Pet?.OwnerID == owner.OwnerID ? "selected" : "";
+                            <option value="@owner.OwnerID" selected="@(Model.Appointments.FirstOrDefault()?.Pet?.OwnerID == owner.OwnerID ? "selected" : null)">
+                                @owner.Name
+                            </option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Appointment Date</label>
+                    <input type="date"
+                           id="GroupDate"
+                           name="GroupDate"
+                           class="form-control"
+                           value="@Model.GroupTime.ToString("yyyy-MM-dd")" />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Appointment Time</label>
+                    <select name="GroupTime"
+                            id="groupTimeSelect"
+                            class="form-select">
+                    </select>
+                </div>
+            </div>
+
+            <div id="appointmentsContainer">
+                @for (int i = 0; i < Model.Appointments.Count; i++)
+                {
+                    var appt = Model.Appointments.ElementAt(i);
+                    <div class="appointment-block border rounded p-3 mb-3 position-relative bg-light">
+                        <input type="hidden" name="appointments[@i].AppointmentID" value="@appt.AppointmentID" />
+                        <h6 class="fw-bold mb-3">Service #@(i + 1)</h6>
+                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 mt-2 me-2 remove-appointment">×</button>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Pet</label>
+                                <select name="appointments[@i].PetID" class="form-select pet-select select2">
+                                    <option value="">Select Pet</option>
+                                    @if (appt.Pet?.Owner?.Pets != null)
+                                    {
+                                        foreach (var pet in appt.Pet.Owner.Pets)
+                                        {
+                                            var selected = appt.PetID == pet.PetID ? "selected" : "";
+                                            <option value="@pet.PetID" selected="@(appt.PetID == pet.PetID ? "selected" : null)">
+                                                @pet.Name (@pet.Type)
+                                            </option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Category</label>
+                                <select name="appointments[@i].CategoryID" class="form-select category-select select2">
+                                    <option value="">Select Category</option>
+                                    @foreach (var cat in ViewBag.ServiceCategories)
+                                    {
+                                        var selected = appt.CategoryID == cat.CategoryID ? "selected" : "";
+                                        <option value="@cat.CategoryID" selected="@(appt.CategoryID == cat.CategoryID ? "selected" : null)">
+                                            @cat.ServiceType
+                                        </option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Subtype</label>
+                                <select name="appointments[@i].SubtypeID"
+                                        class="form-select subtype-select select2"
+                                        data-subtype="@appt.SubtypeID"
+                                        >
+                                    <option value="">-- Select Subtype --</option>
+                                </select>
+                            </div>
+                            @if (appt.Status == "Completed")
+                            {
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Administered By</label>
+                                    <input type="text"
+                                           name="appointments[@i].AdministeredBy"
+                                           class="form-control"
+                                           value="@appt.AdministeredBy"
+                                           placeholder="Enter staff name" />
+                                </div>
+
+                                @if (appt.ServiceCategory?.ServiceType == "Vaccination" ||
+                                     appt.ServiceCategory?.ServiceType == "Deworming & Preventives")
+                                {
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Next Due Date</label>
+                                        <input type="date"
+                                               name="appointments[@i].DueDate"
+                                               class="form-control"
+                                               value="@(appt.DueDate?.ToString("yyyy-MM-dd") ?? "")" />
+                                    </div>
+                                }
+                            }
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Status</label>
+                                <select name="appointments[@i].Status" class="form-select">
+                                    <option value="Missed" selected="@(appt.Status == "Missed" ? "selected" : null)">Missed</option>
+                                    <option value="Completed" selected="@(appt.Status == "Completed" ? "selected" : null)">Completed</option>
+                                    <option value="Cancelled" selected="@(appt.Status == "Cancelled" ? "selected" : null)">Cancelled</option>
+
+                                </select>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Notes</label>
+                                <textarea name="appointments[@i].Notes" class="form-control">@appt.Notes</textarea>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="mt-3 text-end">
+                <button type="button" id="addMoreAppointments" class="btn btn-outline-primary">+ Add Service</button>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-end gap-2">
+                <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+                <a href="@Url.Action("Appointments", "Admin")" class="btn btn-secondary px-4">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- ✅ Confirm Add Modal -->
+<div class="modal fade" id="confirmAddModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h6 class="modal-title fw-bold">Add Service</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mb-0 fw-semibold">Add another service to this group?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                <button id="confirmAddBtn" class="btn btn-success px-4">Add</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmRemoveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h6 class="modal-title fw-bold">Remove Service</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mb-0 fw-semibold">Are you sure you want to remove this service?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                <button id="confirmRemoveBtn" class="btn btn-danger px-4">Remove</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmSaveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h6 class="modal-title fw-bold">Confirm Save</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mb-0 fw-semibold">Are you sure you want to save these changes?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                <button id="confirmSaveBtn" class="btn btn-success px-4">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+    $(function () {
+        const allSubtypes = @Html.Raw(subtypesJson);
+        const container = $("#appointmentsContainer");
+        let cachedPets = [];
+        let pendingRemove = null;
+
+        $(document).on("change", "#GroupDate", function () {
+            loadSlots($(this).val());
+        });
+
+        function initSelect2(scope) {
+            const $scope = scope ? $(scope) : $(document);
+            $scope.find(".select2").each(function () {
+                try { $(this).select2('destroy'); } catch (e) {}
+                $(this).select2({
+                    width: "100%",
+                    allowClear: true,
+                    placeholder: $(this).attr("data-placeholder") || "",
+                    dropdownParent: $(this).closest('.card, .modal').length
+                        ? $(this).closest('.card, .modal')
+                        : $(document.body)
+                });
+            });
+        }
+        initSelect2(document);
+
+        function showToast(msg, success = false) {
+            const toastEl = $('#messageToast');
+            toastEl.find('.toast-body').text(msg);
+            toastEl.removeClass('bg-success bg-danger')
+                .addClass(success ? 'bg-success' : 'bg-danger');
+            new bootstrap.Toast(toastEl[0]).show();
+        }
+
+        function loadPets(ownerId, scope) {
+            if (!ownerId) {
+                cachedPets = [];
+                $(scope || document).find(".pet-select").each(function () {
+                    $(this).empty().append('<option value="">-- Select Pet --</option>');
+                    try { $(this).select2('destroy'); } catch (e) {}
+                    $(this).select2({ width: "100%", allowClear: true });
+                });
+                return;
+            }
+
+            return $.get("@Url.Action("GetPetsByOwner", "Admin")", { ownerId })
+                .done(pets => {
+                    cachedPets = pets || [];
+                    const $targets = scope ? $(scope).find(".pet-select") : $(".pet-select");
+                    $targets.each(function () {
+                        const s = $(this);
+                        const selectedPetId = s.val();
+                        s.empty().append('<option value="">-- Select Pet --</option>');
+                        cachedPets.forEach(p => {
+                            const sel = (String(p.petID) === String(selectedPetId)) ? 'selected' : '';
+                            s.append(`<option value="${p.petID}" ${sel}>${p.name} (${p.type})</option>`);
+                        });
+                        try { s.select2('destroy'); } catch (e) {}
+                        s.select2({ width: "100%", allowClear: true });
+                    });
+                })
+                .fail(() => showToast("Failed to load pets"));
+        }
+
+        const preselectedOwnerId = $("#ownerSelect").val();
+        if (preselectedOwnerId) loadPets(preselectedOwnerId);
+        $("#ownerSelect").on("change", function () { loadPets($(this).val()); });
+
+        function populateSubtypes(categorySelect, subtypeSelect, selectedSubtypeId) {
+            const catId = $(categorySelect).val();
+            const $s = $(subtypeSelect);
+            $s.empty();
+            if (!catId) {
+                try { $s.select2('destroy'); } catch (e) {}
+                $s.select2({ width: "100%", allowClear: true });
+                return;
+            }
+            const filtered = allSubtypes.filter(s => String(s.CategoryID) === String(catId));
+            filtered.forEach(item => {
+                const sel = (String(item.SubtypeID) === String(selectedSubtypeId)) ? 'selected' : '';
+                $s.append(`<option value="${item.SubtypeID}" ${sel}>${item.ServiceSubType}</option>`);
+            });
+            try { $s.select2('destroy'); } catch (e) {}
+            $s.select2({ width: "100%", allowClear: true });
+            if (!selectedSubtypeId && filtered.length > 0) $s.val(filtered[0].SubtypeID).trigger("change");
+        }
+
+        $(".category-select").each(function() {
+            const subtypeSelect = $(this).closest(".appointment-block").find(".subtype-select");
+            const selectedSubtypeId = subtypeSelect.attr("data-subtype");
+            populateSubtypes(this, subtypeSelect, selectedSubtypeId);
+        });
+
+        $(document).on("change", ".category-select", function () {
+            const block = $(this).closest(".appointment-block");
+            populateSubtypes(this, block.find(".subtype-select"), null);
+        });
+
+        function fixIndexes() {
+            $("#appointmentsContainer .appointment-block").each(function (i) {
+                $(this).find("[name]").each(function () {
+                    const name = $(this).attr("name");
+                    if (!name) return;
+                    const newName = name.replace(/appointments\[\d*\]/, `appointments[${i}]`);
+                    $(this).attr("name", newName);
+                });
+                $(this).find("h6").text(`Service #${i + 1}`);
+            });
+        }
+        fixIndexes();
+
+        $("#addMoreAppointments").on("click", function () {
+            const ownerId = $("#ownerSelect").val();
+            if (!ownerId) return showToast("Please select an owner first.");
+            if (container.find(".appointment-block").length >= 3) return showToast("Max 3 services allowed.");
+
+            const modal = new bootstrap.Modal('#confirmAddModal');
+            modal.show();
+
+            $("#confirmAddBtn").off().on("click", function () {
+                modal.hide();
+                const newIndex = container.find(".appointment-block").length;
+
+                const newBlock = $(`
+                    <div class="appointment-block border rounded p-3 mb-3 position-relative bg-light">
+                        <h6 class="fw-bold mb-3">Service #${newIndex + 1}</h6>
+                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 mt-2 me-2 remove-appointment">×</button>
+                        <input type="hidden" name="appointments[${newIndex}].AppointmentID" value="0" />
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Pet</label>
+                                <select name="appointments[${newIndex}].PetID" class="form-select pet-select select2" data-placeholder="-- Select Pet --"><option></option></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Category</label>
+                                <select name="appointments[${newIndex}].CategoryID" class="form-select category-select select2" data-placeholder="-- Select Category --"><option></option>
+                                    @foreach (var cat in ViewBag.ServiceCategories)
+                                    {
+                                        <text><option value="@cat.CategoryID">@cat.ServiceType</option></text>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Subtype</label>
+                                <select name="appointments[${newIndex}].SubtypeID" class="form-select subtype-select select2" data-placeholder="-- Select Subtype --"></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Status</label>
+                                <select name="appointments[${newIndex}].Status" class="form-select">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Missed">Missed</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Notes</label>
+                                <textarea name="appointments[${newIndex}].Notes" class="form-control">No notes.</textarea>
+                            </div>
+                        </div>
+                    </div>
+                `);
+
+                container.append(newBlock);
+
+                loadPets($("#ownerSelect").val(), newBlock);
+                const catSelect = newBlock.find(".category-select");
+                const subtypeSelect = newBlock.find(".subtype-select");
+                const firstCatId = catSelect.find('option:eq(1)').val(); 
+                if (firstCatId) { catSelect.val(firstCatId).trigger('change'); }
+                populateSubtypes(catSelect, subtypeSelect, null);
+
+                fixIndexes();
+                initSelect2(newBlock);
+            });
+        });
+
+        $(document).on("click", ".remove-appointment", function () {
+            pendingRemove = $(this).closest(".appointment-block");
+
+            const remaining = $("#appointmentsContainer .appointment-block").length;
+
+            if (remaining <= 1) {
+                showToast("You must keep at least one service in this appointment.");
+                pendingRemove = null;
+                return;
+            }
+
+            new bootstrap.Modal('#confirmRemoveModal').show();
+        });
+
+        $("#confirmRemoveBtn").on("click", function () {
+            const modal = bootstrap.Modal.getInstance('#confirmRemoveModal');
+            modal.hide();
+
+            if (pendingRemove) {
+                pendingRemove.remove();
+                pendingRemove = null;
+                fixIndexes();
+                showToast("Service removed.", true);
+            }
+        });
+
+        function validateAppointments() {
+            let valid = true;
+            container.find(".appointment-block").each(function (i) {
+                const pet = $(this).find('[name*="PetID"]').val();
+                const cat = $(this).find('[name*="CategoryID"]').val();
+                const subtype = $(this).find('[name*="SubtypeID"]').val();
+                if (!pet || !cat || !subtype) { showToast(`Please complete Service #${i + 1}.`); valid = false; return false; }
+            });
+            return valid;
+        }
+
+        let availableTimes = [];
+        const currentTime = "@Model.GroupTime.ToString("HH:mm")";
+
+        loadSlots("@Model.GroupTime.ToString("yyyy-MM-dd")");
+        $("input[name='GroupDate']").on("change", function () { loadSlots($(this).val()); });
+
+        function loadSlots(date) {
+            $.get("@Url.Action("GetAvailableTimeSlots", "Admin")", { date: new Date(date).toISOString() })
+                .done(res => { availableTimes = res || []; buildTimeDropdown(); })
+                .fail(() => showToast("Failed to load time slots"));
+        }
+
+        function buildTimeDropdown() {
+            const select = $("#groupTimeSelect");
+            select.empty();
+
+            function normalize(t) {
+                if (!t) return "";
+                const digits = t.replace(/[^0-9:]/g, "").split(":").map(x => x.padStart(2, '0'));
+                return (digits[0] || "00") + ":" + (digits[1] || "00");
+            }
+
+            const date = $("input[name='GroupDate']").val();
+
+            const cart = JSON.parse(localStorage.getItem("appointmentCart") || "[]");
+            const existingTimes = cart.map(a => `${a.date}-${normalize(a.time)}`);
+
+            const formUsedTimes = [];
+            $("#appointmentsContainer .appointment-block").each(function () {
+                const t = $(this).find("[name*='AppointmentTime'], [name*='Time']").val();
+                if (t) formUsedTimes.push(`${date}-${normalize(t)}`);
+            });
+
+            const selectedTime = normalize(currentTime);
+
+            if (selectedTime && !availableTimes.includes(selectedTime)) {
+                select.append(new Option(selectedTime + " (Current)", selectedTime, true, true));
+            }
+
+            availableTimes.forEach(t => {
+                const normalized = normalize(t);
+                const key = `${date}-${normalized}`;
+
+                const isTaken = existingTimes.includes(key) || (formUsedTimes.includes(key) && normalized !== selectedTime);
+
+                const displayText = isTaken ? `${normalized} (Added to List)` : normalized;
+                const opt = new Option(displayText, normalized, normalized === selectedTime, normalized === selectedTime);
+
+                if (isTaken && normalized !== selectedTime) opt.disabled = true;
+
+                select.append(opt);
+            });
+
+            if (!availableTimes.length) {
+                select.append("<option disabled>No slots available</option>");
+            }
+        }
+
+        $("#editGroupForm").on("submit", function (e) {
+            fixIndexes();
+            e.preventDefault();
+            if (!validateAppointments()) return;
+
+            const modal = new bootstrap.Modal('#confirmSaveModal');
+            modal.show();
+
+            $("#confirmSaveBtn").off().on("click", function () {
+                modal.hide();
+                fixIndexes();
+                $(".select2").each(function () { const $el = $(this); const val = $el.val(); $el.val(val).trigger('change'); });
+                const formData = $("#editGroupForm").serialize();
+                console.log("Form Data Being Sent:", formData);
+
+                $.post($("#editGroupForm").attr("action"), formData)
+                    .done(res => {
+                        if (!res || res.success === undefined) { showToast("Unexpected server response.", false); return; }
+                        showToast(res.message, res.success);
+                        if (res.success) setTimeout(() => window.location.href = '@Url.Action("Appointments", "Admin")', 1000);
+                    })
+                    .fail(xhr => { const msg = xhr.responseJSON?.message || "Failed to save changes"; showToast(msg, false); });
+            });
+        });
+    });
+
+</script>
+
+}

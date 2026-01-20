@@ -1,0 +1,423 @@
+﻿@model List<PurrVet.Models.Appointment>
+@Html.AntiForgeryToken()
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewBag.Title = "My Appointments";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js"></script>
+<link href="~/css/appointment.css" rel="stylesheet" />
+
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
+    <div id="syncToast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body fw-semibold" id="syncToastMessage">Syncing appointments...</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmSyncModal" tabindex="-1" aria-labelledby="confirmSyncModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h6 class="modal-title fw-bold" id="confirmSyncModalLabel">Confirm Sync</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to sync <strong>ALL your appointments</strong> to Microsoft Outlook?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-success btn-sm" id="confirmSyncBtn">Yes, Sync Now</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex flex-column p-3" style="height: calc(100vh - 50px); background-color:#f4f4f4;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-2">My Appointments</h5>
+        <div class="form-check form-switch d-flex align-items-center">
+            <input class="form-check-input me-2" type="checkbox" id="syncToggle" onchange="toggleSync(this)">
+            <label class="form-check-label fw-semibold" for="syncToggle">Auto Sync with Microsoft Calendar</label>
+        </div>
+    </div>
+
+    <div class="d-flex flex-grow-1">
+        <div class="p-3" style="width: 320px;">
+            <div id="mini-calendar" class="mb-3"></div>
+            <div class="container mt-4">
+                <div class="card shadow-sm" style="max-width: 600px; width: 100%;">
+                    <div class="card-header fw-bold">
+                        Appointment Details
+                    </div>
+                    <div class="card-body" id="details-content">
+                        <p class="text-muted">Select an appointment</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="maxPendingModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">Cannot Schedule Appointment</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>You already have <strong>3 pending appointment requests.</strong></p>
+                        <p class="mb-0">Please contact the clinic staff to manage your schedule before booking more.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="cancelModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">Request Appointment Cancellation</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="form-label">Please provide a reason:</label>
+                        <textarea id="cancelNotes" class="form-control" rows="3" placeholder="Enter reason..."></textarea>
+                        <input type="hidden" id="cancelAppointmentId" />
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button class="btn btn-danger" onclick="submitCancelRequest()">Submit Request</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-grow-1 p-3 bg-white shadow-sm ms-3 rounded">
+            <div id="calendar"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showConfirmSyncModal() {
+        const modal = new bootstrap.Modal(document.getElementById('confirmSyncModal'));
+        modal.show();
+        document.getElementById('confirmSyncBtn').onclick = function () {
+            modal.hide();
+            syncAllAppointments();
+        };
+    }
+
+    function showToast(message, type = 'info') {
+        const toastEl = document.getElementById('syncToast');
+        const toastMessage = document.getElementById('syncToastMessage');
+        toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+        toastMessage.textContent = message;
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const calendarEl = document.getElementById('calendar');
+
+        const allAppointments = [
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                    var appt = Model[i];
+                    var isCurrentOwner = appt.Pet?.OwnerID == Context.Session.GetInt32("OwnerID");
+                    var status = appt.Status?.ToLower() ?? "";
+                    var title = isCurrentOwner
+                            ? (appt.GroupID != null ? $"Group Appointment #{appt.GroupID}" : appt.ServiceCategory?.ServiceType ?? "Service")
+                            : "Not Available";
+
+                    <text>
+                    {
+                        id: '@appt.AppointmentID',
+                        title: '@Html.Raw(title)',
+                        start: '@appt.AppointmentDate.ToString("yyyy-MM-ddTHH:mm:ss")',
+                        allDay: false,
+                        backgroundColor: '@(isCurrentOwner
+                                                    ? (status == "pending" ? "#0dcaf0"
+                                                    : status == "approved" ? "#198754"
+                                                    : status == "cancelled" ? "#dc3545"
+                                                    : status == "completed" ? "#20c997"
+                                                    : status == "missed" ? "#dc3545"
+                                                    : "#6c757d")
+                                                    : "#dc3545")',                      /* red for others */
+                    borderColor: '@(isCurrentOwner ? "#0dcaf0" : "#dc3545")',
+                    textColor: 'white',
+                    extendedProps: {
+                        petName: '@Html.Raw(appt.Pet?.Name)',
+                        category: '@Html.Raw(appt.ServiceCategory?.ServiceType)',
+                        subtype: '@Html.Raw(appt.ServiceSubtype?.ServiceSubType)',
+                        status: '@Html.Raw(appt.Status)',
+                        notes: '@Html.Raw(appt.Notes)',
+                        groupID: '@appt.GroupID',
+                        ownerID: '@appt.Pet?.OwnerID'
+                    }
+                }@(i < Model.Count - 1 ? "," : "")
+                </text>
+                        }
+        ];
+
+        const limitedAppointments = allAppointments;
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'timeGridWeek',
+            height: '100%',
+            slotMinTime: '09:00:00',
+            slotMaxTime: '18:30:00',
+            expandRows: true,
+            slotDuration: '00:05:00',
+            eventOverlap: false,
+            headerToolbar: {
+                left: 'prev,next title',
+                center: '',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            allDaySlot: false,
+            selectable: true,
+            eventTimeFormat: {
+                hour: 'numeric',
+                minute: '2-digit',
+                meridiem: 'short',
+                hour12: true
+            },
+            events: limitedAppointments,
+
+            eventDidMount: function (info) {
+                if (info.event.extendedProps.ownerID != @Context.Session.GetInt32("OwnerID")) {
+                    info.el.style.backgroundColor = '#dc3545';
+                    info.el.style.borderColor = '#dc3545';
+                    info.el.style.color = 'white';
+                }
+            },
+
+            eventContent: function (arg) {
+                const e = arg.event;
+                const timeStr = e.start
+                    ? e.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })
+                    : '';
+                const label = e.extendedProps.ownerID != @Context.Session.GetInt32("OwnerID")
+                    ? "Not Available"
+                    : e.title;
+                const style = "color:white;font-weight:600;font-size:9px;line-height:0.9;";
+                return { html: `<div style="${style}">${label}</div><div style="${style}">${timeStr}</div>` };
+            },
+
+            eventClick: function (info) {
+                const e = info.event;
+                const detailsDiv = document.getElementById('details-content');
+                const groupID = e.extendedProps.groupID;
+                let currentGroupEvents = calendar.getEvents().filter(ev => ev.extendedProps.groupID === groupID);
+                let currentGroupIndex = currentGroupEvents.findIndex(ev => ev.id === e.id);
+
+                if (e.extendedProps.ownerID != @Context.Session.GetInt32("OwnerID")) {
+                    detailsDiv.innerHTML = `<p class="text-danger fw-bold">This slot is <strong>Not Available</strong>.</p>`;
+                    return;
+                }
+
+                function renderDetails(event) {
+                    let statusClass = "";
+                    switch (event.extendedProps.status?.toLowerCase()) {
+                        case "completed": statusClass = "bg-success"; break;
+                        case "missed":
+                        case "cancelled": statusClass = "bg-danger"; break;
+                        case "pending": statusClass = "bg-primary"; break;
+                        default: statusClass = "bg-secondary";
+                    }
+
+                    let buttons = "";
+                    if (event.extendedProps.status?.toLowerCase() === "requested") {
+                        buttons += `<a href="/Owner/EditAppointment/${event.id}" class="btn btn-outline-primary btn-sm">Edit</a>`;
+                    }
+                    if (["pending", "requested"].includes(event.extendedProps.status?.toLowerCase())) {
+                        buttons += `<button class="btn btn-outline-danger btn-sm" onclick="requestCancellation(${event.id})">Request Cancellation</button>`;
+                    }
+
+                    detailsDiv.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <a id="prevGroupBtn" class="btn btn-sm d-flex align-items-center justify-content-center"
+                               style="border-radius:20px; width:36px; height:36px; font-size:8px;">
+                               <i class="bi bi-chevron-left text-black"></i>
+                            </a>
+                            <span class="fw-semibold">Appointment ${currentGroupIndex + 1} of ${currentGroupEvents.length}</span>
+                            <a id="nextGroupBtn" class="btn btn-sm d-flex align-items-center justify-content-center"
+                               style="border-radius:20px; width:36px; height:36px; font-size:8px;">
+                               <i class="bi bi-chevron-right text-black"></i>
+                            </a>
+                        </div>
+                        <p><strong>Pet:</strong> ${event.extendedProps.petName}</p>
+                        <p><strong>Category:</strong> ${event.extendedProps.category ?? '—'}</p>
+                        <p><strong>Subtype:</strong> ${event.extendedProps.subtype ?? '—'}</p>
+                        <p><strong>Date:</strong> ${event.start.toLocaleString()}</p>
+                        <p><strong>Status:</strong> <span class="badge ${statusClass}">${event.extendedProps.status}</span></p>
+                        <p><strong>Notes:</strong> ${event.extendedProps.notes ?? 'N/A'}</p>
+                        <div class="d-flex justify-content-between mt-3">${buttons}</div>
+                    `;
+
+                    document.getElementById('prevGroupBtn').onclick = () => {
+                        if (currentGroupIndex > 0) {
+                            currentGroupIndex--;
+                            renderDetails(currentGroupEvents[currentGroupIndex]);
+                        }
+                    };
+                    document.getElementById('nextGroupBtn').onclick = () => {
+                        if (currentGroupIndex < currentGroupEvents.length - 1) {
+                            currentGroupIndex++;
+                            renderDetails(currentGroupEvents[currentGroupIndex]);
+                        }
+                    };
+                }
+
+                if (currentGroupIndex === -1) currentGroupIndex = 0;
+                renderDetails(currentGroupEvents[currentGroupIndex]);
+            },
+
+            dateClick: function (info) {
+                const now = new Date();
+
+                if (info.date < now) {
+                    showToast("Cannot schedule in the past.", "danger");
+                    return;
+                }
+
+                const detailsDiv = document.getElementById('details-content');
+                if (info.view.type === "dayGridMonth") return;
+                const date = info.date;
+                const formattedDate = date.toISOString().split('T')[0];
+                const formattedTime = date.toTimeString().slice(0, 5);
+                detailsDiv.innerHTML = `
+                    <p class="mb-2 text-muted">No appointment for <strong>${date.toLocaleString()}</strong>.</p>
+                    <button class="btn btn-success w-100" onclick="scheduleAppointment('${formattedDate}', '${formattedTime}')">
+                        + Schedule Appointment
+                    </button>
+                `;
+            }
+        });
+
+        calendar.render();
+
+        flatpickr("#mini-calendar", {
+            inline: true,
+            dateFormat: "D",
+            minDate: "today",
+            onChange: function (selectedDates) {
+                calendar.gotoDate(selectedDates[0]);
+            }
+        });
+
+    });
+
+    let isSyncEnabled = sessionStorage.getItem("syncEnabled") === "true";
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const toggle = document.getElementById("syncToggle");
+        if (toggle) toggle.checked = isSyncEnabled;
+        if (isSyncEnabled) {
+            showToast("Auto Sync is active. Checking for new appointments...", "primary");
+            syncAllAppointments();
+        }
+        setInterval(() => {
+            if (isSyncEnabled) syncAllAppointments();
+        }, 3 * 60 * 1000);
+    });
+
+    function toggleSync(element) {
+        isSyncEnabled = element.checked;
+        sessionStorage.setItem("syncEnabled", isSyncEnabled);
+        if (isSyncEnabled) {
+            showToast("Auto Sync enabled. Syncing all appointments...", "primary");
+            syncAllAppointments();
+        } else {
+            showToast("Auto Sync disabled. New appointments will not sync.", "danger");
+        }
+    }
+
+    async function syncAllAppointments() {
+        showToast("Syncing appointments...", "primary");
+        const res = await fetch('/Owner/SyncAppointments', {
+            method: "POST",
+            headers: {
+                "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]')?.value || "",
+                "Content-Type": "application/json"
+            }
+        });
+        const data = await res.json();
+        showToast(
+            data.message || (data.success ? "Appointments synced successfully!" : "Some appointments failed to sync."),
+            data.success ? "success" : "danger"
+        );
+    }
+
+    function scheduleAppointment(date, time) {
+        const pending = @ViewBag.PendingGroupCount;
+
+        if (pending >= 3) {
+            const modal = new bootstrap.Modal(document.getElementById("maxPendingModal"));
+            modal.show();
+            return;
+        }
+
+        window.location.href = `/Owner/AddAppointment?date=${date}&time=${time}`;
+    }
+
+
+        function requestCancellation(id) {
+        document.getElementById("cancelNotes").value = "";
+        document.getElementById("cancelAppointmentId").value = id;
+        new bootstrap.Modal(document.getElementById("cancelModal")).show();
+    }
+
+          async function submitCancelRequest() {
+        const id = document.getElementById("cancelAppointmentId").value;
+        const notes = document.getElementById("cancelNotes").value.trim();
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        if (!notes) {
+            showToast("Please enter a reason for cancellation.", "danger");
+            return;
+        }
+
+        try {
+            const res = await fetch(`/Owner/RequestCancellation/${id}`, {
+                method: "POST",
+                headers: {
+                    "RequestVerificationToken": token,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ notes })
+            });
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById("cancelModal"));
+            modal.hide(); 
+
+            if (!res.ok) {
+                showToast("Something went wrong. Please try again.", "danger");
+                return;
+            }
+
+            const data = await res.json();
+            showToast(data.message, data.success ? "success" : "danger");
+
+            if (data.success) {
+                document.getElementById("cancelNotes").value = "";
+                setTimeout(() => location.reload(), 1000);
+            }
+        } catch (error) {
+            const modal = bootstrap.Modal.getInstance(document.getElementById("cancelModal"));
+            modal.hide(); 
+
+            showToast("Failed to submit request. Please check your connection.", "danger");
+            console.error("Cancel error:", error);
+        }
+    }
+
+</script>

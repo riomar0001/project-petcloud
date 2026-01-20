@@ -1,0 +1,932 @@
+﻿@model List<PurrVet.Models.Appointment>
+@Html.AntiForgeryToken()
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewBag.Title = "Appointments";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js"></script>
+<link href="~/css/appointment.css" rel="stylesheet" />
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
+    <div id="syncToast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body fw-semibold" id="syncToastMessage">
+                Syncing appointments...
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmSyncModal" tabindex="-1" aria-labelledby="confirmSyncModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h6 class="modal-title fw-bold" id="confirmSyncModalLabel">Confirm Sync</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to sync <strong>ALL appointments</strong> to Microsoft Outlook?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-success btn-sm" id="confirmSyncBtn">Yes, Sync Now</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- modal add cart -->
+<div class="modal fade" id="cartModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h6 class="modal-title fw-bold">Add Appointment to Cart</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Owner</label>
+                        <select id="cartOwnerSelect" class="form-select select2"></select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Pet</label>
+                        <select id="cartPetSelect" class="form-select select2"></select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Category</label>
+                        <select id="cartCategorySelect" class="form-select select2"></select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Subtype</label>
+                        <select id="cartSubtypeSelect" class="form-select select2"></select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Date</label>
+                        <input type="date" id="cartDate" class="form-control" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Time</label>
+                        <select id="cartTimeSelect" class="form-select"></select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Notes</label>
+                        <textarea id="cartNotes" class="form-control">No notes.</textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex flex-column p-3" style="height: calc(100vh - 50px); background-color:#f4f4f4;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-2">Manage Appointments</h5>
+        <div class="form-check form-switch d-flex align-items-center">
+            <input class="form-check-input me-2" type="checkbox" id="syncToggle" onchange="toggleSync(this)">
+            <label class="form-check-label fw-semibold" for="syncToggle">
+                Auto Sync with Microsoft Calendar
+            </label>
+        </div>
+    </div>
+    <!-- cart kuno -->
+    <div id="appointmentCart" class="card shadow-sm mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
+            <h6 class="mb-0">Appointment Draft</h6>
+            <button class="btn btn-sm btn-light" type="button" data-bs-toggle="collapse" data-bs-target="#cartBody">
+                Toggle
+            </button>
+        </div>
+        <div id="cartBody" class="collapse show">
+            <div class="card-body">
+                <div id="cartItems" class="overflow-auto" style="max-height:200px; overflow-y:auto; overflow-x:auto;"></div>
+                <button id="submitCart" class="btn btn-success btn-sm float-end mt-2 mb-2" style="margin-right:20px;" disabled>Save All</button>
+                <button id="clearCart" class="btn btn-danger btn-sm float-end mt-2" style="margin-right:10px;" disabled>Clear All</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-grow-1">
+        <div class="p-3" style="width: 320px;">
+            <div id="mini-calendar" class="mb-3"></div>
+
+            <div class="container mt-4">
+                <div class="card shadow-sm" style="max-width: 600px; width: 100%;">
+                    <div class="card-header fw-bold">
+                        Appointment Details
+                    </div>
+                    <div class="card-body" id="details-content">
+                        <p class="text-muted">Select an appointment</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="flex-grow-1 p-3 bg-white shadow-sm ms-3 rounded">
+            <div id="calendar"></div>
+        </div>
+    </div>
+    <div class="modal fade" id="markCompletedModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h6 class="modal-title fw-bold">Mark Appointment as Completed</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="markCompletedForm">
+                        <input type="hidden" id="completeAppointmentId">
+
+                        <div id="modalAppointments" class="mb-3"></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-success btn-sm" id="markCompletedFooterBtn">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="confirmCompleteModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-white">
+                    <h6 class="modal-title fw-bold">Confirm Completion</h6>
+                    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    Mark selected appointments as completed?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-success btn-sm" id="confirmCompleteBtn">Yes, Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="confirmActionModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="font-weight:bold;">
+                <div class="modal-header bg-warning text-white">
+                    <h6 class="modal-title fw-bold" id="confirmActionTitle">Confirm Action</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center" id="confirmActionMessage">
+                    Are you sure?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-danger btn-sm" id="confirmActionBtn">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="resendReminderModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-white">
+                    <h6 class="modal-title fw-bold">Resend Reminder</h6>
+                    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p class="mb-2">Choose how to resend the reminder:</p>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="reminderChannel" value="sms" checked>
+                        <label class="form-check-label">SMS</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="reminderChannel" value="email">
+                        <label class="form-check-label">Email</label>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="reminderChannel" value="both">
+                        <label class="form-check-label">SMS + Email</label>
+                    </div>
+
+                    <small class="text-muted d-block mt-2">
+                        SMS can be resent every 6 hours (max 3/day).
+                    </small>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-success btn-sm" id="confirmResendReminderBtn">
+                        Send Reminder
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function showConfirmSyncModal() {
+        const modal = new bootstrap.Modal(document.getElementById('confirmSyncModal'));
+        modal.show();
+
+        document.getElementById('confirmSyncBtn').onclick = function () {
+            modal.hide();
+            syncAllAppointments();
+        };
+    }
+
+    function showToast(message, type = 'info') {
+        const toastEl = document.getElementById('syncToast');
+        const toastMessage = document.getElementById('syncToastMessage');
+
+        toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+        toastMessage.textContent = message;
+
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const calendarEl = document.getElementById('calendar');
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'timeGridWeek',
+            height: '100%',
+            slotMinTime: '09:00:00',
+            slotMaxTime: '18:05:00',
+            expandRows: true,
+            slotDuration: '00:05:00',
+            eventOverlap: false,
+            headerToolbar: {
+                left: 'prev,next title',
+                center: '',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            allDaySlot: false,
+            selectable: true,
+            eventTimeFormat: {
+                hour: 'numeric',
+                minute: '2-digit',
+                meridiem: 'short',
+                hour12: true
+            },
+            events: function (info, successCallback, failureCallback) {
+                fetch("/Admin/GetAppointmentsJson")
+                    .then(res => res.json())
+                    .then(data => {
+                        data.forEach(e => {
+                            if (e.isDraft) {
+                                e.classNames = ["draft"]; 
+                            }
+                        });
+                        successCallback(data);
+                    })
+                    .catch(failureCallback);
+            },
+
+            eventContent: function (arg) {
+                const event = arg.event;
+                const viewType = arg.view.type;
+                const timeStr = event.start
+                    ? event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })
+                    : '';
+                const style = "color:white; font-weight:600; font-size:9px; line-height:0.9;";
+
+                if (viewType === "dayGridMonth") {
+                    const pet = event.extendedProps.petName || "Unnamed";
+                    const category = event.extendedProps.category || "Service";
+                    return {
+                        html: `
+                            <div style="${style}">${pet}</div>
+                            <div style="${style}">${timeStr}</div> 
+                            <div style="${style}">${category}</div>
+                        `
+                    };
+                }
+
+                if (viewType === "timeGridWeek" || viewType === "timeGridDay") {
+                    const groupID = event.extendedProps.groupID || "—";
+                    return {
+                        html: `
+                            <div style="${style}">${timeStr}</div>
+                            <div style="${style}"> Appointment #${groupID}</div>
+                        `
+                    };
+                }
+                return { html: "" };
+            },
+            eventClick: function (info) {
+
+                if (info.event.extendedProps.isDraft) {
+                    return false; 
+                }
+
+                const detailsDiv = document.getElementById('details-content');
+                const groupID = info.event.extendedProps.groupID;
+                let currentGroupEvents = calendar.getEvents().filter(e => e.extendedProps.groupID === groupID);
+                let currentGroupIndex = currentGroupEvents.findIndex(e => e.id === info.event.id);
+
+                function renderDetails(event) {
+                    let statusClass = "";
+                    switch (event.extendedProps.status?.toLowerCase()) {
+                        case "completed": statusClass = "bg-success"; break;
+                        case "missed":
+                        case "cancelled": statusClass = "bg-danger"; break;
+                        case "pending": statusClass = "bg-primary"; break;
+                        default: statusClass = "bg-secondary";
+                    }
+
+                    const editLink = groupID
+                        ? `/Admin/EditAppointmentsGroup?groupId=${groupID}`
+                        : `/Admin/EditAppointment/${event.id}`;
+                    const editLabel = groupID ? "Edit" : "Edit";
+
+                    detailsDiv.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <a id="prevGroupBtn" class="btn btn-sm d-flex align-items-center justify-content-center"
+                               style="border-radius:20px; width:36px; height:36px; font-size:8px;">
+                                <i class="bi bi-chevron-left text-black"></i>
+                            </a>
+                            <span class="fw-semibold">Appointment ${currentGroupIndex + 1} of ${currentGroupEvents.length}</span>
+                            <a id="nextGroupBtn" class="btn btn-sm d-flex align-items-center justify-content-center"
+                               style="border-radius:20px; width:36px; height:36px; font-size:8px;">
+                                <i class="bi bi-chevron-right text-black"></i>
+                            </a>
+                        </div>
+                        <p><strong>Pet Name:</strong> ${event.extendedProps.petName}</p>
+                        <p><strong>Category:</strong> ${event.extendedProps.category ?? '—'}</p>
+                        <p><strong>Subtype:</strong> ${event.extendedProps.subtype ?? '—'}</p>
+                        <p><strong>Date:</strong> ${event.start.toLocaleString()}</p>
+                        <p><strong>Status:</strong> <span class="badge ${statusClass}">${event.extendedProps.status}</span></p>
+                        <p><strong>Notes:</strong> ${event.extendedProps.notes ?? 'N/A'}</p>
+                             ${
+                                event.extendedProps.status === "Completed"
+                                ? ``
+                                : `<button class="btn btn-outline-success btn-sm" onclick="openMarkCompletedModal(${event.id}, ${event.extendedProps.groupID})">Mark as Completed</button>`
+                            }
+                        <div class="d-flex justify-content-between mt-3">
+                            <button class="btn btn-outline-primary btn-sm"
+                                    onclick="sendReminderAgain(${event.id})">
+                                Resend Reminder
+                            </button>
+
+                            <a href="${editLink}" class="btn btn-outline-primary btn-sm">${editLabel}</a>
+                        </div>
+                    `;
+
+                    document.getElementById('prevGroupBtn').onclick = () => {
+                        if (currentGroupIndex > 0) {
+                            currentGroupIndex--;
+                            renderDetails(currentGroupEvents[currentGroupIndex]);
+                        }
+                    };
+                    document.getElementById('nextGroupBtn').onclick = () => {
+                        if (currentGroupIndex < currentGroupEvents.length - 1) {
+                            currentGroupIndex++;
+                            renderDetails(currentGroupEvents[currentGroupIndex]);
+                        }
+                    };
+                }
+
+                if (currentGroupIndex === -1) currentGroupIndex = 0;
+                renderDetails(currentGroupEvents[currentGroupIndex]);
+            },
+
+            dateClick: function (info) {
+                const detailsDiv = document.getElementById('details-content');
+                if (info.view.type === "dayGridMonth") return;
+
+                const date = info.date;
+                const formattedDate = date.toISOString().split('T')[0];
+                const formattedTime = date.toTimeString().slice(0, 5);
+
+                detailsDiv.innerHTML = `
+                    <p class="mb-2 text-muted">No appointment for <strong>${date.toLocaleString()}</strong>.</p>
+                    <button class="btn btn-success w-100" onclick="scheduleAppointment('${formattedDate}', '${formattedTime}')">
+                        + Schedule Appointment
+                    </button>
+                `;
+            }
+        });
+
+        calendar.render();
+
+        flatpickr("#mini-calendar", {
+            inline: true,
+            dateFormat: "D",
+            onChange: function (selectedDates) {
+                calendar.gotoDate(selectedDates[0]);
+            }
+        });
+    });
+
+    function toastError(msg) {
+        showToast("" + msg, "danger");
+    }
+
+    async function openMarkCompletedModal(appointmentId, groupId) {
+        document.getElementById("completeAppointmentId").value = appointmentId;
+
+        const res = await fetch(`/Admin/GetAppointmentsByGroup?groupId=${groupId}`);
+        const groupData = await res.json();
+
+        let html = `
+        <div class="text-end mb-2">
+            <button class="btn btn-success btn-sm d-none" id="markCompletedSaveBtn">Save</button>
+             </div>
+        `;
+
+        groupData
+        .filter(appt => (appt.status || "").toLowerCase().trim() !== "completed")
+        .forEach(appt => {
+            html += `
+                <div class="border rounded p-2 mb-2">
+                    <strong>${appt.petName}</strong><br>
+                    ${appt.category} — ${appt.subtype}<br>
+                    <small>${appt.date}</small><br>
+
+                    <div class="mt-2">
+                        <label class="form-label mb-1">Administered By</label>
+                        <input type="text" class="form-control administered-input" data-id="${appt.id}" placeholder="Leave blank if not administered">
+                    </div>
+
+                    ${(appt.category === "Vaccination" || appt.category === "Deworming & Preventives")
+                        ? `<div class="mt-2">
+                                <label class="form-label mb-1">Next Due</label>
+                                <input type="date" class="form-control due-input" data-id="${appt.id}">
+                           </div>`
+                        : ``}
+                </div>
+            `;
+        });
+
+
+        document.getElementById("modalAppointments").innerHTML = html;
+        document.getElementById("markCompletedFooterBtn").onclick = submitMarkCompleted;
+        new bootstrap.Modal(document.getElementById("markCompletedModal")).show();
+
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('markCompletedModal');
+        modal.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        });
+    });
+
+    async function submitMarkCompleted() {
+        let payload = [];
+
+        for (const input of document.querySelectorAll(".administered-input")) {
+            const apptId = input.getAttribute("data-id");
+            const administeredBy = input.value.trim();
+            const dueInput = document.querySelector(`.due-input[data-id="${apptId}"]`);
+            const dueDate = dueInput ? dueInput.value : null;
+
+           if (administeredBy) {
+                payload.push({ id: apptId, administeredBy, dueDate });
+            }
+        }
+
+        const response = await fetch('/Admin/MarkAsCompleted', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+
+        if (res.success) {
+            showToast("Appointment marked as completed", "success");
+            setTimeout(() => window.location.reload(), 1500);
+        } else {
+            toastError("Failed to save changes.");
+        }
+    }
+
+
+
+    let isSyncEnabled = sessionStorage.getItem("syncEnabled") === "true";
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const toggle = document.getElementById("syncToggle");
+        if (toggle) toggle.checked = isSyncEnabled;
+
+        if (isSyncEnabled) {
+            showToast("Auto Sync is active. Checking for new appointments...", "primary");
+            syncAllAppointments();
+        }
+
+        setInterval(() => {
+            if (isSyncEnabled) syncAllAppointments();
+        }, 3 * 60 * 1000);
+    });
+
+    function toggleSync(element) {
+        isSyncEnabled = element.checked;
+        sessionStorage.setItem("syncEnabled", isSyncEnabled);
+
+        if (isSyncEnabled) {
+            showToast("Auto Sync enabled. Syncing all appointments...", "primary");
+            syncAllAppointments();
+        } else {
+            showToast("Auto Sync disabled. New appointments will not sync.", "danger");
+        }
+    }
+
+    async function syncAllAppointments() {
+        showToast("Syncing appointments...", "primary");
+
+        const res = await fetch('/Admin/SyncAllAppointments', {
+            method: "POST",
+            headers: {
+                "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]')?.value || "",
+                "Content-Type": "application/json"
+            }
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+            showToast(data.message || "Appointments synced successfully!", "success");
+        } else {
+            showToast(data.message || "Some appointments failed to sync.", "danger");
+        }
+    }
+
+    function scheduleAppointment(date, time) {
+        window.location.href = `/Admin/AddAppointment?date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`;
+    }
+
+    let currentReminderAppointmentId = null;
+
+    function sendReminderAgain(appointmentId) {
+        currentReminderAppointmentId = appointmentId;
+        new bootstrap.Modal(document.getElementById("resendReminderModal")).show();
+    }
+
+    document.getElementById("confirmResendReminderBtn").onclick = async function () {
+        const channel = document.querySelector('input[name="reminderChannel"]:checked').value;
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        try {
+            const res = await fetch('/Admin/SendReminderAgain', {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken": token
+                },
+                body: JSON.stringify({
+                    appointmentId: currentReminderAppointmentId,
+                    channel: channel
+                })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                showToast(data.message, "success");
+            } else {
+                showToast(data.message, "danger");
+            }
+
+            bootstrap.Modal.getInstance(
+                document.getElementById("resendReminderModal")
+            ).hide();
+
+        } catch (err) {
+            console.error(err);
+            showToast("Failed to send reminder.", "danger");
+        }
+    };
+
+
+    function getCart() {
+        return JSON.parse(localStorage.getItem("appointmentCart") || "[]");
+    }
+
+    function saveCart(cart) {
+        localStorage.setItem("appointmentCart", JSON.stringify(cart));
+    }
+
+        function clearCart() {
+        let cart = getCart();
+        let groupDraftIds = [...new Set(cart.map(x => x.groupDraftId))];
+
+        $.ajax({
+            url: "/Admin/DeleteAllDraftGroups",
+            method: "POST",
+            contentType: "application/json",
+            headers: {
+                "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+            },
+            data: JSON.stringify(groupDraftIds),
+
+            success: function (res) {
+                if (res.success) {
+                    localStorage.removeItem("appointmentCart");
+                    refreshCart();
+                    showToast("All drafts deleted.", "danger");
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(res.message, "danger");
+                }
+            },
+
+            error: function () {
+                showToast("Server error while clearing drafts.", "danger");
+            }
+        });
+    }
+
+
+    function generateGroupDraftId() {
+        return "draft-" + Math.random().toString(36).substring(2, 10);
+    }
+
+    function refreshCart() {
+        let cart = getCart();
+        const container = $("#cartItems");
+        container.empty();
+
+        if (cart.length === 0) {
+            container.html(`<p class="text-muted mb-0">No appointments in cart.</p>`);
+            $("#submitCart").prop("disabled", true);
+            $("#clearCart").prop("disabled", true);
+            return;
+        }
+
+        $("#submitCart").prop("disabled", false);
+        $("#clearCart").prop("disabled", false);
+
+        const grouped = {};
+        cart.forEach(item => {
+            if (!item.groupDraftId) item.groupDraftId = generateGroupDraftId();
+            const gid = item.groupDraftId;
+
+            if (!grouped[gid]) grouped[gid] = [];
+            grouped[gid].push(item);
+        });
+
+        Object.keys(grouped).forEach(gid => {
+            const appts = grouped[gid];
+
+            let groupHtml = `
+                <div class="border rounded p-3 mb-3 bg-light shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold mb-0">Appointment Group ID: ${gid}</h6>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary edit-group" data-gid="${gid}">Edit</button>
+                            <button class="btn btn-sm btn-danger remove-group" data-gid="${gid}">&times;</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered align-middle mb-2 bg-white">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Pet</th>
+                                    <th>Category</th>
+                                    <th>Subtype</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            appts.forEach((item, idx) => {
+                groupHtml += `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td>${item.petName || "—"}</td>
+                        <td>${item.categoryName || "—"}</td>
+                        <td>${item.subtypeName || "—"}</td>
+                        <td>${item.date || "—"}</td>
+                        <td>${item.time || "—"}</td>
+                        <td>${item.notes || "No notes."}</td>
+                    </tr>
+                `;
+            });
+
+            groupHtml += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            container.append(groupHtml);
+        });
+
+        $("#openCartForm").hide();
+    }
+    $(document).on("click", ".remove-group", function () {
+        const gid = $(this).data("gid");
+
+        confirmAction({
+            title: "Delete Draft Group",
+            message: `Are you sure you want to delete appointment group ${gid}? This action cannot be undone.`,
+            confirmText: "Delete",
+            confirmClass: "btn-danger",
+            onConfirm: () => {
+                deleteDraftGroup(gid);
+            }
+        });
+    });
+
+    function deleteDraftGroup(gid) {
+        $.ajax({
+            url: "/Admin/DeleteDraftGroup",
+            method: "POST",
+            contentType: "application/json",
+            headers: { "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val() },
+            data: JSON.stringify({ groupDraftId: gid }),
+
+            success: function (res) {
+                if (res.success) {
+                    let cart = getCart().filter(item => item.groupDraftId !== gid);
+                    saveCart(cart);
+
+                    refreshCart();
+                    showToast(`Group ${gid} removed.`, "danger");
+                    setTimeout(() => location.reload(), 300);
+                } else {
+                    showToast(res.message || "Failed to delete group.", "danger");
+                }
+            },
+
+            error: function () {
+                showToast("Server error while deleting group.", "danger");
+            }
+        });
+    }
+
+
+
+    $(document).ready(function () {
+        console.log("Page loaded, refreshing cart.");
+        refreshCart();
+
+        $(document).on("click", ".edit-group", function () {
+            const gid = $(this).data("gid");
+            confirmAction({
+                title: "Edit Draft Group",
+                message: "Editing will discard unsaved changes in the cart. Continue?",
+                confirmText: "Edit",
+                confirmClass: "btn-primary",
+                onConfirm: () => {
+                    window.location.href = `/Admin/EditDraftGroup?draftId=${gid}`;
+                }
+            });
+
+        });
+
+        $("#clearCart").on("click", function () {
+            confirmAction({
+                title: "Clear All Drafts",
+                message: "This will permanently delete ALL draft appointments. Continue?",
+                confirmText: "Yes, Clear",
+                confirmClass: "btn-danger",
+                onConfirm: () => {
+                    clearCart();
+                }
+            });
+        });
+
+
+        $("#submitCart")
+            .off("click")
+            .on("click", function () {
+                let cart = getCart();
+
+                if (!cart || cart.length === 0) {
+                    showToast("Cart is empty!", "danger");
+                    return;
+                }
+
+                let groupDraftIds = [...new Set(cart.map(x => x.groupDraftId))];
+
+                confirmAction({
+                    title: "Finalize Draft Appointments",
+                    message: "This will save ALL drafts and convert them into FINAL appointments. This action cannot be undone. Continue?",
+                    confirmText: "Yes, Finalize",
+                    confirmClass: "btn-success",
+                    onConfirm: () => {
+
+                        $("#submitCart").prop("disabled", true);
+
+                        $.ajax({
+                            url: '/Admin/SaveAppointmentDrafts',
+                            method: 'POST',
+                            headers: {
+                                "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val(),
+                                "Content-Type": "application/json"
+                            },
+                            data: JSON.stringify(cart),
+
+                            success: function (res) {
+                                if (res.success) {
+                                    showToast("Drafts saved!", "success");
+
+                                    localStorage.removeItem("appointmentCart");
+                                    refreshCart();
+
+                                    saveDraftsToAppointments(groupDraftIds);
+                                } else {
+                                    showToast(res.message || "Failed to save drafts.", "danger");
+                                    $("#submitCart").prop("disabled", false);
+                                }
+                            },
+
+                            error: function () {
+                                showToast("Server error while saving drafts.", "danger");
+                                $("#submitCart").prop("disabled", false);
+                            }
+                        });
+                    }
+                });
+            });
+
+    });
+
+    function saveDraftsToAppointments(groupDraftIds) {
+        $.ajax({
+            url: '/Admin/SaveDraftsToAppointments',
+            method: 'POST',
+            contentType: "application/json",
+            headers: { "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val() },
+            data: JSON.stringify({ groupDraftIds }),
+
+            success: function (res) {
+                if (res.success && res.groupIds?.length > 0) {
+                    showToast(res.message, "success");
+
+                    res.groupIds.forEach(id => finalizeAppointmentGroup(id.toString()));
+                } else {
+                    showToast(res.message || "No drafts to convert.", "danger");
+                    $("#submitCart").prop("disabled", false);
+                }
+            }
+        });
+    }
+
+    function finalizeAppointmentGroup(groupId) {
+        $.ajax({
+            url: '/Admin/FinalizeAppointmentsGroup',
+            method: 'POST',
+            contentType: "application/json",
+            data: JSON.stringify([groupId]),
+            headers: { "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val() },
+
+            success: function (res) {
+                if (res.success) {
+                    showToast("Appointment group finalized!", "success");
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(res.message || "Finalization failed.", "danger");
+                    $("#submitCart").prop("disabled", false);
+                }
+            },
+
+            error: function () {
+                showToast("Error finalizing group.", "danger");
+                $("#submitCart").prop("disabled", false);
+            }
+        });
+    }
+    function confirmAction({ title, message, confirmText = "Yes", confirmClass = "btn-danger", onConfirm }) {
+        const modalEl = document.getElementById("confirmActionModal");
+        const modal = new bootstrap.Modal(modalEl);
+
+        document.getElementById("confirmActionTitle").innerText = title;
+        document.getElementById("confirmActionMessage").innerText = message;
+
+        const btn = document.getElementById("confirmActionBtn");
+        btn.className = `btn btn-sm ${confirmClass}`;
+        btn.innerText = confirmText;
+
+        btn.onclick = () => {
+            modal.hide();
+            onConfirm();
+        };
+
+        modal.show();
+    }
+
+</script>

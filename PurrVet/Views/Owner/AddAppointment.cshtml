@@ -1,0 +1,348 @@
+﻿@model PurrVet.Models.Appointment
+@{
+    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    ViewBag.Title = "Add Multiple Appointments";
+}
+
+<div class="p-4">
+    <h5 class="fw-bold mb-4">Appointments / Add Multiple</h5>
+    <div class="card shadow-sm p-4">
+
+        <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
+            <div id="messageToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body"></div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        </div>
+
+        <form id="addAppointmentForm" method="post" action="@Url.Action("AddAppointmentsBulkOwner", "Owner")">
+            @Html.AntiForgeryToken()
+
+            <div id="appointmentsContainer"></div>
+
+            <div class="mt-3 text-end">
+                <button type="button" id="addMoreAppointments" class="btn btn-outline-primary">+ Add Service</button>
+            </div>
+
+            <div class="mt-4 d-flex justify-content-end gap-2">
+                <button type="submit" class="btn btn-primary px-4">Save</button>
+                <a href="@Url.Action("Appointments", "Owner")" class="btn btn-secondary px-4">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmAddModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h6 class="modal-title fw-bold">Add Service</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mb-0 fw-semibold">Add another service?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                <button id="confirmAddBtn" class="btn btn-success px-4">Add</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmRemoveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h6 class="modal-title fw-bold">Remove Service</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mb-0 fw-semibold">Are you sure you want to remove this service?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                <button id="confirmRemoveBtn" class="btn btn-danger px-4">Remove</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmSaveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h6 class="modal-title fw-bold">Confirm Save</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="mb-0 fw-semibold">Are you sure you want to save these appointments?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                <button id="confirmSaveBtn" class="btn btn-success px-4">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<template id="appointmentTemplate">
+    <div class="appointment-block border rounded p-3 mb-3 position-relative bg-light">
+        <h6 class="fw-bold mb-3">Service #</h6>
+        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 mt-2 me-2 remove-appointment">×</button>
+
+        <div class="row g-3">
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Pet</label>
+                <select class="form-select pet-select select2" data-prop="PetID">
+                    <option value="">Select Pet</option>
+                    @foreach (var pet in ViewBag.Pets)
+                    {
+                        <option value="@pet.PetID">@pet.Name (@pet.Type)</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Service Category</label>
+                <select class="form-select category-select select2" data-prop="CategoryID">
+                    <option value="">Select Category</option>
+                    @foreach (var cat in ViewBag.ServiceCategories)
+                    {
+                        <option value="@cat.CategoryID">@cat.ServiceType</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Service Subtype</label>
+                <select class="form-select subtype-select select2" data-prop="SubtypeID">
+                    <option value="">Select Subtype</option>
+                </select>
+            </div>
+
+            <div class="col-md-6 date-time-group">
+                <label class="form-label fw-semibold">Date</label>
+                <input type="date" class="form-control appointment-date" data-prop="AppointmentDate" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+            </div>
+
+            <div class="col-md-6 date-time-group">
+                <label class="form-label fw-semibold">Time</label>
+                <select class="form-select timeSlots" data-prop="AppointmentTime"></select>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label fw-semibold">Notes</label>
+                <textarea class="form-control" data-prop="Notes">No notes.</textarea>
+            </div>
+        </div>
+    </div>
+</template>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        $(function () {
+            const allSubtypes = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ServiceSubtypes));
+            const container = $("#appointmentsContainer");
+            const template = document.getElementById("appointmentTemplate");
+            const maxAppointments = 5;
+            let appointmentCount = 0;
+            let pendingRemove = null;
+
+            const params = new URLSearchParams(window.location.search);
+            const dateParam = params.get("date");
+            const timeParam = params.get("time");
+
+            function showToast(msg, success = false) {
+                const toastEl = $('#messageToast');
+                const toastBody = toastEl.find('.toast-body');
+                toastBody.text(msg);
+                toastEl.removeClass('bg-success bg-danger').addClass(success ? 'bg-success' : 'bg-danger');
+                new bootstrap.Toast(toastEl[0]).show();
+            }
+
+            function initSelect2(scope) {
+                $(scope).find(".select2").each(function () {
+                    const placeholder =
+                        $(this).attr("data-prop") === "PetID" ? "-- Select Pet --" :
+                        $(this).attr("data-prop") === "CategoryID" ? "-- Select Category --" :
+                        $(this).attr("data-prop") === "SubtypeID" ? "-- Select Category --" : "";
+
+                    $(this).select2({
+                        width: "100%",
+                        placeholder: placeholder,
+                        allowClear: true
+                    });
+                });
+            }
+
+            $(document).on("change", ".category-select", function () {
+                const id = $(this).val();
+                const subtype = $(this).closest(".appointment-block").find(".subtype-select");
+
+                subtype.empty();
+
+                const filtered = allSubtypes.filter(s => s.CategoryID == id);
+
+                filtered.forEach(s => {
+                    subtype.append(`<option value="${s.SubtypeID}">${s.ServiceSubType}</option>`);
+                });
+
+                subtype.select2({ width: "100%", allowClear: false });
+
+                if (filtered.length > 0) {
+                    subtype.val(filtered[0].SubtypeID).trigger("change");
+                }
+            });
+
+           function fetchSlots(dateInput, timeSelect, selectedTime = null) {
+                const date = dateInput.val();
+                if (!date) return;
+
+                const today = new Date();
+                const isToday = date === today.toISOString().split('T')[0];
+
+                $.get("@Url.Action("GetAvailableTimeSlots", "Owner")", { date })
+                    .done(res => {
+                        timeSelect.empty();
+                        if (res?.slots?.length) {
+                            res.slots.forEach(s => {
+                                const opt = $("<option>", { value: s.time, text: s.time });
+
+                                if (!s.available) opt.prop("disabled", true);
+
+                                if (isToday) {
+                                    const [hour, minute] = s.time.split(":").map(Number);
+                                    const slotTime = new Date();
+                                    slotTime.setHours(hour, minute, 0, 0);
+                                    if (slotTime < today) opt.prop("disabled", true);
+                                }
+
+                                if (s.time === selectedTime) opt.prop("selected", true);
+                                timeSelect.append(opt);
+                            });
+                        } else {
+                            timeSelect.append("<option disabled>No slots available</option>");
+                        }
+                    });
+            }
+            $("#addAppointmentForm").submit(function (e) {
+                $(".appointment-block").each(function () {
+                    const dateInput = $(this).find(".appointment-date").val();
+                    const timeInput = $(this).find(".timeSlots").val();
+                    const selectedDateTime = new Date(`${dateInput}T${timeInput}`);
+                    if (selectedDateTime < new Date()) {
+                        e.preventDefault();
+                        showToast("Cannot select past time or date.", "danger");
+                        return false;
+                    }
+                });
+            });
+
+
+            function areAllAppointmentsComplete() {
+                let complete = true;
+                $(".appointment-block").each(function () {
+                    const b = $(this);
+                    const pet = b.find("[data-prop='PetID']").val();
+                    const cat = b.find("[data-prop='CategoryID']").val();
+                    const sub = b.find("[data-prop='SubtypeID']").val();
+                    const notes = b.find("[data-prop='Notes']").val().trim();
+
+                    const dateInput = b.find("[data-prop='AppointmentDate']");
+                    const timeInput = b.find("[data-prop='AppointmentTime']");
+                    const date = !dateInput.prop("disabled") ? dateInput.val() : true;
+                    const time = !timeInput.prop("disabled") ? timeInput.val() : true;
+
+                    if (!pet || !cat || !sub || !date || !time || !notes) complete = false;
+                });
+                return complete;
+            }
+
+            function addAppointmentBlock() {
+                if (appointmentCount >= maxAppointments)
+                    return showToast("You can only add up to 5 services per appointment.");
+
+                appointmentCount++;
+
+                const clone = template.content.cloneNode(true);
+                const block = $(clone).find(".appointment-block");
+
+                block.find("h6").text(`Service #${appointmentCount}`);
+                block.find("[data-prop]").each(function () {
+                    const prop = $(this).data("prop");
+                    $(this).attr("name", `Appointments[${appointmentCount - 1}].${prop}`);
+                });
+
+                container.append(block);
+                initSelect2(block);
+
+                const dateInput = block.find(".appointment-date");
+                const timeSelect = block.find(".timeSlots");
+
+                if (appointmentCount === 1) {
+                    if (dateParam) dateInput.val(dateParam);
+                    fetchSlots(dateInput, timeSelect, timeParam);
+                } else {
+                    block.find(".date-time-group").hide().find("input, select").prop("disabled", true);
+                }
+            }
+            $(document).on('focus', '.appointment-date', function () {
+                const today = new Date().toISOString().split('T')[0];
+                $(this).attr('min', today);
+            });
+
+            $("#addMoreAppointments").click(() => {
+                if (!areAllAppointmentsComplete())
+                    return showToast("Please complete all fields before adding another service.");
+
+                new bootstrap.Modal('#confirmAddModal').show();
+            });
+
+            $("#confirmAddBtn").click(() => {
+                bootstrap.Modal.getInstance(document.getElementById('confirmAddModal')).hide();
+                addAppointmentBlock();
+            });
+
+            $(document).on("click", ".remove-appointment", function () {
+                pendingRemove = $(this).closest(".appointment-block");
+                new bootstrap.Modal('#confirmRemoveModal').show();
+            });
+
+            $("#confirmRemoveBtn").click(() => {
+                bootstrap.Modal.getInstance(document.getElementById('confirmRemoveModal')).hide();
+                pendingRemove.remove();
+                appointmentCount--;
+            });
+
+            $("#addAppointmentForm").submit(function (e) {
+                e.preventDefault();
+
+                if (!areAllAppointmentsComplete())
+                    return showToast("Please fill out all fields for every service (including notes).");
+
+                new bootstrap.Modal('#confirmSaveModal').show();
+
+                $('#confirmSaveBtn').off('click').on('click', function () {
+                    bootstrap.Modal.getInstance(document.getElementById('confirmSaveModal')).hide();
+
+                    $.post($("#addAppointmentForm").attr("action"), $("#addAppointmentForm").serialize())
+                        .done(res => {
+                            showToast(res.message, res.success);
+                            if (res.success)
+                                setTimeout(() => window.location.href = "@Url.Action("Appointments", "Owner")", 1000);
+                        })
+                        .fail(() => showToast("Failed to save appointments"));
+                });
+            });
+
+            addAppointmentBlock();
+        });
+    </script>
+}

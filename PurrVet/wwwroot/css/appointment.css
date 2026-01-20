@@ -1,0 +1,279 @@
+﻿.fc .fc-prev-button,
+.fc .fc-next-button {
+    background: none !important;
+    border: none !important;
+    color: gray !important;
+    font-size: 1.2rem !important;
+    box-shadow: none !important;
+}
+#syncToast {
+    z-index: 99999 !important;
+}
+
+.toast {
+    z-index: 99999 !important;
+}
+
+.py-custom {
+    padding-top: 3.35rem;
+}
+.fc .fc-toolbar-title {
+    margin-left: 8px !important;
+    font-size: 1.1rem !important;
+    color: dimgray !important;
+    text-transform: uppercase !important; 
+    text-decoration: none !important; 
+}
+.fc .fc-daygrid-day-number {
+    text-decoration: none !important;
+    color: dimgray !important;
+}
+.fc-toolbar.fc-header-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.fc-daygrid-dot-event .fc-event-title  {
+    font-weight: 300;
+    font-size:11px;
+}
+.fc-daygrid-event-dot {
+    display: none !important;
+    font-weight: 300;
+    font-size: 11px;
+}
+.fc-toolbar-chunk {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.fc-toolbar-title {
+    font-size: 1rem;
+    margin-left: 8px; 
+}
+
+.fc-daygrid-event {
+    background: transparent !important; 
+    border: none !important;
+    color: black !important;
+    position: relative;
+    padding-left: 18px !important; 
+}
+
+.fc-daygrid-event::before {
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9rem;
+}
+
+.fc-timegrid-event {
+    min-height: 40px !important;
+    max-height: 40px !important;
+    width: 55% !important;
+    border-radius: 10px !important;
+}
+
+.fc-timegrid-event-harness:nth-child(n) {
+    position: relative !important;
+}
+.fc .fc-timegrid-body,
+.fc .fc-timegrid-cols,
+.fc .fc-timegrid-col-frame {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.fc-timeGridDay-view .fc-timegrid-event {
+    width: calc(100% + 10px) !important;
+    left: 0 !important;
+    border-radius: 4px !important;
+    margin-top: 2px !important;
+    margin-bottom: 2px !important;
+    min-height: 27px !important;
+    max-height: 30px !important;
+    padding: 3px 6px !important;
+    font-size: 11px !important;
+    line-height: 0.91 !important;
+}
+
+.fc-timeGridWeek-view .fc-timegrid-event {
+    width: 95% !important;
+    left: -1.5px !important;
+    border-radius: 4px !important;
+    margin-top: 2px !important;
+    margin-bottom: 2px !important;
+    min-height: 27px !important;
+    max-height: 30px !important;
+    padding: 3px 6px !important;
+    font-size: 11px !important;
+    line-height: 0.91 !important;
+}
+
+.fc-timeGridDay-view .fc-timegrid-event-harness,
+.fc-timeGridWeek-view .fc-timegrid-event-harness {
+    width: calc(100% + 10px) !important;
+    left: 0 !important;
+}
+
+.fc-timeGridDay-view .fc-scrollgrid,
+.fc-timeGridWeek-view .fc-scrollgrid {
+    width: 100% !important;
+}
+
+.fc-dayGridMonth-view .fc-daygrid-event {
+    display: block !important;
+    width: 95% !important;
+    margin: 1px auto !important;
+    border-radius: 4px !important;
+    font-size: 11px !important;
+    padding: 3px 4px !important;
+    background-color: var(--fc-event-bg-color, #2196f3) !important;
+    color: white !important;
+    line-height: 0.8 !important;
+    font-weight:lighter;
+}
+
+.fc-timegrid-event .fc-event-time,
+.fc-daygrid-event .fc-event-time {
+    text-transform: uppercase !important;
+    font-size:9px;
+
+}
+.fc .fc-timegrid-slot-label-cushion {
+    text-transform: uppercase !important;
+}
+.fc .fc-timegrid-axis-cushion{
+    text-transform: uppercase !important;
+}
+.fc-event.missed::before {
+    color: #f44336 !important; 
+}
+.fc-event.pending::before {
+    color: #2196f3 !important;  
+}
+.fc-event.completed::before {
+    color: #4caf50 !important; 
+}
+.fc-event.cancelled::before {
+    color: #f44336 !important;
+}
+.fc-timegrid-event.missed,
+.fc-daygrid-event.missed {
+    background-color: #f44336 !important; 
+    border: none !important;
+    color: white !important;
+}
+
+.fc-timegrid-event.pending,
+.fc-daygrid-event.pending {
+    background-color: #2196f3 !important; 
+    border: none !important;
+    color: white !important;
+}
+
+.fc-timegrid-event.completed,
+.fc-daygrid-event.completed {
+    background-color: #4caf50 !important; 
+    border: none !important;
+    color: white !important;
+}
+.fc-timegrid-event.cancelled,
+.fc-daygrid-event.cancelled {
+    background-color: #f44336 !important; 
+    border: none !important;
+    color: white !important;
+}
+.fc-timegrid-event.draft,
+.fc-daygrid-event.draft {
+    background-color: #f0ad4e !important; 
+    border: none !important;
+    color: white !important;
+    opacity: 0.9;
+}
+.fc .fc-dayGridMonth-button,
+.fc .fc-timeGridWeek-button,
+.fc .fc-timeGridDay-button {
+    text-transform: uppercase !important;
+    font-size: 0.9rem !important;
+    padding: 10px 18px !important;
+    border-radius: 8px !important;
+    background: #F9FFFF !important;
+    color: black !important;
+    transition: all 0.2s ease-in-out;
+    border: none !important;
+    margin-left: 6px !important;
+}
+
+    .fc .fc-dayGridMonth-button:hover,
+    .fc .fc-timeGridWeek-button:hover,
+    .fc .fc-timeGridDay-button:hover {
+        background: #559DD4 !important;
+        color: white !important;
+        transform: translateY(-2px);
+        box-shadow: 0px 3px 6px rgba(0,0,0,0.2);
+    }
+
+.fc .fc-button-active {
+    background: #559DD4 !important;
+    color: white !important;
+    font-weight: bold !important;
+}
+.fc-event.not\ available {
+    background-color: #6c757d !important;
+    border: none !important;
+    cursor: not-allowed !important;
+    opacity: 0.7;
+}
+
+.fc-col-header-cell-cushion {
+    text-transform: uppercase !important;
+    color: dimgray !important;
+    text-decoration: none !important;
+}
+
+#mini-calendar,
+#appointment-details {
+    margin-bottom: 1rem;
+}
+
+#appointment-details {
+    border: none !important;
+    background: none !important;
+    padding: 0 !important;
+}
+
+.flatpickr-calendar {
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+    position: relative !important;
+}
+
+.flatpickr-next-month,
+.flatpickr-prev-month {
+    font-size: 14px !important;
+    color: gray !important;
+    height: 20px !important;
+}
+
+.flatpickr-day.today {
+    background: #559DD4 !important;
+    color: white !important;
+    border: 1px solid #559DD4 !important;
+}
+.fc-event.draft,
+.fc-timegrid-event.draft,
+.fc-daygrid-event.draft {
+    background-color: #f0ad4e !important; 
+    border: none !important;
+    color: white !important;
+    cursor: not-allowed !important;
+    opacity: 0.85;
+}
+
+    .fc-event.draft * {
+        pointer-events: none !important;
+    }
