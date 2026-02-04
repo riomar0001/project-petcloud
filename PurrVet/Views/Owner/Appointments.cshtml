@@ -1,7 +1,7 @@
-﻿@model List<PurrVet.Models.Appointment>
+@model List<PurrVet.Models.Appointment>
 @Html.AntiForgeryToken()
 @{
-    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
     ViewBag.Title = "My Appointments";
 }
 
@@ -10,7 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js"></script>
-<link href="~/css/appointment.css" rel="stylesheet" />
+<link href="/css/appointment.css" rel="stylesheet" />
 
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
     <div id="syncToast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
@@ -24,7 +24,7 @@
 <div class="modal fade" id="confirmSyncModal" tabindex="-1" aria-labelledby="confirmSyncModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header bg-warning text-white">
+            <div class="modal-header" style="background: var(--primary-green, #10B981); color: white;">
                 <h6 class="modal-title fw-bold" id="confirmSyncModalLabel">Confirm Sync</h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -255,8 +255,8 @@
                             </a>
                         </div>
                         <p><strong>Pet:</strong> ${event.extendedProps.petName}</p>
-                        <p><strong>Category:</strong> ${event.extendedProps.category ?? '—'}</p>
-                        <p><strong>Subtype:</strong> ${event.extendedProps.subtype ?? '—'}</p>
+                        <p><strong>Category:</strong> ${event.extendedProps.category ?? '�'}</p>
+                        <p><strong>Subtype:</strong> ${event.extendedProps.subtype ?? '�'}</p>
                         <p><strong>Date:</strong> ${event.start.toLocaleString()}</p>
                         <p><strong>Status:</strong> <span class="badge ${statusClass}">${event.extendedProps.status}</span></p>
                         <p><strong>Notes:</strong> ${event.extendedProps.notes ?? 'N/A'}</p>
@@ -421,3 +421,4 @@
     }
 
 </script>
+

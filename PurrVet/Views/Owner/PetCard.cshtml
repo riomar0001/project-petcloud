@@ -1,6 +1,6 @@
-﻿@model PurrVet.Models.PetCardVM
+@model PurrVet.Models.PetCardVM
 @{
-    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
     ViewBag.Title = "Pets";
 
     var fallback = Url.Content("~/uploads/profiles/pet.png");
@@ -16,17 +16,17 @@
     <div class="d-flex flex-wrap justify-content-end justify-content-md-end gap-2 w-100 w-md-auto mt-md-0">
         <a href="@Url.Action("ViewPet", "Owner", new { id = Model.Pet.PetID })"
            class="btn btn-warning fw-semibold" style="background:#FFB100;border:none;">
-            🐾 Pet Info
+            ?? Pet Info
         </a>
 
         <a class="btn fw-semibold" style="background:#559DD4;border:none;color:white;">
-            📋 Pet Card
+            ?? Pet Card
         </a>
 
-        <button onclick="printPetCard()" class="btn btn-dark fw-semibold">🖨️ Print</button>
+        <button onclick="printPetCard()" class="btn btn-dark fw-semibold">??? Print</button>
 
         <a href="@Url.Action("DownloadPetCardPdf", "Owner", new { id = Model.Pet.PetID })"
-           class="btn btn-secondary fw-semibold">📄 PDF</a>
+           class="btn btn-secondary fw-semibold">?? PDF</a>
     </div>
 </div>
 
@@ -138,7 +138,7 @@
 
             <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
                 <a class="page-link border-0 text-dark"
-                   href="@(Model.CurrentPage == 1 ? "#" : $"?id={Model.Pet.PetID}&page={Model.CurrentPage - 1}")">‹</a>
+                   href="@(Model.CurrentPage == 1 ? "#" : $"?id={Model.Pet.PetID}&page={Model.CurrentPage - 1}")">�</a>
             </li>
 
             @if (startPage > 1)
@@ -161,7 +161,7 @@
                 {
                     <li class="page-item active">
                         <a class="page-link rounded-circle border-0 text-black"
-                           style="background-color:#FFB100;width:32px;height:32px;display:flex;align-items:center;justify-content:center;">@i</a>
+                           style="background-color:var(--primary-green, #10B981);width:32px;height:32px;display:flex;align-items:center;justify-content:center;">@i</a>
                     </li>
                 }
                 else
@@ -190,7 +190,7 @@
 
             <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
                 <a class="page-link border-0 text-dark"
-                   href="@(Model.CurrentPage == Model.TotalPages ? "#" : $"?id={Model.Pet.PetID}&page={Model.CurrentPage + 1}")">›</a>
+                   href="@(Model.CurrentPage == Model.TotalPages ? "#" : $"?id={Model.Pet.PetID}&page={Model.CurrentPage + 1}")">�</a>
             </li>
 
         </ul>
@@ -214,7 +214,7 @@
                 <strong>Recommended Ecto & Endo Parasitic Treatment</strong>
             </div>
             <div class="card-equal" style="background:white;border:2px solid #C38AC7;border-top:0;border-radius:0 0 8px 8px;padding:8px;">
-                Every 2 weeks × 2<br>
+                Every 2 weeks � 2<br>
                 Then every 3 months
             </div>
         </div>

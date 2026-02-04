@@ -1,91 +1,143 @@
-﻿@{
+@{
     ViewBag.Title = "Login";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = null;
 }
 
-<div class="hero-section d-flex flex-column justify-content-center">
-    <div class="hero-wave"></div>
-
-    <div class="container">
-        <div class="row align-items-center justify-content-center text-center text-md-start">
-            <div class="col-md-3 mb-4 mb-md-0 slogan-col">
-                <h1 class="fw-bold slogan">Healthy Pets,<br />Happy Homes.</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PurrVet | Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="/css/auth-modern.css" rel="stylesheet" />
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body>
+    <div class="auth-page">
+        <!-- Left Side - Branding -->
+        <div class="auth-branding">
+            <div class="auth-branding-content">
+                <div class="auth-logo">
+                    <div class="logo-icon">
+                        <img src="~/images/PurrVet.png" alt="PurrVet" />
+                    </div>
+                    <h1>PurrVet</h1>
+                </div>
+                
+                <h2 class="auth-headline">
+                    Welcome to <span>PurrVet</span><br/>
+                    Pet Care Clinic
+                </h2>
+                <p class="auth-subtext">
+                    Your trusted partner in pet healthcare. Manage appointments, track vaccinations, and keep your furry friends healthy.
+                </p>
+                
+                <div class="auth-features">
+                    <div class="auth-feature">
+                        <div class="feature-icon">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <span>Easy appointment scheduling</span>
+                    </div>
+                    <div class="auth-feature">
+                        <div class="feature-icon">
+                            <i class="bi bi-heart-pulse"></i>
+                        </div>
+                        <span>Complete health records</span>
+                    </div>
+                    <div class="auth-feature">
+                        <div class="feature-icon">
+                            <i class="bi bi-bell"></i>
+                        </div>
+                        <span>Vaccination reminders</span>
+                    </div>
+                </div>
+                
+                <div class="auth-illustration">
+                    <img src="~/images/golden.png" alt="Happy Pet" />
+                </div>
             </div>
-
-            <div class="col-md-2 mb-4 mb-md-0 paws-col d-flex justify-content-center">
-                <img src="~/images/paws.png" alt="Paws" class="login-paws" />
-            </div>
-
-            <div class="col-md-5 d-flex justify-content-end">
-                <div class="login-card shadow p-4 w-100" style="max-width: 400px;">
-
-                    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
-                        <div id="messageToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                            <div class="d-flex">
-                                <div class="toast-body"></div>
-                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                            </div>
+        </div>
+        
+        <!-- Right Side - Login Form -->
+        <div class="auth-form-container">
+            <div class="auth-card">
+                <div class="auth-card-header">
+                    <h2>Sign In</h2>
+                    <p>Welcome back! Please enter your details.</p>
+                </div>
+                
+                <form id="loginForm" class="auth-form">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <div class="input-icon-wrapper">
+                            <i class="bi bi-envelope input-icon"></i>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" style="padding-left: 48px;" />
                         </div>
                     </div>
-
-                    <h6 class="mb-3 text-center fw-bold">Welcome, Paw! Please log in to access your account.</h6>
-                    <hr class="mb-4">
-
-                    <form id="loginForm">
-                        @Html.AntiForgeryToken()
-                        <h6 class="fw-bold text-start mb-3">Login</h6>
-                        <div class="mb-3">
-                            <input type="email" class="form-control" id="email" name="email" placeholder="Email" />
+                    
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" />
+                            <button type="button" class="password-toggle" id="togglePassword">
+                                <i class="bi bi-eye" id="eyeIcon"></i>
+                            </button>
                         </div>
-
-                        <div class="mb-3 position-relative">
-                            <input type="password" class="form-control" id="password" name="password" placeholder="Password" />
-                            <span id="togglePassword"
-                                  class="position-absolute top-50 end-0 translate-middle-y me-3"
-                                  style="cursor:pointer; font-size:12px; color:#666;">
-                                <i id="eyeIcon" class="fa-solid fa-eye"></i>
-                            </span>
-                        </div>
-                            <div class="mb-3 mt-3 d-flex justify-content-center">
-                                <div class="g-recaptcha"
-                                data-sitekey="6LeHpBosAAAAAOT3RVMuW-M-5BwRoyKKAII748QC">
-                            </div>
-                            </div>
-                        <div class="text-start mb-3">
-                            <a href="/Account/ForgotPassword" class="forgot-link">Forget Password</a>
-                        </div>
-                        <div class="text-center mb-1">
-                            <img src="~/images/golden.png" alt="Golden Dog" class="dog-img" />
-                        </div>
-
-                        <button type="submit" class="btn-skyblue w-100">Log In</button>
-                    </form>
+                    </div>
+                    
+                    <a href="/Account/ForgotPassword" class="forgot-link">Forgot password?</a>
+                    
+                    <div class="recaptcha-container">
+                        <div class="g-recaptcha" data-sitekey="6LeHpBosAAAAAOT3RVMuW-M-5BwRoyKKAII748QC"></div>
+                    </div>
+                    
+                    <button type="submit" class="btn-auth-primary">
+                        <span>Sign In</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+                </form>
+                
+                <div class="auth-footer">
+                    <p>Don't have an account? <a href="/Account/Register">Sign up</a></p>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-@section Scripts {
+    
+    <!-- Toast Container -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999">
+        <div id="messageToast" class="toast align-items-center text-white border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+    
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
-                $(document).ready(function () {
-
+        $(document).ready(function () {
             const toastEl = $('#messageToast');
             const toastBody = toastEl.find('.toast-body');
 
-           $("#togglePassword").click(function () {
+            // Password toggle
+            $("#togglePassword").click(function () {
                 const passwordField = $("#password");
                 const icon = $("#eyeIcon");
                 const isHidden = passwordField.attr("type") === "password";
-
                 passwordField.attr("type", isHidden ? "text" : "password");
-                icon.toggleClass("fa-eye fa-eye-slash");
+                icon.toggleClass("bi-eye bi-eye-slash");
             });
 
-
+            // Form submission
             $('#loginForm').submit(function (e) {
                 e.preventDefault();
 
@@ -100,18 +152,18 @@
                 }
 
                 const formData = $(this).serialize();
+                const submitBtn = $(this).find('button[type="submit"]');
+                submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Signing in...');
 
                 $.ajax({
                     url: '@Url.Action("Login", "Account")',
                     type: 'POST',
                     data: formData,
                     success: function (res) {
-
                         if (res.success && res.requires2FA) {
-                            toastBody.html("Login successful! <br>We've sent a 6-digit verification code to your email.");
+                            toastBody.html("Login successful! <br>Verification code sent to your email.");
                             toastEl.removeClass('bg-danger').addClass('bg-success');
                             new bootstrap.Toast(toastEl[0], { delay: 4000 }).show();
-
                             setTimeout(() => {
                                 window.location.href = "/Account/Verify2FA?userId=" + res.userId;
                             }, 3500);
@@ -120,7 +172,6 @@
                             toastBody.text("Login successful! Redirecting...");
                             toastEl.removeClass('bg-danger').addClass('bg-success');
                             new bootstrap.Toast(toastEl[0], { delay: 1500 }).show();
-
                             setTimeout(() => {
                                 window.location.href = res.redirectUrl;
                             }, 1200);
@@ -129,16 +180,19 @@
                             toastBody.text(res.message);
                             toastEl.removeClass('bg-success').addClass('bg-danger');
                             new bootstrap.Toast(toastEl[0], { delay: 3000 }).show();
+                            submitBtn.prop('disabled', false).html('<span>Sign In</span><i class="bi bi-arrow-right"></i>');
                         }
                     },
                     error: function () {
                         toastBody.text("An unexpected error occurred!");
                         toastEl.removeClass('bg-success').addClass('bg-danger');
                         new bootstrap.Toast(toastEl[0], { delay: 3000 }).show();
+                        submitBtn.prop('disabled', false).html('<span>Sign In</span><i class="bi bi-arrow-right"></i>');
                     }
                 });
             });
-
         });
     </script>
-}
+</body>
+</html>
+

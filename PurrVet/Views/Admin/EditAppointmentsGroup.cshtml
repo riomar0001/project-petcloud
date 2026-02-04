@@ -1,7 +1,7 @@
-﻿@model PurrVet.Models.AppointmentGroup
+@model PurrVet.Models.AppointmentGroup
 @using System.Text.Json
 @{
-    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
     ViewBag.Title = "Edit Group Appointments";
 
     var simpleSubtypes = ((IEnumerable<PurrVet.Models.ServiceSubtype>)ViewBag.ServiceSubtypes)
@@ -70,7 +70,7 @@
                     <div class="appointment-block border rounded p-3 mb-3 position-relative bg-light">
                         <input type="hidden" name="appointments[@i].AppointmentID" value="@appt.AppointmentID" />
                         <h6 class="fw-bold mb-3">Service #@(i + 1)</h6>
-                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 mt-2 me-2 remove-appointment">×</button>
+                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 mt-2 me-2 remove-appointment">�</button>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Pet</label>
@@ -166,7 +166,7 @@
         </form>
     </div>
 </div>
-<!-- ✅ Confirm Add Modal -->
+<!-- ? Confirm Add Modal -->
 <div class="modal fade" id="confirmAddModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -351,7 +351,7 @@
                 const newBlock = $(`
                     <div class="appointment-block border rounded p-3 mb-3 position-relative bg-light">
                         <h6 class="fw-bold mb-3">Service #${newIndex + 1}</h6>
-                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 mt-2 me-2 remove-appointment">×</button>
+                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 mt-2 me-2 remove-appointment">�</button>
                         <input type="hidden" name="appointments[${newIndex}].AppointmentID" value="0" />
                         <div class="row g-3">
                             <div class="col-md-6">

@@ -1,7 +1,7 @@
-ï»¿@model PurrVet.Models.OwnerDetailsViewModel
+@model PurrVet.Models.OwnerDetailsViewModel
 
 @{
-    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
     ViewBag.Title = "Owners";
     int blockSize = 10;
     int startPage = Math.Max(1, Model.CurrentPage - 2);
@@ -23,7 +23,7 @@
             <div class="col-12 col-md-3 d-flex justify-content-center justify-content-md-start">
                 <img id="profilePreview"
                      src="@Url.Content(Model.Owner.User?.ProfileImage ?? "~/uploads/profiles/pet.png")"
-                     class="rounded-circle border border-4 border-warning shadow img-fluid"
+                     class="rounded-circle border border-4 border-success shadow img-fluid"
                      style="max-width:170px; height:auto; object-fit:cover;"
                      onerror="this.onerror=null;this.src='@Url.Content("~/uploads/profiles/pet.png")';" />
             </div>
@@ -56,11 +56,11 @@
     </div>
 
     <div class="card shadow-sm border-0">
-        <div class="d-flex flex-wrap align-items-center justify-content-start px-3 py-2" style="background-color:#FFD392;">
+        <div class="d-flex flex-wrap align-items-center justify-content-start px-3 py-2" style="background-color:var(--primary-green-light, #D1FAE5);">
             <span class="fw-semibold me-2">Filter:</span>
             <div class="dropdown me-3">
                 <button class="btn text-black dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                        style="background-color:#FFB100;">
+                        style="background-color:var(--primary-green, #10B981);">
                     @(string.IsNullOrEmpty(Model.TypeFilter) ? "All" : Model.TypeFilter)
                 </button>
                 <ul class="dropdown-menu statusfiltering">
@@ -75,7 +75,7 @@
                 <div class="input-group" style="max-width:300px;">
                     <input type="text" name="searchQuery" class="form-control" placeholder="Search..."
                            value="@Model.SearchQuery" />
-                    <button type="submit" class="btn" style="background-color:#559DD4; color:white;">
+                    <button type="submit" class="btn" style="background-color:var(--primary-green, #10B981); color:white;">
                         <i class="bi bi-search"></i>
                     </button>
                 </div>
@@ -133,7 +133,7 @@
 
                     <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
                         <a class="page-link border-0 text-dark"
-                           href="@(Model.CurrentPage == 1 ? "#" : $"?id={Model.Owner.OwnerID}&page={Model.CurrentPage - 1}&searchQuery={Model.SearchQuery}&typeFilter={Model.TypeFilter}")">â€¹</a>
+                           href="@(Model.CurrentPage == 1 ? "#" : $"?id={Model.Owner.OwnerID}&page={Model.CurrentPage - 1}&searchQuery={Model.SearchQuery}&typeFilter={Model.TypeFilter}")">‹</a>
                     </li>
 
                     @if (startPage > 1)
@@ -156,7 +156,7 @@
                         {
                             <li class="page-item active">
                                 <a class="page-link rounded-circle border-0 text-black"
-                                   style="background-color:#FFB100;width:32px;height:32px;display:flex;align-items:center;justify-content:center;">@i</a>
+                                   style="background-color:var(--primary-green, #10B981);width:32px;height:32px;display:flex;align-items:center;justify-content:center;">@i</a>
                             </li>
                         }
                         else
@@ -185,7 +185,7 @@
 
                     <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
                         <a class="page-link border-0 text-dark"
-                           href="@(Model.CurrentPage == Model.TotalPages ? "#" : $"?id={Model.Owner.OwnerID}&page={Model.CurrentPage + 1}&searchQuery={Model.SearchQuery}&typeFilter={Model.TypeFilter}")">â€º</a>
+                           href="@(Model.CurrentPage == Model.TotalPages ? "#" : $"?id={Model.Owner.OwnerID}&page={Model.CurrentPage + 1}&searchQuery={Model.SearchQuery}&typeFilter={Model.TypeFilter}")">›</a>
                     </li>
                 </ul>
             </nav>

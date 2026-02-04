@@ -1,7 +1,7 @@
-ï»¿@model PurrVet.Models.AppointmentDraftGroupVM
+@model PurrVet.Models.AppointmentDraftGroupVM
 @using System.Text.Json
 @{
-    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
     ViewBag.Title = "Edit Draft Group";
 
     var simpleSubtypes = JsonSerializer.Serialize(Model.Subtypes.Select(s => new { s.SubtypeID, s.ServiceSubType, s.CategoryID }).ToList());
@@ -45,7 +45,7 @@
                     var d = Model.Drafts[i];
                     <div class="draft-block border rounded p-3 mb-3 position-relative bg-light">
                         <h6 class="fw-bold mb-3">Service #@(i + 1)</h6>
-                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 mt-2 me-2 remove-draft">Ã—</button>
+                        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 mt-2 me-2 remove-draft">×</button>
 
                         <input type="hidden" name="Drafts[@i].DraftID" value="@d.DraftID" />
 
@@ -456,7 +456,7 @@
                     const block = $(`
                         <div class="draft-block border rounded p-3 mb-3 position-relative bg-light">
                             <h6 class="fw-bold mb-3">Service #${idx + 1}</h6>
-                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 mt-2 me-2 remove-draft">Ã—</button>
+                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 mt-2 me-2 remove-draft">×</button>
                             <input type="hidden" name="Drafts[${idx}].DraftID" value="0" />
                             <div class="row g-3">
                                 <div class="col-md-6">

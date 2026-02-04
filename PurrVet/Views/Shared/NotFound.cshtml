@@ -1,11 +1,11 @@
-﻿@{
+@{
     Layout = null;
 }
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="~/css/cat.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600&display=swap" rel="stylesheet">
+    <link href="/css/cat.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <meta charset="UTF-8">
     <title>Page Not Found</title>
@@ -17,21 +17,32 @@
             align-items: center;
             height: 100vh;
             text-align: center;
-            background-color: #f0f4f8;
+            background-color: #F8FAFC;
             margin: 0;
             padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+        h1 {
+            color: #1F2937;
+            font-weight: 700;
+            margin-top: 16px;
         }
         button {
-            background-color: #007bff;
+            background-color: #10B981;
             color: white;
             border: none;
             padding: 12px 25px;
             font-size: 1rem;
-            border-radius: 20px;
+            font-weight: 600;
+            border-radius: 12px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: all 0.2s ease;
         }
-
+        button:hover {
+            background-color: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);
+        }
     </style>
 </head>
 
@@ -240,11 +251,11 @@
         </defs>
     </svg>
     <h1>Page Not Found</h1>
-    <p class="message-text">
+    <p style="color: #6B7280; max-width: 400px; line-height: 1.6;">
         The page you are looking for might have been removed or is temporarily unavailable.
     </p>
 
-    <button class="btn btn-outline-success" onclick="goBack()" >Go Back</button>
+    <button onclick="goBack()">Go Back</button>
     <script>
         function goBack() {
             if (document.referrer) {
@@ -256,3 +267,4 @@
     </script>
 </body>
 </html>
+

@@ -1,6 +1,6 @@
-﻿@model PurrVet.Models.Pet
+@model PurrVet.Models.Pet
 @{
-    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
     ViewBag.Title = "Edit Pet";
     string fallback = Url.Content("~/uploads/profiles/pet.png");
     var photo = string.IsNullOrEmpty(Model.PhotoPath) ? fallback : Url.Content(Model.PhotoPath);

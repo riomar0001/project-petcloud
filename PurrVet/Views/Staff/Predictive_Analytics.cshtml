@@ -1,7 +1,7 @@
-﻿@model PurrVet.Models.DashboardViewModel
+@model PurrVet.Models.DashboardViewModel
 
 @{
-    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
     ViewBag.Title = "Predictive Analytics";
 }
 
@@ -9,11 +9,11 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
-<link href="~/css/cards.css" rel="stylesheet" />
+<link href="/css/cards.css" rel="stylesheet" />
 
 <div class="container-fluid p-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div class="note">🔄 Forecast resets every <strong>28th</strong> of the month.</div>
+        <div class="note">?? Forecast resets every <strong>28th</strong> of the month.</div>
     </div>
 
     <div class="row g-4 mb-4">
@@ -115,7 +115,7 @@
                 <div class="px-3 forecast-list" id="forecastList2"></div>
             </div>
             <div class="forecast-card mt-3">
-                <div class="forecast-header">Next Month – Service Demand Ranking</div>
+                <div class="forecast-header">Next Month � Service Demand Ranking</div>
                 <div class="px-3 forecast-list" id="nextMonthServiceRanking"></div>
             </div>
         </div>
@@ -243,3 +243,4 @@
             loadForecast($("#serviceFilter").val(), $("#yearFilter").val());
         });
     </script>
+

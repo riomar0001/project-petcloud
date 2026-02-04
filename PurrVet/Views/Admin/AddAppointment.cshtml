@@ -1,6 +1,6 @@
-ï»¿@model PurrVet.Models.Appointment
+@model PurrVet.Models.Appointment
 @{
-    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
     ViewBag.Title = "Add Multiple Appointments";
 }
 
@@ -104,7 +104,7 @@
 <template id="appointmentTemplate">
     <div class="appointment-block border rounded p-3 mb-3 position-relative bg-light">
         <h6 class="fw-bold mb-3">Service #</h6>
-        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 mt-2 me-2 remove-appointment">Ã—</button>
+        <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 mt-2 me-2 remove-appointment">×</button>
 
         <div class="row g-3">
             <div class="col-md-6">
@@ -398,11 +398,11 @@
                 const item = {
                     ownerID: ownerId,
                     petID: block.find("[data-prop='PetID']").val(),
-                    petName: block.find("[data-prop='PetID'] option:selected").text() || "â€”",
+                    petName: block.find("[data-prop='PetID'] option:selected").text() || "—",
                     categoryID: block.find("[data-prop='CategoryID']").val(),
-                    categoryName: block.find("[data-prop='CategoryID'] option:selected").text() || "â€”",
+                    categoryName: block.find("[data-prop='CategoryID'] option:selected").text() || "—",
                     subtypeID: block.find("[data-prop='SubtypeID']").val(),
-                    subtypeName: block.find("[data-prop='SubtypeID'] option:selected").text() || "â€”",
+                    subtypeName: block.find("[data-prop='SubtypeID'] option:selected").text() || "—",
                     date: block.find("[data-prop='AppointmentDate']").val(),
                     time: block.find("[data-prop='AppointmentTime']").val(),
                     appointmentDate: block.find("[data-prop='AppointmentDate']").val(),

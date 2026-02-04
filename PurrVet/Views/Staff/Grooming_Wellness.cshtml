@@ -1,7 +1,7 @@
-ï»¿@model PurrVet.Models.GroomingWellnessListViewModel
+@model PurrVet.Models.GroomingWellnessListViewModel
 
 @{
-    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
     ViewBag.Title = "Grooming & Wellness";
     int maxPagesToShow = 5;
     int blockSize = 10;
@@ -12,20 +12,20 @@
 <div class="d-md-none px-3">
     <form method="get" class="d-flex align-items-center gap-2 mb-2">
         <input type="text" name="searchQuery" class="form-control" placeholder="Search..." value="@Model.SearchQuery" />
-        <button type="submit" class="btn" style="background-color:#559DD4; color:white;">
+        <button type="submit" class="btn" style="background-color:var(--primary-green, #10B981); color:white;">
             <i class="bi bi-search"></i>
         </button>
     </form>
 
-    <button class="btn text-black w-100 fw-semibold" id="toggleFilter" style="background-color:#FFB100;">
+    <button class="btn text-black w-100 fw-semibold" id="toggleFilter" style="background-color:var(--primary-green, #10B981);">
         <i class="bi bi-funnel"></i> Filters
     </button>
 </div>
 
-<div id="filterSection" class="filter-mobile d-flex flex-wrap align-items-center justify-content-start px-3 py-2" style="background-color:#FFD392;">
+<div id="filterSection" class="filter-mobile d-flex flex-wrap align-items-center justify-content-start px-3 py-2" style="background-color:var(--primary-green-light, #D1FAE5);">
     <span class="fw-semibold me-2">Filter Status:</span>
     <div class="dropdown me-3">
-        <button class="btn text-black dropdown-toggle" type="button" data-bs-toggle="dropdown" style="background-color:#FFB100;">
+        <button class="btn text-black dropdown-toggle" type="button" data-bs-toggle="dropdown" style="background-color:var(--primary-green, #10B981);">
             @(string.IsNullOrEmpty(Model.StatusFilter) ? "All" : Model.StatusFilter)
         </button>
         <ul class="dropdown-menu statusfiltering">
@@ -39,7 +39,7 @@
 
     <span class="fw-semibold me-2">Filter Service Type:</span>
     <div class="dropdown me-3">
-        <button class="btn text-black dropdown-toggle" type="button" data-bs-toggle="dropdown" style="background-color:#FFB100;">
+        <button class="btn text-black dropdown-toggle" type="button" data-bs-toggle="dropdown" style="background-color:var(--primary-green, #10B981);">
             @(string.IsNullOrEmpty(Model.SubtypeFilter) ? "All" : Model.SubtypeFilter)
         </button>
         <ul class="dropdown-menu statusfiltering">
@@ -53,7 +53,7 @@
 
     <span class="fw-semibold me-2">Sort by Date:</span>
     <div class="dropdown me-3">
-        <button class="btn text-black dropdown-toggle" type="button" data-bs-toggle="dropdown" style="background-color:#FFB100;">
+        <button class="btn text-black dropdown-toggle" type="button" data-bs-toggle="dropdown" style="background-color:var(--primary-green, #10B981);">
             @(ViewBag.SortOrder == "asc" ? "Old to New" : "New to Old")
         </button>
         <ul class="dropdown-menu">
@@ -65,7 +65,7 @@
         <div class="input-group" style="max-width:300px;">
             <input type="text" name="searchQuery" class="form-control" placeholder="Search..."
                    value="@Model.SearchQuery" />
-            <button type="submit" class="btn" style="background-color:#559DD4; color:white;">
+            <button type="submit" class="btn" style="background-color:var(--primary-green, #10B981); color:white;">
                 <i class="bi bi-search"></i>
             </button>
         </div>
@@ -144,7 +144,7 @@
 
                 <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
                     <a class="page-link border-0 text-dark"
-                       href="@(Model.CurrentPage == 1 ? "#" : $"?page={Model.CurrentPage - 1}&searchQuery={Model.SearchQuery}&statusFilter={Model.StatusFilter}&subtypeFilter={Model.SubtypeFilter}&sortOrder={ViewBag.SortOrder}")">â€¹</a>
+                       href="@(Model.CurrentPage == 1 ? "#" : $"?page={Model.CurrentPage - 1}&searchQuery={Model.SearchQuery}&statusFilter={Model.StatusFilter}&subtypeFilter={Model.SubtypeFilter}&sortOrder={ViewBag.SortOrder}")">‹</a>
                 </li>
 
                 @if (startPage > 1)
@@ -167,7 +167,7 @@
                     {
                         <li class="page-item active">
                             <a class="page-link rounded-circle border-0 text-black"
-                               style="background-color:#FFB100;width:32px;height:32px;display:flex;align-items:center;justify-content:center;">@i</a>
+                               style="background-color:var(--primary-green, #10B981);width:32px;height:32px;display:flex;align-items:center;justify-content:center;">@i</a>
                         </li>
                     }
                     else
@@ -196,7 +196,7 @@
 
                 <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
                     <a class="page-link border-0 text-dark"
-                       href="@(Model.CurrentPage == Model.TotalPages ? "#" : $"?page={Model.CurrentPage + 1}&searchQuery={Model.SearchQuery}&statusFilter={Model.StatusFilter}&subtypeFilter={Model.SubtypeFilter}&sortOrder={ViewBag.SortOrder}")">â€º</a>
+                       href="@(Model.CurrentPage == Model.TotalPages ? "#" : $"?page={Model.CurrentPage + 1}&searchQuery={Model.SearchQuery}&statusFilter={Model.StatusFilter}&subtypeFilter={Model.SubtypeFilter}&sortOrder={ViewBag.SortOrder}")">›</a>
                 </li>
 
             </ul>

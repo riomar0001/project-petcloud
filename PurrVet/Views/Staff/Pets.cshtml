@@ -1,7 +1,7 @@
-﻿@model PurrVet.Models.PetsListViewModel
+@model PurrVet.Models.PetsListViewModel
 
 @{
-    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
     ViewBag.Title = "Pets";
     int maxPagesToShow = 5;
     int blockSize = 10;
@@ -13,22 +13,22 @@
     <form method="get" class="d-flex align-items-center gap-2 mb-2">
         <input type="text" name="searchQuery" class="form-control" placeholder="Search..."
                value="@Model.SearchQuery" />
-        <button type="submit" class="btn" style="background-color:#559DD4; color:white;">
+        <button type="submit" class="btn" style="background-color:var(--primary-green, #10B981); color:white;">
             <i class="bi bi-search"></i>
         </button>
     </form>
 
-    <button class="btn text-black w-100 fw-semibold" id="toggleFilter" style="background-color:#FFB100;">
+    <button class="btn text-black w-100 fw-semibold" id="toggleFilter" style="background-color:var(--primary-green, #10B981);">
         <i class="bi bi-funnel"></i> Filters
     </button>
 </div>
 
 <div id="filterSection" class="filter-mobile d-flex flex-wrap align-items-center justify-content-start px-3 py-2 mb-3"
-     style="background-color:#FFD392;">
+     style="background-color:var(--primary-green-light, #D1FAE5);">
     <span class="fw-semibold me-2">Filter Type:</span>
     <div class="dropdown me-3">
         <button class="btn text-black dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                style="background-color:#FFB100;">
+                style="background-color:var(--primary-green, #10B981);">
             @(string.IsNullOrEmpty(Model.TypeFilter) ? "All" : Model.TypeFilter)
         </button>
         <ul class="dropdown-menu">
@@ -41,7 +41,7 @@
     <span class="fw-semibold me-2">Sort by:</span>
     <div class="dropdown me-3">
         <button class="btn text-black dropdown-toggle" type="button" id="sortFieldBtn" data-bs-toggle="dropdown"
-                style="background-color:#FFB100;">
+                style="background-color:var(--primary-green, #10B981);">
             @(ViewBag.SortField switch
             {
                 "id" => "Pet ID",
@@ -59,12 +59,12 @@
 
     <div class="dropdown me-3">
         <button class="btn text-black dropdown-toggle" type="button" id="sortOrderBtn" data-bs-toggle="dropdown"
-                style="background-color:#FFB100;">
-            @(ViewBag.SortOrder == "desc" ? "Descending (↓)" : "Ascending (↑)")
+                style="background-color:var(--primary-green, #10B981);">
+            @(ViewBag.SortOrder == "desc" ? "Descending (?)" : "Ascending (?)")
         </button>
         <ul class="dropdown-menu">
-            <li><a class="dropdown-item text-black sort-order" data-order="asc" href="#">Ascending (↑)</a></li>
-            <li><a class="dropdown-item text-black sort-order" data-order="desc" href="#">Descending (↓)</a></li>
+            <li><a class="dropdown-item text-black sort-order" data-order="asc" href="#">Ascending (?)</a></li>
+            <li><a class="dropdown-item text-black sort-order" data-order="desc" href="#">Descending (?)</a></li>
         </ul>
     </div>
 
@@ -72,7 +72,7 @@
         <div class="input-group" style="max-width:300px;">
             <input type="text" name="searchQuery" class="form-control" placeholder="Search..."
                    value="@Model.SearchQuery" />
-            <button type="submit" class="btn" style="background-color:#559DD4; color:white;">
+            <button type="submit" class="btn" style="background-color:var(--primary-green, #10B981); color:white;">
                 <i class="bi bi-search"></i>
             </button>
         </div>
@@ -83,7 +83,7 @@
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h6 class="fw-bold mb-0">MANAGE PETS</h6>
-            <a href="~/Staff/AddPet" class="btn text-white" style="background-color:#559DD4;">
+            <a href="/Staff/AddPet" class="btn text-white" style="background-color:var(--primary-green, #10B981);">
                 + Add Pet
             </a>
         </div>
@@ -111,10 +111,10 @@
                             <td>@pet.Birthdate.ToShortDateString()</td>
                             <td>@pet.Owner?.Name</td>
                             <td>
-                                <a href="~/Staff/EditPet/@pet.PetID" class="btn btn-sm btn-edit" title="Edit">
+                                <a href="/Staff/EditPet/@pet.PetID" class="btn btn-sm btn-edit" title="Edit">
                                     <i class="bi bi-pencil-fill"></i>
                                 </a>
-                                <a href="~/Staff/ViewPet/@pet.PetID" class="btn btn-sm btn-view" title="View">
+                                <a href="/Staff/ViewPet/@pet.PetID" class="btn btn-sm btn-view" title="View">
                                     <i class="bi bi-eye-fill"></i>
                                 </a>
                             </td>
@@ -129,7 +129,7 @@
                 <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
                     <a class="page-link border-0 text-dark"
                        href="@(Model.CurrentPage == 1 ? "#" : $"?page={Model.CurrentPage - 1}&searchQuery={Model.SearchQuery}&typeFilter={Model.TypeFilter}&sortField={ViewBag.SortField}&sortOrder={ViewBag.SortOrder}")">
-                        ‹
+                        �
                     </a>
                 </li>
 
@@ -153,7 +153,7 @@
                     {
                         <li class="page-item active">
                             <a class="page-link rounded-circle border-0 text-black"
-                               style="background-color:#FFB100;width:32px;height:32px;display:flex;align-items:center;justify-content:center;">
+                               style="background-color:var(--primary-green, #10B981);width:32px;height:32px;display:flex;align-items:center;justify-content:center;">
                                 @i
                             </a>
                         </li>
@@ -185,7 +185,7 @@
                 <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
                     <a class="page-link border-0 text-dark"
                        href="@(Model.CurrentPage == Model.TotalPages ? "#" : $"?page={Model.CurrentPage + 1}&searchQuery=@Model.SearchQuery&typeFilter=@Model.TypeFilter&sortField=@ViewBag.SortField&sortOrder=@ViewBag.SortOrder")">
-                        ›
+                        �
                     </a>
                 </li>
             </ul>

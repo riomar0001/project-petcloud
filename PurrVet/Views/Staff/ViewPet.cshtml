@@ -1,7 +1,7 @@
-﻿@model PurrVet.Models.PetDetailsViewModel
+@model PurrVet.Models.PetDetailsViewModel
 
 @{
-    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
     ViewBag.Title = "Pets";
 
     var categories = ViewBag.Categories as List<PurrVet.Models.ServiceCategory>;
@@ -20,14 +20,14 @@
     <div class="d-flex flex-wrap justify-content-end justify-content-md-end gap-2 w-100 w-md-auto mt-md-0">
         <a href="@Url.Action("ViewPet", "Admin", new { id = Model.Pet.PetID })"
            class="btn fw-semibold text-black"
-           style="background-color:#FFB100; border:none;">
-            🐾 Pet Info
+           style="background-color:var(--primary-green, #10B981); border:none;">
+            ?? Pet Info
         </a>
 
         <a href="@Url.Action("PetCard", "Admin", new { id = Model.Pet.PetID })"
            class="btn fw-semibold text-white"
-           style="background-color:#559DD4; border:none;">
-            📋 Pet Card
+           style="background-color:var(--primary-green, #10B981); border:none;">
+            ?? Pet Card
         </a>
     </div>
 </div>
@@ -40,7 +40,7 @@
             <div class="col-md-3 text-center">
                 <img src="@photoPath"
                      alt="@Model.Pet.Name"
-                     class="rounded-circle border border-4 border-warning shadow"
+                     class="rounded-circle border border-4 border-success shadow"
                      style="width:170px; height:170px; object-fit:cover;"
                      onerror="this.onerror=null;this.src='@Url.Content("~/uploads/profiles/pet.png")';" />
             </div>
@@ -74,11 +74,11 @@
     </div>
 
     <div class="card shadow-sm border-0">
-        <div class="d-flex flex-wrap align-items-center justify-content-start px-3 py-2" style="background-color:#FFD392;">
+        <div class="d-flex flex-wrap align-items-center justify-content-start px-3 py-2" style="background-color:var(--primary-green-light, #D1FAE5);">
             <span class="fw-semibold me-2">Filter:</span>
             <div class="dropdown me-3">
                 <button class="btn text-black dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                        style="background-color:#FFB100;">
+                        style="background-color:var(--primary-green, #10B981);">
                     @selectedCategory
                 </button>
                 <ul class="dropdown-menu statusfiltering">
@@ -98,7 +98,7 @@
                 <div class="input-group" style="max-width:300px;">
                     <input type="text" name="searchQuery" class="form-control" placeholder="Search..."
                            value="@Model.SearchQuery" />
-                    <button type="submit" class="btn" style="background-color:#559DD4; color:white;">
+                    <button type="submit" class="btn" style="background-color:var(--primary-green, #10B981); color:white;">
                         <i class="bi bi-search"></i>
                     </button>
                 </div>
@@ -166,7 +166,7 @@
 
                     <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
                         <a class="page-link border-0 text-dark"
-                           href="@(Model.CurrentPage == 1 ? "#" : $"?id={Model.Pet.PetID}&page={Model.CurrentPage - 1}&searchQuery={Model.SearchQuery}&categoryFilter={Model.CategoryFilter}")">‹</a>
+                           href="@(Model.CurrentPage == 1 ? "#" : $"?id={Model.Pet.PetID}&page={Model.CurrentPage - 1}&searchQuery={Model.SearchQuery}&categoryFilter={Model.CategoryFilter}")">�</a>
                     </li>
 
                     @if (startPage > 1)
@@ -189,7 +189,7 @@
                         {
                             <li class="page-item active">
                                 <a class="page-link rounded-circle border-0 text-black"
-                                   style="background-color:#FFB100;width:32px;height:32px;display:flex;align-items:center;justify-content:center;">@i</a>
+                                   style="background-color:var(--primary-green, #10B981);width:32px;height:32px;display:flex;align-items:center;justify-content:center;">@i</a>
                             </li>
                         }
                         else
@@ -218,7 +218,7 @@
 
                     <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
                         <a class="page-link border-0 text-dark"
-                           href="@(Model.CurrentPage == Model.TotalPages ? "#" : $"?id={Model.Pet.PetID}&page={Model.CurrentPage + 1}&searchQuery={Model.SearchQuery}&categoryFilter={Model.CategoryFilter}")">›</a>
+                           href="@(Model.CurrentPage == Model.TotalPages ? "#" : $"?id={Model.Pet.PetID}&page={Model.CurrentPage + 1}&searchQuery={Model.SearchQuery}&categoryFilter={Model.CategoryFilter}")">�</a>
                     </li>
                 </ul>
             </nav>

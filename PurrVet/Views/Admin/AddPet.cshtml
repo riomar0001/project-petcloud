@@ -1,26 +1,32 @@
-﻿@model PurrVet.Models.Pet
+@model PurrVet.Models.Pet
 
 @{
     ViewBag.Title = "Pets";
-    Layout = "~/Views/Shared/_DashboardLayout.cshtml";
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
 }
-<div class="p-4">
-    <h5 class="mb-4 fw-bold">Pets / Add Pet</h5>
-    <div class="card shadow-sm p-4">
 
-        <!-- Toast -->
-        <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
-            <div id="messageToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
-                    <div class="toast-body"></div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <h2>Add Pet</h2>
+    <p>Register a new pet to the system</p>
+</div>
+
+<div class="page-card-modern">
+    <!-- Toast -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
+        <div id="messageToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
             </div>
         </div>
+    </div>
 
-        <h4 class="mb-3 fw-bold">Add a New Pet</h4>
-        <hr class="mb-4">
+    <div class="card-header-modern">
+        <h6>PET INFORMATION</h6>
+    </div>
 
+    <div class="card-body p-4">
         <form id="addPetForm" method="post" enctype="multipart/form-data" action="@Url.Action("AddPet", "Admin")">
             @Html.AntiForgeryToken()
 
@@ -30,7 +36,7 @@
                         <div class="d-flex justify-content-center mb-2">
                             <img id="profilePreview"
                                  src="@Url.Content("~/uploads/profiles/pet.png")"
-                                 class="rounded-circle border border-4 border-warning shadow"
+                                 class="rounded-circle border border-4 border-success shadow"
                                  style="width:170px; height:170px; object-fit:cover;" />
                         </div>
 
@@ -79,12 +85,12 @@
                     </select>
                 </div>
 
-                
+
             </div>
 
             <div class="mt-4 d-flex justify-content-end gap-2">
-                <button type="submit" class="btn btn-primary px-4">Save</button>
                 <a href="@Url.Action("Pets", "Admin")" class="btn btn-secondary px-4">Cancel</a>
+                <button type="submit" class="btn-add-modern">Save</button>
             </div>
         </form>
     </div>
@@ -92,7 +98,7 @@
     <div class="modal fade" id="confirmSaveModal" tabindex="-1" aria-labelledby="confirmSaveModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header bg-warning text-white">
+                <div class="modal-header" style="background: var(--primary-green, #10B981); color: white;">
                     <h6 class="modal-title fw-bold" id="confirmSaveModalLabel">Pets</h6>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>

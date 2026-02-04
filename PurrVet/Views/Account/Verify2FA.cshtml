@@ -1,93 +1,154 @@
-﻿@{
+@{
     ViewBag.Title = "Two-Factor Authentication";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = null;
 }
 
-<div class="hero-section d-flex flex-column justify-content-center">
-    <div class="hero-wave"></div>
-
-    <div class="container">
-        <div class="row align-items-center justify-content-center text-center text-md-start">
-            <div class="col-md-3 mb-4 mb-md-0 slogan-col">
-                <h1 class="fw-bold forgot">
-                    Healthy Pets,<br />Happy Homes.
-                </h1>
-            </div>
-
-            <div class="col-md-2 mb-4 mb-md-0 paws-col d-flex justify-content-center">
-                <img src="~/images/paws.png" alt="Paws" class="forgot-paws" />
-            </div>
-
-            <div class="col-md-5 d-flex justify-content-end">
-                <div class="login-card shadow p-4 w-100" style="max-width: 400px; position: relative;">
-                    <a href="/Account/Login" class="text-decoration-none d-flex align-items-center text-muted btn-back">
-                        <i class="bi bi-arrow-left me-2"></i>
-                    </a>
-
-                    <h6 class="mb-3 text-center fw-bold">Two-Factor Authentication</h6>
-                    <hr class="mb-4">
-
-                    <form id="verify2FAForm">
-                        <input type="hidden" id="userId" value="@ViewBag.UserId" />
-
-                        <div class="mb-3">
-                            <input type="text" id="twoFACode" name="twoFACode" class="form-control" placeholder="Enter 6-digit code" maxlength="6" required />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewBag.Title - PurrVet</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="/css/auth-modern.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="auth-page">
+        <!-- Left Side - Branding -->
+        <div class="auth-branding">
+            <div class="auth-branding-content">
+                <div class="auth-logo">
+                    <i class="bi bi-heart-pulse-fill"></i>
+                    <span>PurrVet</span>
+                </div>
+                <h1>Verify Your Identity</h1>
+                <p>We've sent a verification code to your email. Enter it below to complete your login.</p>
+                
+                <div class="auth-features">
+                    <div class="auth-feature-item">
+                        <div class="auth-feature-icon">
+                            <i class="bi bi-shield-check"></i>
                         </div>
-                        <div class="text-center my-1">
-                            <img src="~/images/golden.png" alt="Golden Dog" class="dog-img" style="max-height:120px;" />
+                        <div>
+                            <strong>Extra Security</strong>
+                            <span>Two-factor authentication protects your account</span>
                         </div>
+                    </div>
+                    <div class="auth-feature-item">
+                        <div class="auth-feature-icon">
+                            <i class="bi bi-envelope-paper"></i>
+                        </div>
+                        <div>
+                            <strong>Check Your Email</strong>
+                            <span>The code was sent to your registered email</span>
+                        </div>
+                    </div>
+                    <div class="auth-feature-item">
+                        <div class="auth-feature-icon">
+                            <i class="bi bi-stopwatch"></i>
+                        </div>
+                        <div>
+                            <strong>Code Expires</strong>
+                            <span>Enter your code before it expires</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                        <button type="submit" class="btn-skyblue w-100">Verify Code</button>
-                    </form>
+        <!-- Right Side - Form -->
+        <div class="auth-form-side">
+            <div class="auth-card">
+                <a href="/Account/Login" class="btn-back">
+                    <i class="bi bi-arrow-left"></i>
+                    Back to Login
+                </a>
+
+                <div class="auth-card-header">
+                    <h2>Enter Verification Code</h2>
+                    <p>Please enter the 6-digit code we sent to your email.</p>
+                </div>
+
+                <form id="verify2FAForm">
+                    <input type="hidden" id="userId" value="@ViewBag.UserId" />
+
+                    <div class="form-group">
+                        <label for="twoFACode" class="form-label">Verification Code</label>
+                        <div class="input-icon-wrapper">
+                            <i class="bi bi-key input-icon"></i>
+                            <input type="text" id="twoFACode" name="twoFACode" class="form-control" 
+                                   placeholder="Enter 6-digit code" maxlength="6" required 
+                                   style="letter-spacing: 8px; font-weight: 600; text-align: center;" />
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-auth-primary w-100">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Verify Code
+                    </button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Didn't receive the code? <a href="#" id="resendCode">Resend</a></p>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
-    <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert">
-        <div class="d-flex">
-            <div class="toast-body"></div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    <!-- Toast Message -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+        <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
         </div>
     </div>
-</div>
 
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script>
-    $("#verify2FAForm").on("submit", function (e) {
-        e.preventDefault();
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        $("#verify2FAForm").on("submit", function (e) {
+            e.preventDefault();
 
-        const userId = $("#userId").val();
-        const code = $("#twoFACode").val();
-        const rememberMe = $("#rememberMe").is(":checked");
+            const userId = $("#userId").val();
+            const code = $("#twoFACode").val();
+            const rememberMe = $("#rememberMe").is(":checked");
+            const btn = $(this).find('button[type="submit"]');
+            const originalText = btn.html();
+            
+            btn.html('<span class="spinner-border spinner-border-sm me-2"></span>Verifying...').prop('disabled', true);
 
-        $.ajax({
-            url: "/Account/Verify2FA",
-            type: "POST",
-            data: { userId: userId, code: code, rememberMe: rememberMe },
-            success: function (response) {
-                const toast = new bootstrap.Toast($('#toastMessage'));
-                const toastBody = $('#toastMessage .toast-body');
+            $.ajax({
+                url: "/Account/Verify2FA",
+                type: "POST",
+                data: { userId: userId, code: code, rememberMe: rememberMe },
+                success: function (response) {
+                    const toast = new bootstrap.Toast($('#toastMessage'));
+                    const toastBody = $('#toastMessage .toast-body');
 
-                if (response.success) {
-                    $('#toastMessage').removeClass('bg-danger').addClass('bg-success');
-                    toastBody.text("Two-Factor Verification successful! Redirecting...");
-                    toast.show();
-                    setTimeout(() => window.location.href = response.redirectUrl, 1500);
-                } else {
+                    if (response.success) {
+                        $('#toastMessage').removeClass('bg-danger').addClass('bg-success');
+                        toastBody.text("Two-Factor Verification successful! Redirecting...");
+                        toast.show();
+                        setTimeout(() => window.location.href = response.redirectUrl, 1500);
+                    } else {
+                        $('#toastMessage').removeClass('bg-success').addClass('bg-danger');
+                        toastBody.text("Invalid or expired code. Please try again.");
+                        toast.show();
+                        btn.html(originalText).prop('disabled', false);
+                    }
+                },
+                error: function () {
                     $('#toastMessage').removeClass('bg-success').addClass('bg-danger');
-                    toastBody.text("❌ Invalid or expired code. Please try again.");
-                    toast.show();
+                    $('#toastMessage .toast-body').text("Something went wrong. Please try again.");
+                    new bootstrap.Toast($('#toastMessage')).show();
+                    btn.html(originalText).prop('disabled', false);
                 }
-            },
-            error: function () {
-                $('#toastMessage').removeClass('bg-success').addClass('bg-danger');
-                $('#toastMessage .toast-body').text("Something went wrong. Please try again.");
-                new bootstrap.Toast($('#toastMessage')).show();
-            }
+            });
         });
-    });
-</script>
+    </script>
+</body>
+</html>
 
