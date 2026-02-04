@@ -1,7 +1,5 @@
-﻿namespace PurrVet.Models
-{
-    public class AppointmentDraftGroupVM
-    {
+﻿namespace PurrVet.Models {
+    public class AppointmentDraftGroupVM {
         public string GroupDraftId { get; set; }
         public string GroupDate { get; set; }
         public string GroupTime { get; set; }

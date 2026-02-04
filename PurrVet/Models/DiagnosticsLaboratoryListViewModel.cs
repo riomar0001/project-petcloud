@@ -1,7 +1,5 @@
-﻿namespace PurrVet.Models
-{
-    public class DiagnosticsLaboratoryListViewModel
-    {
+﻿namespace PurrVet.Models {
+    public class DiagnosticsLaboratoryListViewModel {
         public IEnumerable<Appointment> DiagnosticsLaboratory { get; set; } = new List<Appointment>();
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }

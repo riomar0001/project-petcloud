@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace PurrVet.Models
-{
-    public class AppointmentGroup
-    {
+namespace PurrVet.Models {
+    public class AppointmentGroup {
         [Key]
         public int GroupID { get; set; }
 

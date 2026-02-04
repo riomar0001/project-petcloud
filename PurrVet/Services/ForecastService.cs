@@ -1,16 +1,12 @@
-﻿using System.Globalization;
-using CsvHelper;
+﻿using CsvHelper;
 using CsvHelper.Configuration;
 using Microsoft.ML;
 using Microsoft.ML.Data;
-using Microsoft.ML.Trainers.FastTree;
 using PurrVet.Models;
-using static PurrVet.Controllers.AdminController;
+using System.Globalization;
 
-namespace PurrVet.Services
-{
-    public class ForecastResult
-    {
+namespace PurrVet.Services {
+    public class ForecastResult {
         public List<string> Months { get; set; } = new();
         public List<double> ActualCounts { get; set; } = new();
         public List<double> PredictedCounts { get; set; } = new();
@@ -27,20 +23,16 @@ namespace PurrVet.Services
         public string Severity { get; set; } = "MEDIUM";
     }
 
-    public class ForecastService
-    {
+    public class ForecastService {
         private readonly string _csvPath;
         private readonly MLContext _mlContext;
 
-        public ForecastService(string csvPath)
-        {
+        public ForecastService(string csvPath) {
             _csvPath = csvPath;
             _mlContext = new MLContext();
         }
-        private List<float> GetServiceHistory(List<ServiceDemandData> records, string service)
-        {
-            return records.Select(r => service switch
-            {
+        private List<float> GetServiceHistory(List<ServiceDemandData> records, string service) {
+            return records.Select(r => service switch {
                 "Consultation" => r.Consultation,
                 "Vaccination" => r.Vaccination,
                 "Grooming" => r.Grooming,
@@ -54,8 +46,7 @@ namespace PurrVet.Services
                 _ => 0
             }).ToList();
         }
-        private double PredictNextMonthForService( List<ServiceDemandData> records, string serviceName, int nextYear, int nextMonth)
-        {
+        private double PredictNextMonthForService(List<ServiceDemandData> records, string serviceName, int nextYear, int nextMonth) {
             var demandHistory = GetServiceHistory(records, serviceName);
             if (demandHistory.Count < 6) return 0;
 
@@ -103,8 +94,7 @@ namespace PurrVet.Services
             float sLag2 = demandHistory[^2];
             float sLag3 = demandHistory[^3];
 
-            var input = new ServiceDemandData
-            {
+            var input = new ServiceDemandData {
                 Year = nextYear,
                 Month = nextMonth,
                 Month_sin = (float)Math.Sin(2 * Math.PI * nextMonth / 12.0),
@@ -130,8 +120,7 @@ namespace PurrVet.Services
 
         public ForecastResult TrainAndPredict(string serviceColumn, string selectedYearStr)         // Method pang train model and predict sa values
         {
-            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
-            {
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture) {
                 HasHeaderRecord = true,
                 MissingFieldFound = null,
                 HeaderValidated = null
@@ -139,8 +128,7 @@ namespace PurrVet.Services
 
             List<ServiceDemandData> records;
             using (var reader = new StreamReader(_csvPath))
-            using (var csv = new CsvReader(reader, config))
-            {
+            using (var csv = new CsvReader(reader, config)) {
                 csv.Context.RegisterClassMap<ServiceDemandDataMap>();
                 records = csv.GetRecords<ServiceDemandData>().ToList();
             }
@@ -148,8 +136,7 @@ namespace PurrVet.Services
 
             var today = DateTime.Today;
 
-            if (today.Day < 28)
-            {
+            if (today.Day < 28) {
                 records = records.Where(r => (r.Year < today.Year) ||
                                              (r.Year == today.Year && r.Month <= today.Month)).ToList();
             }
@@ -163,11 +150,8 @@ namespace PurrVet.Services
                     r.Deworming + r.Surgery + r.Medication +
                     r.SpecialtyTests + r.EndOfLifeCare + r.Confinement + r.Diagnostics
                 ).ToList();
-            }
-            else
-            {
-                demandHistory = records.Select(r => 
-                {
+            } else {
+                demandHistory = records.Select(r => {
                     return serviceColumn switch  // Kung specific service lang
                     {
                         "Consultation" => r.Consultation,
@@ -185,15 +169,12 @@ namespace PurrVet.Services
                 }).ToList();
             }
             // If not enough ang data, return ni
-            if (!records.Any() || demandHistory.Count < 6)
-            {
+            if (!records.Any() || demandHistory.Count < 6) {
                 return new ForecastResult { Severity = "NO DATA" };
             }
 
-            if (serviceColumn == "All")
-            {
-                trainingRecords = records.Select(r => new ServiceDemandData
-                {
+            if (serviceColumn == "All") {
+                trainingRecords = records.Select(r => new ServiceDemandData {
                     Year = r.Year,
                     Month = r.Month,
                     Month_sin = r.Month_sin,
@@ -272,8 +253,8 @@ namespace PurrVet.Services
             var predictedCounts = records.Select(r => (double)predEngine.Predict(r).Score).ToList();
 
             var last = records.Last();
-            int targetMonth = (int)last.Month;
-            int targetYear = (int)last.Year;
+            int targetMonth = last.Month;
+            int targetYear = last.Year;
 
             int globalHorizon = 12;
 
@@ -295,7 +276,7 @@ namespace PurrVet.Services
             var globalSeverities = new List<string>();
 
             float lag1 = demandHistory.Last();
-            float lag2 = demandHistory.Count > 1 ? demandHistory[^2] : lag1;    
+            float lag2 = demandHistory.Count > 1 ? demandHistory[^2] : lag1;
             float lag3 = demandHistory.Count > 2 ? demandHistory[^3] : lag2;
 
             int gTargetMonth = targetMonth;
@@ -307,17 +288,14 @@ namespace PurrVet.Services
             double highThreshold = avg + (0.5 * stdDev);
             double lowThreshold = avg - (0.5 * stdDev);
 
-            for (int i = 0; i < globalHorizon; i++)
-            {
+            for (int i = 0; i < globalHorizon; i++) {
                 gTargetMonth++;
-                if (gTargetMonth > 12)
-                {
+                if (gTargetMonth > 12) {
                     gTargetMonth = 1;
                     gTargetYear++;
                 }
 
-                var nextInput = new ServiceDemandData
-                {
+                var nextInput = new ServiceDemandData {
                     Year = gTargetYear,
                     Month = gTargetMonth,
                     Month_sin = (float)Math.Sin(2 * Math.PI * gTargetMonth / 12.0),
@@ -358,8 +336,7 @@ namespace PurrVet.Services
             List<double> actualToShow = allActuals;
             List<double> predictedToShow = allPredictions;
 
-            if (yearParsed && selectedYearStr != "All")
-            {
+            if (yearParsed && selectedYearStr != "All") {
                 monthsToShow = allMonths.Where(m => m.EndsWith("/" + selectedYear)).ToList();
                 actualToShow = allActuals
                     .Where((_, i) => allMonths[i].EndsWith("/" + selectedYear))
@@ -387,14 +364,12 @@ namespace PurrVet.Services
 
             int nextMonth = targetMonth + 1;
             int nextYear = targetYear;
-            if (nextMonth > 12)
-            {
+            if (nextMonth > 12) {
                 nextMonth = 1;
                 nextYear++;
             }
 
-            foreach (var service in serviceTypes)
-            {
+            foreach (var service in serviceTypes) {
                 double value = PredictNextMonthForService(
                     records,
                     service,
@@ -402,8 +377,7 @@ namespace PurrVet.Services
                     nextMonth
                 );
 
-                nextMonthServiceRanking.Add(new ServiceForecastResult
-                {
+                nextMonthServiceRanking.Add(new ServiceForecastResult {
                     Service = service,
                     Count = Math.Round(value, 2)
                 });
@@ -414,8 +388,7 @@ namespace PurrVet.Services
                 .ToList();
 
 
-            return new ForecastResult
-            {
+            return new ForecastResult {
                 Months = monthsToShow,
                 ActualCounts = actualToShow,
                 PredictedCounts = predictedToShow,
@@ -429,13 +402,11 @@ namespace PurrVet.Services
                 NextMonthServiceRanking = nextMonthServiceRanking
             };
         }
-        public ForecastResult TrainAndPredict(List<ServiceDemandData> mergedRecords, string serviceColumn, string selectedYearStr)
-        {
-   
+        public ForecastResult TrainAndPredict(List<ServiceDemandData> mergedRecords, string serviceColumn, string selectedYearStr) {
+
             var tempPath = Path.Combine(Path.GetTempPath(), "merged_forecast_data.csv");
             using (var writer = new StreamWriter(tempPath))
-            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-            {
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture)) {
                 csv.Context.RegisterClassMap<ServiceDemandDataMap>();
                 csv.WriteRecords(mergedRecords);
             }

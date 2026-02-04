@@ -1,7 +1,5 @@
-﻿namespace PurrVet.Models
-{
-    public class PetCardVM
-    {
+﻿namespace PurrVet.Models {
+    public class PetCardVM {
         public Pet Pet { get; set; }
         public List<Appointment> Records { get; set; }
         public List<Appointment> PageData { get; set; }

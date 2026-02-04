@@ -1,10 +1,8 @@
-﻿namespace PurrVet.Models
-{
+﻿namespace PurrVet.Models {
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
-    public class Appointment
-    {
+    public class Appointment {
         [Key]
         public int AppointmentID { get; set; }
 

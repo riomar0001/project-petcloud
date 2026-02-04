@@ -1,30 +1,22 @@
-﻿using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
-using System.Globalization;
-using System.Text.RegularExpressions;
-using CsvHelper;
+﻿using CsvHelper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
-using Microsoft.Graph.Models.Security;
 using Microsoft.Identity.Web;
 using PurrVet.Models;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
-using QuestPDF.Infrastructure;
-namespace PurrVet.Controllers
-{
-    public class OwnerController : Controller
-    {
+using System.Globalization;
+using System.Text.RegularExpressions;
+namespace PurrVet.Controllers {
+    public class OwnerController : Controller {
         private readonly ApplicationDbContext _context;
         private readonly GraphServiceClient _graphServiceClient;
         private readonly ITokenAcquisition _tokenAcquisition;
-        private readonly IWebHostEnvironment _hostEnvironment;  
+        private readonly IWebHostEnvironment _hostEnvironment;
 
-        public OwnerController(ApplicationDbContext context, GraphServiceClient graphServiceClient, ITokenAcquisition tokenAcquisition, IWebHostEnvironment hostEnvironment)
-        {
+        public OwnerController(ApplicationDbContext context, GraphServiceClient graphServiceClient, ITokenAcquisition tokenAcquisition, IWebHostEnvironment hostEnvironment) {
             _context = context;
             _graphServiceClient = graphServiceClient;
             _tokenAcquisition = tokenAcquisition;
@@ -32,8 +24,7 @@ namespace PurrVet.Controllers
 
         }
         [HttpGet]
-        public IActionResult GetBreeds(string type)
-        {
+        public IActionResult GetBreeds(string type) {
             if (string.IsNullOrWhiteSpace(type))
                 return Json(new List<string>());
 
@@ -44,8 +35,7 @@ namespace PurrVet.Controllers
                 return Json(new List<string>());
 
             using (var reader = new StreamReader(filePath))
-            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-            {
+            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture)) {
                 var breeds = csv.GetRecords<dynamic>()
                                 .Select(r => (r as IDictionary<string, object>)?["Breed"]?.ToString())
                                 .Where(b => !string.IsNullOrWhiteSpace(b))
@@ -55,23 +45,20 @@ namespace PurrVet.Controllers
                 return Json(breeds);
             }
         }
-        public IActionResult Dashboard()
-        {
+        public IActionResult Dashboard() {
             if (HttpContext.Session.GetString("UserRole") != "Owner")
                 return RedirectToAction("Login", "Account");
 
             var ownerId = HttpContext.Session.GetInt32("OwnerID");
             if (ownerId == null) return RedirectToAction("Login", "Account");
 
-            var vm = new OwnerDashboardViewModel
-            {
+            var vm = new OwnerDashboardViewModel {
                 UserName = HttpContext.Session.GetString("UserName"),
 
                 Pets = _context.Pets
                     .Where(p => p.OwnerID == ownerId)
                     .OrderByDescending(p => p.PetID)
-                    .Select(p => new
-                    {
+                    .Select(p => new {
                         p.PetID,
                         p.Name,
                         p.Breed,
@@ -85,8 +72,7 @@ namespace PurrVet.Controllers
                 .Where(a => a.Pet.OwnerID == ownerId &&
                             (a.Status == "Pending" || a.AppointmentDate >= DateTime.Now))
                 .OrderBy(a => a.AppointmentDate)
-                .Select(a => new
-                {
+                .Select(a => new {
                     a.AppointmentID,
                     a.AppointmentDate,
                     a.Status,
@@ -104,8 +90,7 @@ namespace PurrVet.Controllers
                                 a.DueDate <= DateTime.Now.AddDays(5) &&
                                 a.ServiceCategory.ServiceType.Contains("Vaccination"))
                     .OrderBy(a => a.DueDate)
-                    .Select(a => new
-                    {
+                    .Select(a => new {
                         a.AppointmentID,
                         a.DueDate,
                         Pet = new { a.Pet.PetID, a.Pet.Name },
@@ -120,8 +105,7 @@ namespace PurrVet.Controllers
                                 a.DueDate <= DateTime.Now.AddDays(5) &&
                                 a.ServiceCategory.ServiceType.Contains("Deworming & Preventives"))
                     .OrderBy(a => a.DueDate)
-                    .Select(a => new
-                    {
+                    .Select(a => new {
                         a.AppointmentID,
                         a.DueDate,
                         Pet = new { a.Pet.PetID, a.Pet.Name },
@@ -133,8 +117,7 @@ namespace PurrVet.Controllers
         }
 
 
-        public IActionResult Pets()
-        {
+        public IActionResult Pets() {
             if (HttpContext.Session.GetString("UserRole") != "Owner")
                 return RedirectToAction("Login", "Account");
             var ownerId = HttpContext.Session.GetInt32("OwnerID");
@@ -145,8 +128,7 @@ namespace PurrVet.Controllers
             return View(pets);
         }
         [HttpGet]
-        public IActionResult Appointments()
-        {
+        public IActionResult Appointments() {
             if (HttpContext.Session.GetString("UserRole") != "Owner")
                 return RedirectToAction("Login", "Account");
 
@@ -161,8 +143,7 @@ namespace PurrVet.Controllers
                 .Include(a => a.ServiceSubtype)
                 .ToList();
 
-            var appointmentsForView = allAppointments.Select(a => new Appointment
-            {
+            var appointmentsForView = allAppointments.Select(a => new Appointment {
                 AppointmentID = a.AppointmentID,
                 AppointmentDate = a.AppointmentDate,
                 Status = a.Pet.OwnerID == ownerId ? a.Status : "Not Available",
@@ -186,8 +167,7 @@ namespace PurrVet.Controllers
 
 
         [HttpGet]
-        public IActionResult AddAppointment()
-        {
+        public IActionResult AddAppointment() {
             if (HttpContext.Session.GetString("UserRole") != "Owner")
                 return RedirectToAction("Login", "Account");
 
@@ -197,8 +177,7 @@ namespace PurrVet.Controllers
 
             ViewBag.Pets = _context.Pets
                 .Where(p => p.OwnerID == ownerId)
-                .Select(p => new
-                {
+                .Select(p => new {
                     p.PetID,
                     p.Name,
                     p.Type
@@ -218,8 +197,7 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddAppointmentsBulkOwner([FromForm] AppointmentBulkForm form)
-        {
+        public IActionResult AddAppointmentsBulkOwner([FromForm] AppointmentBulkForm form) {
             if (HttpContext.Session.GetString("UserRole") != "Owner")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -242,8 +220,7 @@ namespace PurrVet.Controllers
 
             var groupDateTime = firstValid.AppointmentDate.Date.Add(parsedTime);
 
-            var group = new AppointmentGroup
-            {
+            var group = new AppointmentGroup {
                 GroupTime = groupDateTime,
                 Notes = "Grouped appointment (Owner)",
                 CreatedAt = DateTime.Now
@@ -254,8 +231,7 @@ namespace PurrVet.Controllers
 
             var added = new List<Appointment>();
 
-            foreach (var a in form.Appointments)
-            {
+            foreach (var a in form.Appointments) {
                 if (a.PetID == 0 || a.CategoryID == null)
                     continue;
 
@@ -263,8 +239,7 @@ namespace PurrVet.Controllers
                 if (pet == null)
                     continue;
 
-                var appointment = new Appointment
-                {
+                var appointment = new Appointment {
                     PetID = a.PetID,
                     CategoryID = a.CategoryID,
                     SubtypeID = a.SubtypeID,
@@ -287,23 +262,19 @@ namespace PurrVet.Controllers
             var userName = HttpContext.Session.GetString("UserName") ?? "Owner";
             var dateText = groupDateTime.ToString("MMM dd, yyyy hh:mm tt");
 
-            _context.Notifications.Add(new Notification
-            {
+            _context.Notifications.Add(new Notification {
                 Message = $"New group appointment (#{group.GroupID}) requested by {userName} for {dateText} ({added.Count} services).",
                 Type = "Appointment"
             });
 
-            foreach (var appt in added)
-            {
-                _context.Notifications.Add(new Notification
-                {
+            foreach (var appt in added) {
+                _context.Notifications.Add(new Notification {
                     Message = $"Appointment requested by {userName} for Pet ID: {appt.PetID} on {dateText}.",
                     Type = "Appointment"
                 });
             }
 
-            _context.SystemLogs.Add(new SystemLog
-            {
+            _context.SystemLogs.Add(new SystemLog {
                 ActionType = "Bulk Create",
                 Module = "Appointment",
                 Description = $"Owner #{ownerId} created {added.Count} services in Group #{group.GroupID} scheduled for {dateText}.",
@@ -313,8 +284,7 @@ namespace PurrVet.Controllers
 
             _context.SaveChanges();
 
-            return Json(new
-            {
+            return Json(new {
                 success = true,
                 message = $"Successfully added {added.Count} service(s) (Group #{group.GroupID}).",
                 groupId = group.GroupID
@@ -325,8 +295,7 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddAppointment(Appointment model, string AppointmentTime)
-        {
+        public IActionResult AddAppointment(Appointment model, string AppointmentTime) {
             if (HttpContext.Session.GetString("UserRole") != "Owner")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -347,11 +316,9 @@ namespace PurrVet.Controllers
             model.Status = "Pending";
             model.CreatedAt = DateTime.Now;
 
-            try
-            {
+            try {
                 _context.Appointments.Add(model);
-                _context.Notifications.Add(new Notification
-                {
+                _context.Notifications.Add(new Notification {
                     Message = $"New appointment requested by Owner #{ownerId} for Pet ID: {model.PetID} on {model.AppointmentDate:MMM dd, yyyy hh:mm tt}.",
                     Type = "Appointment"
                 });
@@ -359,17 +326,14 @@ namespace PurrVet.Controllers
                 _context.SaveChanges();
 
                 return Json(new { success = true, message = "Appointment added successfully!" });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
 
 
         [HttpGet]
-        public IActionResult GetAvailableTimeSlots(DateTime date)
-        {
+        public IActionResult GetAvailableTimeSlots(DateTime date) {
             var ownerId = HttpContext.Session.GetInt32("OwnerID");
             if (ownerId == null)
                 return Json(new { success = false, message = "Unauthorized. Please log in again." });
@@ -387,17 +351,14 @@ namespace PurrVet.Controllers
                 .Select(a => new TimeSpan(a.AppointmentDate.Hour, a.AppointmentDate.Minute, 0))
                 .ToList();
 
-            for (var t = start; t <= end; t = t.Add(interval))
-            {
+            for (var t = start; t <= end; t = t.Add(interval)) {
                 bool isTaken = taken.Any(x => Math.Abs((x - t).TotalMinutes) < 1);
 
-                if (isToday && DateTime.Today.Add(t) < now)
-                {
+                if (isToday && DateTime.Today.Add(t) < now) {
                     isTaken = true;
                 }
 
-                slots.Add(new
-                {
+                slots.Add(new {
                     time = DateTime.Today.Add(t).ToString("HH:mm"),
                     available = !isTaken,
                     label = isTaken ? "Not Available" : "Available"
@@ -409,8 +370,7 @@ namespace PurrVet.Controllers
 
         [HttpPost("Owner/RequestCancellation/{id}")]
         [ValidateAntiForgeryToken]
-        public IActionResult RequestCancellation(int id)
-        {
+        public IActionResult RequestCancellation(int id) {
             var appointment = _context.Appointments
                 .FirstOrDefault(a => a.AppointmentID == id);
 
@@ -432,20 +392,17 @@ namespace PurrVet.Controllers
                 .ToList();
 
             if (invalidStatuses.Any())
-                return Json(new
-                {
+                return Json(new {
                     success = false,
                     message = "This group contains appointments that cannot be cancelled."
                 });
 
-            foreach (var appt in groupAppointments)
-            {
+            foreach (var appt in groupAppointments) {
                 appt.Status = "Cancellation Requested";
                 _context.Appointments.Update(appt);
             }
 
-            _context.SystemLogs.Add(new SystemLog
-            {
+            _context.SystemLogs.Add(new SystemLog {
                 ActionType = "Update",
                 Module = "Appointment",
                 Description = $"Owner requested cancellation for group #{appointment.GroupID} ({groupAppointments.Count} appointments).",
@@ -455,16 +412,14 @@ namespace PurrVet.Controllers
 
             _context.SaveChanges();
 
-            return Json(new
-            {
+            return Json(new {
                 success = true,
                 message = $"Cancellation request sent for Group #{appointment.GroupID} ({groupAppointments.Count} appointments)."
             });
         }
 
         [HttpGet]
-        public IActionResult Add()
-        {
+        public IActionResult Add() {
             if (HttpContext.Session.GetString("UserRole") != "Owner")
                 return RedirectToAction("Login", "Account");
 
@@ -473,8 +428,7 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Add(string Name, string Type, string Breed, DateTime Birthdate, IFormFile? Photo)
-        {
+        public async Task<IActionResult> Add(string Name, string Type, string Breed, DateTime Birthdate, IFormFile? Photo) {
             if (HttpContext.Session.GetString("UserRole") != "Owner")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -482,11 +436,9 @@ namespace PurrVet.Controllers
             if (ownerId == null)
                 return Json(new { success = false, message = "Owner not found in session." });
 
-            try
-            {
+            try {
                 string? photoPath = null;
-                if (Photo != null && Photo.Length > 0)
-                {
+                if (Photo != null && Photo.Length > 0) {
                     var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "pets");
                     if (!Directory.Exists(uploadsFolder))
                         Directory.CreateDirectory(uploadsFolder);
@@ -494,12 +446,10 @@ namespace PurrVet.Controllers
                     var fileName = $"{Guid.NewGuid()}.jpg";
                     var filePath = Path.Combine(uploadsFolder, fileName);
 
-                    using (var stream = new MemoryStream())
-                    {
+                    using (var stream = new MemoryStream()) {
                         await Photo.CopyToAsync(stream);
 
-                        using (var original = System.Drawing.Image.FromStream(stream))
-                        {
+                        using (var original = System.Drawing.Image.FromStream(stream)) {
                             int side = Math.Min(original.Width, original.Height);
 
                             var cropRect = new System.Drawing.Rectangle(
@@ -508,10 +458,8 @@ namespace PurrVet.Controllers
                                 side,
                                 side);
 
-                            using (var cropped = new System.Drawing.Bitmap(500, 500))
-                            {
-                                using (var g = System.Drawing.Graphics.FromImage(cropped))
-                                {
+                            using (var cropped = new System.Drawing.Bitmap(500, 500)) {
+                                using (var g = System.Drawing.Graphics.FromImage(cropped)) {
                                     g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
                                     g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
                                     g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
@@ -530,8 +478,7 @@ namespace PurrVet.Controllers
                     photoPath = $"/uploads/pets/{fileName}";
                 }
 
-                var pet = new Pet
-                {
+                var pet = new Pet {
                     OwnerID = ownerId.Value,
                     Name = Name,
                     Type = Type,
@@ -541,13 +488,11 @@ namespace PurrVet.Controllers
                 };
 
                 _context.Pets.Add(pet);
-                _context.Notifications.Add(new Notification
-                {
+                _context.Notifications.Add(new Notification {
                     Message = $"A new pet '{pet.Name}' has been added by Owner ID:{pet.OwnerID}.",
                     Type = "Pet"
                 });
-                _context.SystemLogs.Add(new SystemLog
-                {
+                _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Create",
                     Module = "Pet",
                     Description = $"Added a Pet: {pet.PetID}, {pet.Name}",
@@ -558,16 +503,13 @@ namespace PurrVet.Controllers
                 await _context.SaveChangesAsync();
 
                 return Json(new { success = true, message = "Pet added successfully!" });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
 
         }
         [HttpGet]
-        public IActionResult Profile()
-        {
+        public IActionResult Profile() {
             var role = HttpContext.Session.GetString("UserRole");
             var userId = HttpContext.Session.GetInt32("UserID");
             var ownerId = HttpContext.Session.GetInt32("OwnerID");
@@ -611,8 +553,7 @@ namespace PurrVet.Controllers
             string Phone,
             string CurrentPassword,
             string Password,
-            string ConfirmPassword)
-        {
+            string ConfirmPassword) {
             if (HttpContext.Session.GetString("UserRole") != "Owner")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -643,8 +584,7 @@ namespace PurrVet.Controllers
             owner.Phone = Phone?.Trim();
             owner.Email = user.Email;
 
-            if (!string.IsNullOrWhiteSpace(Password))
-            {
+            if (!string.IsNullOrWhiteSpace(Password)) {
                 if (string.IsNullOrWhiteSpace(CurrentPassword))
                     return Json(new { success = false, message = "Enter your current password to change it." });
 
@@ -662,12 +602,10 @@ namespace PurrVet.Controllers
                 user.Password = hasher.HashPassword(user, Password);
             }
 
-            try
-            {
+            try {
                 _context.Users.Update(user);
                 _context.Owners.Update(owner);
-                _context.SystemLogs.Add(new SystemLog
-                {
+                _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Update",
                     Module = "Owner",
                     Description = $"Updated owner profile: {owner.Name}",
@@ -678,9 +616,7 @@ namespace PurrVet.Controllers
                 await _context.SaveChangesAsync();
 
                 return Json(new { success = true, message = "Profile updated successfully!" });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
@@ -688,8 +624,7 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditOwnerPhoto(int id, IFormFile? ProfileImage)
-        {
+        public async Task<IActionResult> EditOwnerPhoto(int id, IFormFile? ProfileImage) {
             if (HttpContext.Session.GetString("UserRole") != "Owner")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -701,10 +636,8 @@ namespace PurrVet.Controllers
             if (ProfileImage == null || ProfileImage.Length == 0)
                 return Json(new { success = false, message = "No file selected." });
 
-            try
-            {
-                if (!string.IsNullOrEmpty(user.ProfileImage))
-                {
+            try {
+                if (!string.IsNullOrEmpty(user.ProfileImage)) {
                     var oldPath = Path.Combine("wwwroot", user.ProfileImage.TrimStart('/'));
                     if (System.IO.File.Exists(oldPath))
                         System.IO.File.Delete(oldPath);
@@ -722,22 +655,19 @@ namespace PurrVet.Controllers
 
                 var newPath = $"/uploads/profiles/{fileName}";
                 user.ProfileImage = newPath;
-                owner.User.ProfileImage = newPath; 
+                owner.User.ProfileImage = newPath;
 
                 _context.Users.Update(user);
                 _context.Owners.Update(owner);
                 await _context.SaveChangesAsync();
 
                 return Json(new { success = true, message = "Profile photo updated successfully!", profileImageUrl = newPath });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
         [HttpGet]
-        public IActionResult ViewPet(int id, int page = 1, string searchQuery = "", int? categoryFilter = null)
-        {
+        public IActionResult ViewPet(int id, int page = 1, string searchQuery = "", int? categoryFilter = null) {
             if (HttpContext.Session.GetString("UserRole") != "Owner")
                 return RedirectToAction("Login", "Account");
 
@@ -777,8 +707,7 @@ namespace PurrVet.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            var vm = new PetDetailsViewModel
-            {
+            var vm = new PetDetailsViewModel {
                 Pet = pet,
                 Appointments = appointments,
                 CurrentPage = page,
@@ -792,8 +721,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpGet]
-        public IActionResult EditPet(int id)
-        {
+        public IActionResult EditPet(int id) {
             if (HttpContext.Session.GetString("UserRole") != "Owner")
                 return RedirectToAction("Login", "Account");
 
@@ -817,8 +745,7 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditPet(int id, string Name, string Type, string Breed, DateTime? Birthdate, IFormFile? Photo)
-        {
+        public async Task<IActionResult> EditPet(int id, string Name, string Type, string Breed, DateTime? Birthdate, IFormFile? Photo) {
             if (HttpContext.Session.GetString("UserRole") != "Owner")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -831,20 +758,16 @@ namespace PurrVet.Controllers
             if (string.IsNullOrWhiteSpace(Name) || string.IsNullOrWhiteSpace(Type))
                 return Json(new { success = false, message = "Name and Type are required." });
 
-            try
-            {
+            try {
                 pet.Name = Name.Trim();
                 pet.Type = Type.Trim();
                 pet.Breed = string.IsNullOrWhiteSpace(Breed) ? "N/A" : Breed.Trim();
                 if (Birthdate.HasValue) pet.Birthdate = Birthdate.Value;
 
-                if (Photo != null && Photo.Length > 0)
-                {
-                    if (!string.IsNullOrEmpty(pet.PhotoPath))
-                    {
+                if (Photo != null && Photo.Length > 0) {
+                    if (!string.IsNullOrEmpty(pet.PhotoPath)) {
                         var oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", pet.PhotoPath.TrimStart('/'));
-                        if (System.IO.File.Exists(oldPath))
-                        {
+                        if (System.IO.File.Exists(oldPath)) {
                             try { System.IO.File.Delete(oldPath); } catch { }
                         }
                     }
@@ -855,8 +778,7 @@ namespace PurrVet.Controllers
                     var fileName = $"{Guid.NewGuid()}{Path.GetExtension(Photo.FileName)}";
                     var filePath = Path.Combine(uploadsFolder, fileName);
 
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
+                    using (var stream = new FileStream(filePath, FileMode.Create)) {
                         await Photo.CopyToAsync(stream);
                     }
 
@@ -864,8 +786,7 @@ namespace PurrVet.Controllers
                 }
 
                 _context.Pets.Update(pet);
-                _context.SystemLogs.Add(new SystemLog
-                {
+                _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Update",
                     Module = "Pet",
                     Description = $"Updated pet: {pet.PetID} - {pet.Name}",
@@ -876,15 +797,12 @@ namespace PurrVet.Controllers
                 await _context.SaveChangesAsync();
 
                 return Json(new { success = true, message = "Pet updated successfully!", redirect = Url.Action("ViewPet", "Owner", new { id = pet.PetID }) });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
         [HttpGet]
-        public IActionResult PetCard(int id, int page = 1)
-        {
+        public IActionResult PetCard(int id, int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Owner")
                 return RedirectToAction("Login", "Account");
 
@@ -927,8 +845,7 @@ namespace PurrVet.Controllers
                 (DateTime.Now - pet.Birthdate).TotalDays / 30.4375
             );
 
-            return View("PetCard", new PetCardVM
-            {
+            return View("PetCard", new PetCardVM {
                 Pet = pet,
                 Records = completed,
                 PageData = pageData,
@@ -940,8 +857,7 @@ namespace PurrVet.Controllers
 
 
         [HttpGet]
-        public IActionResult DownloadPetCardPdf(int id)
-        {
+        public IActionResult DownloadPetCardPdf(int id) {
             var pet = _context.Pets
                 .Include(p => p.Owner)
                 .Include(p => p.Appointments).ThenInclude(a => a.ServiceCategory)
@@ -962,16 +878,13 @@ namespace PurrVet.Controllers
                 ? $"wwwroot{pet.PhotoPath}"
                 : "wwwroot/uploads/profiles/pet.png";
 
-            byte[] pdfBytes = QuestPDF.Fluent.Document.Create(container =>
-            {
-                container.Page(page =>
-                {
+            byte[] pdfBytes = QuestPDF.Fluent.Document.Create(container => {
+                container.Page(page => {
                     page.Size(PageSizes.A5);
                     page.Margin(15);
                     page.DefaultTextStyle(x => x.FontSize(10));
 
-                    page.Header().Column(col =>
-                    {
+                    page.Header().Column(col => {
                         col.Item()
                            .AlignCenter()
                            .Width(80)
@@ -982,12 +895,9 @@ namespace PurrVet.Controllers
                         col.Item().PaddingBottom(5).LineHorizontal(1);
                     });
 
-                    page.Content().Column(col =>
-                    {
-                        col.Item().Row(row =>
-                        {
-                            row.RelativeColumn().Column(info =>
-                            {
+                    page.Content().Column(col => {
+                        col.Item().Row(row => {
+                            row.RelativeColumn().Column(info => {
                                 info.Item().Text($"Name: {pet.Name}");
                                 info.Item().Text($"Species: {pet.Type}");
                                 info.Item().Text($"Breed: {pet.Breed}");
@@ -1012,10 +922,8 @@ namespace PurrVet.Controllers
 
                         col.Item().PaddingTop(6).LineHorizontal(1);
 
-                        col.Item().PaddingTop(6).Table(table =>
-                        {
-                            table.ColumnsDefinition(cols =>
-                            {
+                        col.Item().PaddingTop(6).Table(table => {
+                            table.ColumnsDefinition(cols => {
                                 cols.RelativeColumn(1);
                                 cols.RelativeColumn(0.8f);
                                 cols.RelativeColumn(1.2f);
@@ -1024,8 +932,7 @@ namespace PurrVet.Controllers
                                 cols.RelativeColumn(1);
                             });
 
-                            table.Header(h =>
-                            {
+                            table.Header(h => {
                                 h.Cell().Text("Date").SemiBold();
                                 h.Cell().Text("Wt.").SemiBold();
                                 h.Cell().Text("Vaccination").SemiBold();
@@ -1034,8 +941,7 @@ namespace PurrVet.Controllers
                                 h.Cell().Text("Next").SemiBold();
                             });
 
-                            foreach (var r in records)
-                            {
+                            foreach (var r in records) {
                                 table.Cell().Text(r.AppointmentDate.ToString("MM/dd/yyyy"));
                                 table.Cell().Text(r.Notes?.Split("|")?[0] ?? "");
 
@@ -1063,8 +969,7 @@ namespace PurrVet.Controllers
 
             return File(pdfBytes, "application/pdf", $"PetCard_{pet.Name}_{DateTime.Now:yyyyMMdd}.pdf");
         }
-        public JsonResult GetOwnerNotifications()
-        {
+        public JsonResult GetOwnerNotifications() {
             var userId = HttpContext.Session.GetInt32("UserID");
             if (userId == null)
                 return Json(new { notifications = new List<object>(), totalUnread = 0 });
@@ -1075,8 +980,7 @@ namespace PurrVet.Controllers
             var notifications = query
                 .OrderByDescending(n => n.CreatedAt)
                 .Take(10)
-                .Select(n => new
-                {
+                .Select(n => new {
                     notificationID = n.NotificationID,
                     message = n.Message,
                     type = n.Type,
@@ -1088,16 +992,14 @@ namespace PurrVet.Controllers
 
             var unreadCount = query.Count(n => !n.IsRead);
 
-            return Json(new
-            {
+            return Json(new {
                 notifications,
                 totalUnread = unreadCount
             });
         }
 
         [HttpPost]
-        public IActionResult MarkAllOwnerNotificationsRead()
-        {
+        public IActionResult MarkAllOwnerNotificationsRead() {
             var userId = HttpContext.Session.GetInt32("UserID");
             if (userId == null) return Json(new { success = false, message = "User not found" });
 
@@ -1117,8 +1019,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpPost]
-        public IActionResult MarkOwnerNotificationRead(int id)
-        {
+        public IActionResult MarkOwnerNotificationRead(int id) {
             var userId = HttpContext.Session.GetInt32("UserID");
             var notif = _context.Notifications
                 .FirstOrDefault(n => n.NotificationID == id &&
@@ -1133,8 +1034,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpGet]
-        public IActionResult OwnerNotification(string typeFilter = "All", string statusFilter = "All", string searchQuery = "", int page = 1)
-        {
+        public IActionResult OwnerNotification(string typeFilter = "All", string statusFilter = "All", string searchQuery = "", int page = 1) {
             var userId = HttpContext.Session.GetInt32("UserID");
             if (userId == null) return RedirectToAction("Login", "Account");
 
@@ -1146,8 +1046,7 @@ namespace PurrVet.Controllers
             if (!string.IsNullOrEmpty(typeFilter) && typeFilter != "All")
                 query = query.Where(n => n.Type == typeFilter);
 
-            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All") {
                 if (statusFilter == "Read") query = query.Where(n => n.IsRead);
                 else if (statusFilter == "Unread") query = query.Where(n => !n.IsRead);
             }
@@ -1162,8 +1061,7 @@ namespace PurrVet.Controllers
                 .OrderByDescending(n => n.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(n => new NotificationViewModel
-                {
+                .Select(n => new NotificationViewModel {
                     NotificationID = n.NotificationID,
                     Message = n.Message,
                     Type = n.Type,
@@ -1173,8 +1071,7 @@ namespace PurrVet.Controllers
                 })
                 .ToList();
 
-            var model = new NotificationListViewModel
-            {
+            var model = new NotificationListViewModel {
                 Notifications = notifications,
                 TypeFilter = typeFilter,
                 StatusFilter = statusFilter,

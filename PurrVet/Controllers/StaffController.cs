@@ -1,43 +1,29 @@
-﻿using System.Drawing;
-using System.Globalization;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using CsvHelper;
+﻿using CsvHelper;
 using CsvHelper.Configuration;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
-using Microsoft.Graph.Models;
-using Microsoft.Graph.Models.TermStore;
-using Microsoft.Identity.Web;
 using PurrVet.Models;
 using PurrVet.Services;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
-using QuestPDF.Infrastructure;
-using GraphUser = Microsoft.Graph.Models.User;
+using System.Globalization;
+using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using PurrVetUser = PurrVet.Models.User;
 
-namespace PurrVet.Controllers
-{
-    public class StaffController : Controller
-    {
+namespace PurrVet.Controllers {
+    public class StaffController : Controller {
         private readonly GraphServiceClient _graphServiceClient;
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _hostEnvironment;
         private readonly SmsReminderService _smsService;
         private readonly EmailService _emailService;
 
-        public StaffController(ApplicationDbContext context, GraphServiceClient graphServiceClient, IWebHostEnvironment hostEnvironment, SmsReminderService smsService, EmailService emailService)
-        {
+        public StaffController(ApplicationDbContext context, GraphServiceClient graphServiceClient, IWebHostEnvironment hostEnvironment, SmsReminderService smsService, EmailService emailService) {
             _context = context;
             _graphServiceClient = graphServiceClient;
             _hostEnvironment = hostEnvironment;
@@ -45,13 +31,11 @@ namespace PurrVet.Controllers
             _emailService = emailService;
         }
         [HttpGet]
-        public IActionResult Dashboard()
-        {
+        public IActionResult Dashboard() {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
-            var model = new DashboardViewModel
-            {
+            var model = new DashboardViewModel {
                 TotalUsers = _context.Users.Count(),
                 TotalPets = _context.Pets.Count(),
                 TotalAppointments = _context.Appointments.Count(),
@@ -63,14 +47,11 @@ namespace PurrVet.Controllers
             return View(model);
         }
         [HttpGet]
-        public JsonResult GetMonthlyTotals(string type, int year)
-        {
+        public JsonResult GetMonthlyTotals(string type, int year) {
             var monthlyData = Enumerable.Range(1, 12)
-                .Select(m => new
-                {
+                .Select(m => new {
                     Month = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(m),
-                    Count = type switch
-                    {
+                    Count = type switch {
                         "Users" => _context.Users.Count(u => u.CreatedAt.Year == year && u.CreatedAt.Month == m),
                         "Appointments" => _context.Appointments.Count(a => a.AppointmentDate.Year == year && a.AppointmentDate.Month == m),
                         "Pets" => _context.Pets.Count(p => p.CreatedAt.Year == year && p.CreatedAt.Month == m),
@@ -81,10 +62,8 @@ namespace PurrVet.Controllers
             return Json(monthlyData);
         }
         [HttpGet]
-        public JsonResult GetTotalsData(int year)
-        {
-            var data = new
-            {
+        public JsonResult GetTotalsData(int year) {
+            var data = new {
                 users = year == 0 ? _context.Users.Count() : _context.Users.Count(u => u.CreatedAt.Year == year),
                 pets = year == 0 ? _context.Pets.Count() : _context.Pets.Count(p => p.CreatedAt.Year == year),
                 appointments = year == 0 ? _context.Appointments.Count() : _context.Appointments.Count(a => a.CreatedAt.Year == year)
@@ -94,8 +73,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpGet]
-        public IActionResult Users(string searchQuery = "", string sortField = "", string sortOrder = "", string statusFilter = "", int page = 1)
-        {
+        public IActionResult Users(string searchQuery = "", string sortField = "", string sortOrder = "", string statusFilter = "", int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -107,19 +85,16 @@ namespace PurrVet.Controllers
                 sortOrder = "asc";
 
             var query = _context.Users.AsQueryable();
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
+            if (!string.IsNullOrEmpty(searchQuery)) {
                 query = query.Where(u =>
                     u.FirstName.Contains(searchQuery) ||
                     u.LastName.Contains(searchQuery) ||
                     u.Email.Contains(searchQuery));
             }
-            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All") {
                 query = query.Where(u => u.Status == statusFilter);
             }
-            query = (sortField, sortOrder) switch
-            {
+            query = (sortField, sortOrder) switch {
                 ("id", "desc") => query.OrderByDescending(u => u.UserID),
                 ("id", "asc") => query.OrderBy(u => u.UserID),
 
@@ -146,8 +121,7 @@ namespace PurrVet.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            var viewModel = new UserListViewModel
-            {
+            var viewModel = new UserListViewModel {
                 Users = users,
                 CurrentPage = page,
                 TotalPages = totalPages,
@@ -163,8 +137,7 @@ namespace PurrVet.Controllers
 
 
         [HttpGet]
-        public IActionResult AddUser()
-        {
+        public IActionResult AddUser() {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -173,8 +146,7 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddUser(PurrVetUser model, IFormFile? ProfileImage)
-        {
+        public async Task<IActionResult> AddUser(PurrVetUser model, IFormFile? ProfileImage) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -183,8 +155,7 @@ namespace PurrVet.Controllers
                 string.IsNullOrWhiteSpace(model.Email) ||
                 string.IsNullOrWhiteSpace(model.Phone) ||
                 string.IsNullOrWhiteSpace(model.Password) ||
-                string.IsNullOrWhiteSpace(model.Type))
-            {
+                string.IsNullOrWhiteSpace(model.Type)) {
                 return Json(new { success = false, message = "All fields are required." });
             }
 
@@ -194,14 +165,12 @@ namespace PurrVet.Controllers
             if (model.Phone.Length > 12)
                 return Json(new { success = false, message = "Phone number cannot exceed 12 digits." });
 
-            try
-            {
+            try {
                 var hasher = new PasswordHasher<PurrVetUser>();
                 model.Password = hasher.HashPassword(model, model.Password);
                 model.Status = "Active";
 
-                if (ProfileImage != null && ProfileImage.Length > 0)
-                {
+                if (ProfileImage != null && ProfileImage.Length > 0) {
                     var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profiles");
                     if (!Directory.Exists(uploadsFolder))
                         Directory.CreateDirectory(uploadsFolder);
@@ -209,25 +178,20 @@ namespace PurrVet.Controllers
                     var fileName = $"{Guid.NewGuid()}{Path.GetExtension(ProfileImage.FileName)}";
                     var filePath = Path.Combine(uploadsFolder, fileName);
 
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
+                    using (var stream = new FileStream(filePath, FileMode.Create)) {
                         await ProfileImage.CopyToAsync(stream);
                     }
 
                     model.ProfileImage = $"/uploads/profiles/{fileName}";
-                }
-                else
-                {
+                } else {
                     model.ProfileImage = "/images/default-profile.png";
                 }
 
                 _context.Users.Add(model);
                 await _context.SaveChangesAsync();
 
-                if (model.Type == "Owner")
-                {
-                    var owner = new Owner
-                    {
+                if (model.Type == "Owner") {
+                    var owner = new Owner {
                         UserID = model.UserID,
                         Name = $"{model.FirstName} {model.LastName}",
                         Email = model.Email,
@@ -238,16 +202,14 @@ namespace PurrVet.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                _context.Notifications.Add(new Notification
-                {
+                _context.Notifications.Add(new Notification {
                     Message = $"A new user '{model.FirstName} {model.LastName}' has been added.",
                     Type = "User",
                     RedirectUrl = $"/Staff/EditUser/{model.UserID}",
                     CreatedAt = DateTime.Now,
                     IsRead = false
                 });
-                _context.SystemLogs.Add(new SystemLog
-                {
+                _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Create",
                     Module = "User",
                     Description = $"Created a new user: {model.FirstName} {model.LastName}",
@@ -258,17 +220,14 @@ namespace PurrVet.Controllers
                 await _context.SaveChangesAsync();
 
                 return Json(new { success = true, message = "User added successfully!" });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
 
 
         [HttpGet]
-        public IActionResult EditUser(int id)
-        {
+        public IActionResult EditUser(int id) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -283,10 +242,9 @@ namespace PurrVet.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditUser(int id, string FirstName, string LastName, string Email,
                                            string Phone, string Password, string ConfirmPassword,
-                                           string Type, string Status, IFormFile? ProfileImage)
-        {
+                                           string Type, string Status, IFormFile? ProfileImage) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
-                return Json(new { success = false, message = "Unauthorized access." }); 
+                return Json(new { success = false, message = "Unauthorized access." });
 
             var user = _context.Users.FirstOrDefault(u => u.UserID == id);
             if (user == null)
@@ -297,8 +255,7 @@ namespace PurrVet.Controllers
                 string.IsNullOrWhiteSpace(Email) ||
                 string.IsNullOrWhiteSpace(Phone) ||
                 string.IsNullOrWhiteSpace(Type) ||
-                string.IsNullOrWhiteSpace(Status))
-            {
+                string.IsNullOrWhiteSpace(Status)) {
                 return Json(new { success = false, message = "All fields are required." });
             }
 
@@ -312,8 +269,7 @@ namespace PurrVet.Controllers
             user.Type = Type;
             user.Status = Status;
 
-            if (!string.IsNullOrWhiteSpace(Password))
-            {
+            if (!string.IsNullOrWhiteSpace(Password)) {
                 if (Password != ConfirmPassword)
                     return Json(new { success = false, message = "Passwords do not match." });
 
@@ -321,10 +277,8 @@ namespace PurrVet.Controllers
                 user.Password = hasher.HashPassword(user, Password);
             }
 
-            if (ProfileImage != null && ProfileImage.Length > 0)
-            {
-                if (!string.IsNullOrEmpty(user.ProfileImage))
-                {
+            if (ProfileImage != null && ProfileImage.Length > 0) {
+                if (!string.IsNullOrEmpty(user.ProfileImage)) {
                     var oldPath = Path.Combine("wwwroot", user.ProfileImage.TrimStart('/'));
                     if (System.IO.File.Exists(oldPath))
                         System.IO.File.Delete(oldPath);
@@ -337,19 +291,16 @@ namespace PurrVet.Controllers
                 var fileName = $"{Guid.NewGuid()}{Path.GetExtension(ProfileImage.FileName)}";
                 var filePath = Path.Combine(uploadsFolder, fileName);
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
+                using (var stream = new FileStream(filePath, FileMode.Create)) {
                     await ProfileImage.CopyToAsync(stream);
                 }
 
                 user.ProfileImage = $"/uploads/profiles/{fileName}";
             }
 
-            try
-            {
+            try {
                 _context.Users.Update(user);
-                _context.SystemLogs.Add(new SystemLog
-                {
+                _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Update",
                     Module = "User",
                     Description = $"Updated user: {user.FirstName} {user.LastName}",
@@ -359,16 +310,13 @@ namespace PurrVet.Controllers
 
                 await _context.SaveChangesAsync();
                 return Json(new { success = true, message = "User updated successfully!" });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
 
         [HttpGet]
-        public IActionResult Appointments()
-        {
+        public IActionResult Appointments() {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -383,8 +331,7 @@ namespace PurrVet.Controllers
             return View(appointments);
         }
         [HttpGet]
-        public IActionResult GetAppointmentsByGroup(int groupId)
-        {
+        public IActionResult GetAppointmentsByGroup(int groupId) {
             var list = _context.Appointments
                 .Where(a => a.GroupID == groupId && a.Status != "Completed")
                 .Include(a => a.Pet)
@@ -404,8 +351,7 @@ namespace PurrVet.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SendReminderAgain([FromBody] ReminderRequest req)
-        {
+        public async Task<IActionResult> SendReminderAgain([FromBody] ReminderRequest req) {
             var appointment = _context.Appointments
                 .Include(a => a.Pet)
                     .ThenInclude(p => p.Owner)
@@ -415,8 +361,7 @@ namespace PurrVet.Controllers
             if (appointment == null)
                 return Json(new { success = false, message = "Appointment not found." });
 
-            if (appointment.ReminderCounterDate?.Date != DateTime.Today)
-            {
+            if (appointment.ReminderCounterDate?.Date != DateTime.Today) {
                 appointment.SmsSentToday = 0;
                 appointment.EmailSentToday = 0;
                 appointment.ReminderCounterDate = DateTime.Today;
@@ -424,8 +369,7 @@ namespace PurrVet.Controllers
 
             var now = DateTime.Now;
 
-            if (req.Channel.Contains("sms"))
-            {
+            if (req.Channel.Contains("sms")) {
                 if (appointment.LastSmsSentAt > now.AddHours(-6))
                     return Json(new { success = false, message = "SMS reminder can only be resent every 6 hours." });
 
@@ -433,8 +377,7 @@ namespace PurrVet.Controllers
                     return Json(new { success = false, message = "SMS reminder limit reached (3 per day)." });
             }
 
-            if (req.Channel.Contains("email"))
-            {
+            if (req.Channel.Contains("email")) {
                 if (appointment.LastEmailSentAt > now.AddHours(-1))
                     return Json(new { success = false, message = "Email reminder can only be resent every hour." });
 
@@ -442,8 +385,7 @@ namespace PurrVet.Controllers
                     return Json(new { success = false, message = "Email reminder limit reached (5 per day)." });
             }
 
-            try
-            {
+            try {
                 var phone = appointment.Pet?.Owner?.Phone;
                 var email = appointment.Pet?.Owner?.Email;
                 var petName = appointment.Pet?.Name ?? "your pet";
@@ -456,27 +398,21 @@ namespace PurrVet.Controllers
                 bool smsAttempted = false;
                 bool smsSent = false;
                 bool emailSent = false;
-                if (req.Channel.Contains("sms") && !string.IsNullOrEmpty(phone))
-                {
+                if (req.Channel.Contains("sms") && !string.IsNullOrEmpty(phone)) {
                     smsAttempted = true;
                     smsSent = await _smsService.ScheduleReminder(phone, now.AddMinutes(1), smsMessage);
 
-                    if (smsSent)
-                    {
+                    if (smsSent) {
                         appointment.LastSmsSentAt = now;
                         appointment.SmsSentToday++;
-                    }
-                    else if (req.Channel == "sms")
-                    {
-                        return Json(new
-                        {
+                    } else if (req.Channel == "sms") {
+                        return Json(new {
                             success = false,
                             message = "SMS failed to send. Please check SMS credits."
                         });
                     }
                 }
-                if (req.Channel.Contains("email") && !string.IsNullOrEmpty(email))
-                {
+                if (req.Channel.Contains("email") && !string.IsNullOrEmpty(email)) {
                     var subject = $"Reminder: {petName}'s {category} appointment";
                     var htmlBody = $@"
                 <p>Hi {appointment.Pet?.Owner?.Name ?? "Pet Parent"},</p>
@@ -495,29 +431,23 @@ namespace PurrVet.Controllers
                 }
 
                 if (req.Channel.Contains("sms") && string.IsNullOrEmpty(phone)
-                    && req.Channel == "sms")
-                {
-                    return Json(new
-                    {
+                    && req.Channel == "sms") {
+                    return Json(new {
                         success = false,
                         message = "No phone number available for SMS reminder."
                     });
                 }
 
                 if (req.Channel.Contains("email") && string.IsNullOrEmpty(email)
-                    && req.Channel == "email")
-                {
-                    return Json(new
-                    {
+                    && req.Channel == "email") {
+                    return Json(new {
                         success = false,
                         message = "No email address available for Email reminder."
                     });
                 }
 
-                if (!smsSent && !emailSent)
-                {
-                    return Json(new
-                    {
+                if (!smsSent && !emailSent) {
+                    return Json(new {
                         success = false,
                         message = "Reminder could not be sent using the selected options."
                     });
@@ -526,8 +456,7 @@ namespace PurrVet.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return Json(new
-                {
+                return Json(new {
                     success = true,
                     message =
                         smsSent && emailSent ? "SMS and Email reminders sent successfully."
@@ -535,25 +464,20 @@ namespace PurrVet.Controllers
                       : smsSent ? "SMS reminder sent successfully."
                       : "Email reminder sent successfully."
                 });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = ex.Message });
             }
         }
 
-        public class ReminderRequest
-        {
+        public class ReminderRequest {
             public int AppointmentId { get; set; }
             public string Channel { get; set; }
         }
 
 
 
-        public async Task<IActionResult> MarkAsCompleted([FromBody] List<AppointmentCompleteDTO> data)
-        {
-            foreach (var item in data)
-            {
+        public async Task<IActionResult> MarkAsCompleted([FromBody] List<AppointmentCompleteDTO> data) {
+            foreach (var item in data) {
                 var appt = await _context.Appointments.FindAsync(item.id);
                 if (appt == null) continue;
 
@@ -566,8 +490,7 @@ namespace PurrVet.Controllers
             return Json(new { success = true });
         }
 
-        public class AppointmentCompleteDTO
-        {
+        public class AppointmentCompleteDTO {
             public int id { get; set; }
             public string administeredBy { get; set; }
             public DateTime? dueDate { get; set; }
@@ -581,8 +504,7 @@ namespace PurrVet.Controllers
       string statusFilter = "",
       string sortField = "date",
       string sortOrder = "asc",
-      int page = 1)
-        {
+      int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -596,14 +518,11 @@ namespace PurrVet.Controllers
                 .Include(a => a.Pet).ThenInclude(p => p.Owner)
                 .ToList();
 
-            if (pastAppointments.Any())
-            {
-                foreach (var appt in pastAppointments)
-                {
+            if (pastAppointments.Any()) {
+                foreach (var appt in pastAppointments) {
                     appt.Status = "Missed";
 
-                    _context.Notifications.Add(new Notification
-                    {
+                    _context.Notifications.Add(new Notification {
                         Message = $"Appointment for {appt.Pet?.Name ?? "a pet"} scheduled on {appt.AppointmentDate:MMM dd, yyyy hh:mm tt} was marked as missed.",
                         Type = "Appointment",
                         RedirectUrl = $"/Admin/ViewPet/{appt.Pet?.PetID}",
@@ -611,8 +530,7 @@ namespace PurrVet.Controllers
                         IsRead = false
                     });
 
-                    _context.SystemLogs.Add(new SystemLog
-                    {
+                    _context.SystemLogs.Add(new SystemLog {
                         ActionType = "Auto-Mark Missed",
                         PerformedBy = "System",
                         Timestamp = DateTime.Now,
@@ -629,21 +547,18 @@ namespace PurrVet.Controllers
                 .Include(a => a.ServiceSubtype)
                 .AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(searchQuery))
-            {
+            if (!string.IsNullOrWhiteSpace(searchQuery)) {
                 query = query.Where(a =>
                     a.Pet.Name.Contains(searchQuery) ||
                     a.ServiceCategory.ServiceType.Contains(searchQuery) ||
                     a.ServiceSubtype.ServiceSubType.Contains(searchQuery));
             }
 
-            if (!string.IsNullOrWhiteSpace(statusFilter) && statusFilter != "All")
-            {
+            if (!string.IsNullOrWhiteSpace(statusFilter) && statusFilter != "All") {
                 query = query.Where(a => a.Status == statusFilter);
             }
 
-            query = sortField.ToLower() switch
-            {
+            query = sortField.ToLower() switch {
                 "id" => sortOrder == "desc"
                     ? query.OrderByDescending(a => a.AppointmentID)
                     : query.OrderBy(a => a.AppointmentID),
@@ -668,8 +583,7 @@ namespace PurrVet.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            var viewModel = new AppointmentListViewModel
-            {
+            var viewModel = new AppointmentListViewModel {
                 Appointments = pagedAppointments,
                 CurrentPage = page,
                 TotalPages = totalPages,
@@ -685,8 +599,7 @@ namespace PurrVet.Controllers
 
 
         [HttpGet]
-        public IActionResult AppointmentDetails(int groupId)
-        {
+        public IActionResult AppointmentDetails(int groupId) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -703,8 +616,7 @@ namespace PurrVet.Controllers
             if (group == null)
                 return NotFound();
 
-            var viewModel = new AppointmentGroupViewModel
-            {
+            var viewModel = new AppointmentGroupViewModel {
                 GroupID = group.GroupID,
                 Appointments = group.Appointments.ToList()
             };
@@ -713,8 +625,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpGet]
-        public IActionResult Professional_Fee(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1)
-        {
+        public IActionResult Professional_Fee(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -728,21 +639,18 @@ namespace PurrVet.Controllers
                 .Where(a => a.CategoryID == 1)
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
+            if (!string.IsNullOrEmpty(searchQuery)) {
                 query = query.Where(a =>
                     a.Pet.Name.Contains(searchQuery) ||
                     (a.ServiceSubtype != null && a.ServiceSubtype.ServiceSubType.Contains(searchQuery)) ||
                     (a.ServiceCategory != null && a.ServiceCategory.ServiceType.Contains(searchQuery)));
             }
 
-            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All") {
                 query = query.Where(a => a.Status == statusFilter);
             }
 
-            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All") {
                 query = query.Where(a => a.ServiceSubtype.ServiceSubType == subtypeFilter);
             }
             query = sortOrder == "asc"
@@ -762,8 +670,7 @@ namespace PurrVet.Controllers
                 .Distinct()
                 .ToList();
 
-            var viewModel = new ProfessionalListViewModel
-            {
+            var viewModel = new ProfessionalListViewModel {
                 ProfessionalAppointments = professionalAppointments,
                 CurrentPage = page,
                 TotalPages = totalPages,
@@ -779,8 +686,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpGet]
-        public IActionResult Vaccination(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1)
-        {
+        public IActionResult Vaccination(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -794,21 +700,18 @@ namespace PurrVet.Controllers
                 .Where(a => a.CategoryID == 2)
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
+            if (!string.IsNullOrEmpty(searchQuery)) {
                 query = query.Where(a =>
                     a.Pet.Name.Contains(searchQuery) ||
                     (a.ServiceSubtype != null && a.ServiceSubtype.ServiceSubType.Contains(searchQuery)) ||
                     (a.ServiceCategory != null && a.ServiceCategory.ServiceType.Contains(searchQuery)));
             }
 
-            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All") {
                 query = query.Where(a => a.Status == statusFilter);
             }
 
-            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All") {
                 query = query.Where(a => a.ServiceSubtype.ServiceSubType == subtypeFilter);
             }
             query = sortOrder == "asc"
@@ -828,8 +731,7 @@ namespace PurrVet.Controllers
                 .Distinct()
                 .ToList();
 
-            var viewModel = new VaccinationListViewModel
-            {
+            var viewModel = new VaccinationListViewModel {
                 Vaccination = vaccinationAppointments,
                 CurrentPage = page,
                 TotalPages = totalPages,
@@ -844,8 +746,7 @@ namespace PurrVet.Controllers
             return View(viewModel);
         }
         [HttpGet]
-        public IActionResult Deworming_Preventives(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1)
-        {
+        public IActionResult Deworming_Preventives(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -859,21 +760,18 @@ namespace PurrVet.Controllers
                 .Where(a => a.CategoryID == 3)
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
+            if (!string.IsNullOrEmpty(searchQuery)) {
                 query = query.Where(a =>
                     a.Pet.Name.Contains(searchQuery) ||
                     (a.ServiceSubtype != null && a.ServiceSubtype.ServiceSubType.Contains(searchQuery)) ||
                     (a.ServiceCategory != null && a.ServiceCategory.ServiceType.Contains(searchQuery)));
             }
 
-            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All") {
                 query = query.Where(a => a.Status == statusFilter);
             }
 
-            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All") {
                 query = query.Where(a => a.ServiceSubtype.ServiceSubType == subtypeFilter);
             }
             query = sortOrder == "asc"
@@ -893,8 +791,7 @@ namespace PurrVet.Controllers
                 .Distinct()
                 .ToList();
 
-            var viewModel = new DewormingListViewModel
-            {
+            var viewModel = new DewormingListViewModel {
                 Deworming = dewormingAppointments,
                 CurrentPage = page,
                 TotalPages = totalPages,
@@ -909,8 +806,7 @@ namespace PurrVet.Controllers
             return View(viewModel);
         }
         [HttpGet]
-        public IActionResult Diagnostics_Laboratory(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1)
-        {
+        public IActionResult Diagnostics_Laboratory(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -924,21 +820,18 @@ namespace PurrVet.Controllers
                 .Where(a => a.CategoryID == 4)
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
+            if (!string.IsNullOrEmpty(searchQuery)) {
                 query = query.Where(a =>
                     a.Pet.Name.Contains(searchQuery) ||
                     (a.ServiceSubtype != null && a.ServiceSubtype.ServiceSubType.Contains(searchQuery)) ||
                     (a.ServiceCategory != null && a.ServiceCategory.ServiceType.Contains(searchQuery)));
             }
 
-            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All") {
                 query = query.Where(a => a.Status == statusFilter);
             }
 
-            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All") {
                 query = query.Where(a => a.ServiceSubtype.ServiceSubType == subtypeFilter);
             }
             query = sortOrder == "asc"
@@ -958,8 +851,7 @@ namespace PurrVet.Controllers
                 .Distinct()
                 .ToList();
 
-            var viewModel = new DiagnosticsLaboratoryListViewModel
-            {
+            var viewModel = new DiagnosticsLaboratoryListViewModel {
                 DiagnosticsLaboratory = diagnosticslaboratoryAppointments,
                 CurrentPage = page,
                 TotalPages = totalPages,
@@ -975,8 +867,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpGet]
-        public IActionResult Medication_Treatment(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1)
-        {
+        public IActionResult Medication_Treatment(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -990,21 +881,18 @@ namespace PurrVet.Controllers
                 .Where(a => a.CategoryID == 5)
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
+            if (!string.IsNullOrEmpty(searchQuery)) {
                 query = query.Where(a =>
                     a.Pet.Name.Contains(searchQuery) ||
                     (a.ServiceSubtype != null && a.ServiceSubtype.ServiceSubType.Contains(searchQuery)) ||
                     (a.ServiceCategory != null && a.ServiceCategory.ServiceType.Contains(searchQuery)));
             }
 
-            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All") {
                 query = query.Where(a => a.Status == statusFilter);
             }
 
-            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All") {
                 query = query.Where(a => a.ServiceSubtype.ServiceSubType == subtypeFilter);
             }
             query = sortOrder == "asc"
@@ -1024,8 +912,7 @@ namespace PurrVet.Controllers
                 .Distinct()
                 .ToList();
 
-            var viewModel = new MedicationTreatmentListViewModel
-            {
+            var viewModel = new MedicationTreatmentListViewModel {
                 MedicationTreatment = medicationtreatmentAppointments,
                 CurrentPage = page,
                 TotalPages = totalPages,
@@ -1040,8 +927,7 @@ namespace PurrVet.Controllers
             return View(viewModel);
         }
         [HttpGet]
-        public IActionResult Surgery(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1)
-        {
+        public IActionResult Surgery(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -1055,21 +941,18 @@ namespace PurrVet.Controllers
                 .Where(a => a.CategoryID == 6)
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
+            if (!string.IsNullOrEmpty(searchQuery)) {
                 query = query.Where(a =>
                     a.Pet.Name.Contains(searchQuery) ||
                     (a.ServiceSubtype != null && a.ServiceSubtype.ServiceSubType.Contains(searchQuery)) ||
                     (a.ServiceCategory != null && a.ServiceCategory.ServiceType.Contains(searchQuery)));
             }
 
-            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All") {
                 query = query.Where(a => a.Status == statusFilter);
             }
 
-            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All") {
                 query = query.Where(a => a.ServiceSubtype.ServiceSubType == subtypeFilter);
             }
             query = sortOrder == "asc"
@@ -1089,8 +972,7 @@ namespace PurrVet.Controllers
                 .Distinct()
                 .ToList();
 
-            var viewModel = new SurgeryListViewModel
-            {
+            var viewModel = new SurgeryListViewModel {
                 Surgery = surgeryAppointments,
                 CurrentPage = page,
                 TotalPages = totalPages,
@@ -1106,8 +988,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpGet]
-        public IActionResult Grooming_Wellness(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1)
-        {
+        public IActionResult Grooming_Wellness(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -1121,21 +1002,18 @@ namespace PurrVet.Controllers
                 .Where(a => a.CategoryID == 7)
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
+            if (!string.IsNullOrEmpty(searchQuery)) {
                 query = query.Where(a =>
                     a.Pet.Name.Contains(searchQuery) ||
                     (a.ServiceSubtype != null && a.ServiceSubtype.ServiceSubType.Contains(searchQuery)) ||
                     (a.ServiceCategory != null && a.ServiceCategory.ServiceType.Contains(searchQuery)));
             }
 
-            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All") {
                 query = query.Where(a => a.Status == statusFilter);
             }
 
-            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All") {
                 query = query.Where(a => a.ServiceSubtype.ServiceSubType == subtypeFilter);
             }
             query = sortOrder == "asc"
@@ -1155,8 +1033,7 @@ namespace PurrVet.Controllers
                 .Distinct()
                 .ToList();
 
-            var viewModel = new GroomingWellnessListViewModel
-            {
+            var viewModel = new GroomingWellnessListViewModel {
                 GroomingWellness = groomingwellnessAppointments,
                 CurrentPage = page,
                 TotalPages = totalPages,
@@ -1171,8 +1048,7 @@ namespace PurrVet.Controllers
             return View(viewModel);
         }
         [HttpGet]
-        public IActionResult Confinement_Hospitalization(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1)
-        {
+        public IActionResult Confinement_Hospitalization(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -1186,21 +1062,18 @@ namespace PurrVet.Controllers
                 .Where(a => a.CategoryID == 8)
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
+            if (!string.IsNullOrEmpty(searchQuery)) {
                 query = query.Where(a =>
                     a.Pet.Name.Contains(searchQuery) ||
                     (a.ServiceSubtype != null && a.ServiceSubtype.ServiceSubType.Contains(searchQuery)) ||
                     (a.ServiceCategory != null && a.ServiceCategory.ServiceType.Contains(searchQuery)));
             }
 
-            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All") {
                 query = query.Where(a => a.Status == statusFilter);
             }
 
-            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All") {
                 query = query.Where(a => a.ServiceSubtype.ServiceSubType == subtypeFilter);
             }
             query = sortOrder == "asc"
@@ -1220,8 +1093,7 @@ namespace PurrVet.Controllers
                 .Distinct()
                 .ToList();
 
-            var viewModel = new ConfinementHospitalizationListViewModel
-            {
+            var viewModel = new ConfinementHospitalizationListViewModel {
                 ConfinementHospitalization = confinementhospitalizationAppointments,
                 CurrentPage = page,
                 TotalPages = totalPages,
@@ -1237,8 +1109,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpGet]
-        public IActionResult SpecialtyTests(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1)
-        {
+        public IActionResult SpecialtyTests(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -1252,21 +1123,18 @@ namespace PurrVet.Controllers
                 .Where(a => a.CategoryID == 9)
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
+            if (!string.IsNullOrEmpty(searchQuery)) {
                 query = query.Where(a =>
                     a.Pet.Name.Contains(searchQuery) ||
                     (a.ServiceSubtype != null && a.ServiceSubtype.ServiceSubType.Contains(searchQuery)) ||
                     (a.ServiceCategory != null && a.ServiceCategory.ServiceType.Contains(searchQuery)));
             }
 
-            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All") {
                 query = query.Where(a => a.Status == statusFilter);
             }
 
-            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All") {
                 query = query.Where(a => a.ServiceSubtype.ServiceSubType == subtypeFilter);
             }
             query = sortOrder == "asc"
@@ -1286,8 +1154,7 @@ namespace PurrVet.Controllers
                 .Distinct()
                 .ToList();
 
-            var viewModel = new SpecialtyTestsListViewModel
-            {
+            var viewModel = new SpecialtyTestsListViewModel {
                 SpecialtyTest = specialtytestAppointments,
                 CurrentPage = page,
                 TotalPages = totalPages,
@@ -1302,8 +1169,7 @@ namespace PurrVet.Controllers
             return View(viewModel);
         }
         [HttpGet]
-        public IActionResult EndLife(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1)
-        {
+        public IActionResult EndLife(string searchQuery = "", string statusFilter = "", string subtypeFilter = "", string sortOrder = "", int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -1317,21 +1183,18 @@ namespace PurrVet.Controllers
                 .Where(a => a.CategoryID == 10)
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
+            if (!string.IsNullOrEmpty(searchQuery)) {
                 query = query.Where(a =>
                     a.Pet.Name.Contains(searchQuery) ||
                     (a.ServiceSubtype != null && a.ServiceSubtype.ServiceSubType.Contains(searchQuery)) ||
                     (a.ServiceCategory != null && a.ServiceCategory.ServiceType.Contains(searchQuery)));
             }
 
-            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All") {
                 query = query.Where(a => a.Status == statusFilter);
             }
 
-            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(subtypeFilter) && subtypeFilter != "All") {
                 query = query.Where(a => a.ServiceSubtype.ServiceSubType == subtypeFilter);
             }
             query = sortOrder == "asc"
@@ -1351,8 +1214,7 @@ namespace PurrVet.Controllers
                 .Distinct()
                 .ToList();
 
-            var viewModel = new EndLifeListViewModel
-            {
+            var viewModel = new EndLifeListViewModel {
                 EndLife = endLlifeAppointments,
                 CurrentPage = page,
                 TotalPages = totalPages,
@@ -1367,20 +1229,17 @@ namespace PurrVet.Controllers
             return View(viewModel);
         }
         [HttpGet]
-        public IActionResult AddAppointment()
-        {
+        public IActionResult AddAppointment() {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
             ViewBag.Pets = _context.Pets
                 .Include(p => p.Owner)
-                .Select(p => new
-                {
+                .Select(p => new {
                     p.PetID,
                     p.Name,
                     p.Type,
-                    Owner = new
-                    {
+                    Owner = new {
                         p.Owner.Name,
                         p.Owner.Email,
                         p.Owner.Phone
@@ -1389,16 +1248,14 @@ namespace PurrVet.Controllers
                 .ToList();
 
             ViewBag.ServiceCategories = _context.ServiceCategories
-                .Select(c => new
-                {
+                .Select(c => new {
                     c.CategoryID,
                     c.ServiceType
                 })
                 .ToList();
 
             ViewBag.ServiceSubtypes = _context.ServiceSubtypes
-                .Select(s => new
-                {
+                .Select(s => new {
                     s.SubtypeID,
                     s.ServiceSubType,
                     s.CategoryID
@@ -1414,8 +1271,7 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddAppointment(Appointment model, string AppointmentTime)
-        {
+        public IActionResult AddAppointment(Appointment model, string AppointmentTime) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -1431,17 +1287,14 @@ namespace PurrVet.Controllers
 
             model.Status = "Pending";
 
-            try
-            {
+            try {
                 _context.Appointments.Add(model);
-                _context.Notifications.Add(new Notification
-                {
+                _context.Notifications.Add(new Notification {
                     Message = $"A new appointment for Pet ID: {model.PetID} has been created on {model.AppointmentDate:MMM dd, yyyy hh:mm tt}.",
                     Type = "Appointment",
                     RedirectUrl = $"/Staff/ViewPet/{model.PetID}"
                 });
-                _context.SystemLogs.Add(new SystemLog
-                {
+                _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Create",
                     Module = "Appointment",
                     Description = $"Created an appointment: {model.AppointmentID}, {model.AppointmentDate}",
@@ -1450,16 +1303,13 @@ namespace PurrVet.Controllers
                 });
                 _context.SaveChanges();
                 return Json(new { success = true, message = "Appointment added successfully!" });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddAppointmentsBulk([FromForm] AppointmentBulkForm form)
-        {
+        public async Task<IActionResult> AddAppointmentsBulk([FromForm] AppointmentBulkForm form) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -1479,8 +1329,7 @@ namespace PurrVet.Controllers
                 return Json(new { success = false, message = $"Item #{invalidIndex.idx + 1} is missing required fields." });
 
             var appointmentDateTimes = new List<DateTime>();
-            for (int i = 0; i < form.Appointments.Count; i++)
-            {
+            for (int i = 0; i < form.Appointments.Count; i++) {
                 var item = form.Appointments[i];
                 if (!TimeSpan.TryParse(item.AppointmentTime, out var ts))
                     return Json(new { success = false, message = $"Invalid time format for item #{i + 1}." });
@@ -1488,8 +1337,7 @@ namespace PurrVet.Controllers
                 appointmentDateTimes.Add(item.AppointmentDate.Date.Add(ts));
             }
 
-            for (int i = 0; i < appointmentDateTimes.Count; i++)
-            {
+            for (int i = 0; i < appointmentDateTimes.Count; i++) {
                 var dt = appointmentDateTimes[i];
                 bool taken = _context.Appointments.Any(a => a.AppointmentDate == dt);
                 if (taken)
@@ -1497,11 +1345,9 @@ namespace PurrVet.Controllers
             }
 
             using var tx = _context.Database.BeginTransaction();
-            try
-            {
+            try {
                 var groupDateTime = appointmentDateTimes.First();
-                var group = new AppointmentGroup
-                {
+                var group = new AppointmentGroup {
                     GroupTime = groupDateTime,
                     Notes = "Grouped appointment",
                     Status = "Draft",
@@ -1511,11 +1357,9 @@ namespace PurrVet.Controllers
                 await _context.SaveChangesAsync();
 
                 var added = new List<Appointment>();
-                for (int i = 0; i < form.Appointments.Count; i++)
-                {
+                for (int i = 0; i < form.Appointments.Count; i++) {
                     var item = form.Appointments[i];
-                    var appt = new Appointment
-                    {
+                    var appt = new Appointment {
                         PetID = item.PetID,
                         CategoryID = item.CategoryID,
                         SubtypeID = item.SubtypeID,
@@ -1534,22 +1378,18 @@ namespace PurrVet.Controllers
                 var userName = HttpContext.Session.GetString("UserName") ?? "Unknown";
                 var dateText = groupDateTime.ToString("MMM dd, yyyy hh:mm tt");
 
-                _context.Notifications.Add(new Notification
-                {
+                _context.Notifications.Add(new Notification {
                     Message = $"A new group appointment (#{group.GroupID}) was created for {dateText}, containing {added.Count} appointments.",
                     Type = "Appointment"
                 });
 
-                foreach (var appt in added)
-                {
-                    _context.Notifications.Add(new Notification
-                    {
+                foreach (var appt in added) {
+                    _context.Notifications.Add(new Notification {
                         Message = $"New appointment for Pet ID: {appt.PetID} on {dateText}.",
                         Type = "Appointment"
                     });
 
-                    _context.SystemLogs.Add(new SystemLog
-                    {
+                    _context.SystemLogs.Add(new SystemLog {
                         ActionType = "Create",
                         Module = "Appointment",
                         Description = $"Created appointment for Pet ID {appt.PetID} (Group #{group.GroupID}) on {dateText}.",
@@ -1558,8 +1398,7 @@ namespace PurrVet.Controllers
                     });
                 }
 
-                _context.SystemLogs.Add(new SystemLog
-                {
+                _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Bulk Create",
                     Module = "Appointment",
                     Description = $"Created {added.Count} services in Group #{group.GroupID} scheduled for {dateText}.",
@@ -1570,12 +1409,9 @@ namespace PurrVet.Controllers
                 await _context.SaveChangesAsync();
                 await tx.CommitAsync();
 
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        foreach (var appt in added)
-                        {
+                _ = Task.Run(async () => {
+                    try {
+                        foreach (var appt in added) {
                             var pet = _context.Pets.Include(p => p.Owner).FirstOrDefault(p => p.PetID == appt.PetID);
                             if (pet == null) continue;
                             var category = _context.ServiceCategories.FirstOrDefault(c => c.CategoryID == appt.CategoryID);
@@ -1589,23 +1425,18 @@ namespace PurrVet.Controllers
                             DateTime reminder3 = appt.AppointmentDate.AddDays(-3).Date.AddHours(8);
                             if (reminder5 > DateTime.Now) await _smsService.ScheduleReminder(phone, reminder5, message);
                             if (reminder3 > DateTime.Now) await _smsService.ScheduleReminder(phone, reminder3, message);
-                            if (!string.IsNullOrEmpty(email))
-                            {
+                            if (!string.IsNullOrEmpty(email)) {
                                 var subject = $"Upcoming Appointment for {pet.Name}";
                                 await _emailService.SendEmailAsync(email, subject, message, message);
                             }
                         }
-                    }
-                    catch (Exception ex)
-                    {
+                    } catch (Exception ex) {
                         Console.WriteLine("[Reminder scheduling error] " + ex.Message);
                     }
                 });
 
                 return Json(new { success = true, message = $"{added.Count} services added (Group #{group.GroupID})!", groupId = group.GroupID });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await tx.RollbackAsync();
                 return Json(new { success = false, message = $"Error saving group: {ex.Message}" });
             }
@@ -1614,13 +1445,11 @@ namespace PurrVet.Controllers
 
 
         [HttpGet]
-        public IActionResult GetPetsByOwner(int ownerId)
-        {
+        public IActionResult GetPetsByOwner(int ownerId) {
             var pets = _context.Pets
                 .Include(p => p.Owner)
                 .Where(p => p.OwnerID == ownerId)
-                .Select(p => new
-                {
+                .Select(p => new {
                     p.PetID,
                     p.Name,
                     p.Type
@@ -1632,8 +1461,7 @@ namespace PurrVet.Controllers
 
 
         [HttpGet]
-        public IActionResult EditAppointment(int id)
-        {
+        public IActionResult EditAppointment(int id) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -1648,8 +1476,7 @@ namespace PurrVet.Controllers
 
             ViewBag.Pets = _context.Pets
                 .Include(p => p.Owner)
-                .Select(p => new
-                {
+                .Select(p => new {
                     p.PetID,
                     p.Name,
                     p.Type,
@@ -1658,16 +1485,14 @@ namespace PurrVet.Controllers
                 .ToList();
 
             ViewBag.ServiceCategories = _context.ServiceCategories
-                .Select(c => new
-                {
+                .Select(c => new {
                     c.CategoryID,
                     c.ServiceType
                 })
                 .ToList();
 
             var subtypes = _context.ServiceSubtypes
-                .Select(s => new
-                {
+                .Select(s => new {
                     s.SubtypeID,
                     s.ServiceSubType,
                     s.CategoryID
@@ -1680,8 +1505,7 @@ namespace PurrVet.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult EditAppointment(Appointment model, string AppointmentTime)
-        {
+        public IActionResult EditAppointment(Appointment model, string AppointmentTime) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -1708,35 +1532,30 @@ namespace PurrVet.Controllers
             existing.Status = model.Status;
             existing.Notes = model.Notes;
 
-            if (existing.GroupID != null)
-            {
+            if (existing.GroupID != null) {
                 var groupAppointments = _context.Appointments
                     .Where(a => a.GroupID == existing.GroupID && a.AppointmentID != existing.AppointmentID)
                     .ToList();
 
-                foreach (var appt in groupAppointments)
-                {
+                foreach (var appt in groupAppointments) {
                     appt.AppointmentDate = model.AppointmentDate;
                     _context.Appointments.Update(appt);
                 }
             }
 
-            try
-            {
+            try {
                 _context.Appointments.Update(existing);
 
                 var pet = _context.Pets
                     .Include(p => p.Owner)
                     .FirstOrDefault(p => p.PetID == existing.PetID);
 
-                if (pet != null && (model.Status == "Cancelled" || model.Status == "Missed" || model.Status == "Completed" || model.Status == "Pending"))
-                {
+                if (pet != null && (model.Status == "Cancelled" || model.Status == "Missed" || model.Status == "Completed" || model.Status == "Pending")) {
                     string message = model.Status == "Pending"
                         ? $"A new appointment has been requested by {pet.Owner.Name} for their pet {pet.Name}."
                         : $"An appointment for {pet.Name} ({pet.Owner.Name}) has been marked as {model.Status}.";
 
-                    _context.Notifications.Add(new Notification
-                    {
+                    _context.Notifications.Add(new Notification {
                         Message = message,
                         Type = "Appointment",
                         CreatedAt = DateTime.Now,
@@ -1744,8 +1563,7 @@ namespace PurrVet.Controllers
                     });
                 }
 
-                _context.SystemLogs.Add(new SystemLog
-                {
+                _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Update",
                     Module = "Appointment",
                     Description = existing.GroupID != null
@@ -1758,15 +1576,12 @@ namespace PurrVet.Controllers
                 _context.SaveChanges();
 
                 return Json(new { success = true, message = existing.GroupID != null ? "Service updated successfully!" : "Service updated successfully!" });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
         [HttpGet]
-        public IActionResult EditAppointmentsGroup(int groupId)
-        {
+        public IActionResult EditAppointmentsGroup(int groupId) {
             var group = _context.AppointmentGroups
                 .Include(g => g.Appointments)
                     .ThenInclude(a => a.Pet)
@@ -1787,8 +1602,7 @@ namespace PurrVet.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult EditAppointmentsGroup(int groupId, string GroupDate, string GroupTime, List<Appointment> appointments)
-        {
+        public IActionResult EditAppointmentsGroup(int groupId, string GroupDate, string GroupTime, List<Appointment> appointments) {
             var group = _context.AppointmentGroups
                 .Include(g => g.Appointments)
                 .FirstOrDefault(g => g.GroupID == groupId);
@@ -1816,24 +1630,18 @@ namespace PurrVet.Controllers
                 .Where(d => d.GroupDraftId != group.GroupID.ToString())
                 .ToList();
 
-            bool draftConflict = drafts.Any(d =>
-            {
-                if (d.AppointmentTime != null && TimeSpan.TryParse(d.AppointmentTime, out var dTime))
-                {
+            bool draftConflict = drafts.Any(d => {
+                if (d.AppointmentTime != null && TimeSpan.TryParse(d.AppointmentTime, out var dTime)) {
                     return d.AppointmentDate.Date.Add(dTime) == newGroupDateTime;
-                }
-                else
-                {
+                } else {
                     return d.AppointmentDate == newGroupDateTime;
                 }
             });
 
 
 
-            if (appointmentConflict || draftConflict)
-            {
-                return Json(new
-                {
+            if (appointmentConflict || draftConflict) {
+                return Json(new {
                     success = false,
                     message = "Selected date and time conflicts with an existing appointment or draft."
                 });
@@ -1847,8 +1655,7 @@ namespace PurrVet.Controllers
 
             using var tx = _context.Database.BeginTransaction();
 
-            try
-            {
+            try {
                 var cleanAppointments = appointments
                     .Where(a => a != null && a.PetID != 0 && a.CategoryID != null)
                     .ToList();
@@ -1858,20 +1665,15 @@ namespace PurrVet.Controllers
                     .Select(a => a.AppointmentID)
                     .ToList();
 
-                foreach (var appt in cleanAppointments)
-                {
-                    if (appt.AppointmentID > 0)
-                    {
+                foreach (var appt in cleanAppointments) {
+                    if (appt.AppointmentID > 0) {
                         var existing = group.Appointments.First(a => a.AppointmentID == appt.AppointmentID);
                         _context.Entry(existing).CurrentValues.SetValues(appt);
                         existing.GroupID = group.GroupID;
                         existing.AppointmentDate = group.GroupTime;
                         updatedCount++;
-                    }
-                    else
-                    {
-                        var newAppt = new Appointment
-                        {
+                    } else {
+                        var newAppt = new Appointment {
                             PetID = appt.PetID,
                             CategoryID = appt.CategoryID,
                             SubtypeID = appt.SubtypeID,
@@ -1890,14 +1692,12 @@ namespace PurrVet.Controllers
                     .Where(a => a.AppointmentID > 0 && !postedExistingIds.Contains(a.AppointmentID))
                     .ToList();
 
-                foreach (var appt in toRemove)
-                {
+                foreach (var appt in toRemove) {
                     _context.Appointments.Remove(appt);
                     removedCount++;
                 }
 
-                _context.SystemLogs.Add(new SystemLog
-                {
+                _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Update",
                     Module = "Appointment",
                     Description = $"Edited {updatedCount}, added {addedCount}, removed {removedCount} in group #{groupId}.",
@@ -1908,14 +1708,11 @@ namespace PurrVet.Controllers
                 _context.SaveChanges();
                 tx.Commit();
 
-                return Json(new
-                {
+                return Json(new {
                     success = true,
                     message = $"Group #{groupId} updated — {updatedCount} modified, {addedCount} added, {removedCount} removed."
                 });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 tx.Rollback();
                 return Json(new { success = false, message = $"Error updating group: {ex.Message}" });
             }
@@ -1925,22 +1722,17 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult FinalizeAppointmentsGroup([FromBody] List<string> groupIds)
-        {
+        public IActionResult FinalizeAppointmentsGroup([FromBody] List<string> groupIds) {
             if (groupIds == null || !groupIds.Any())
                 return Json(new { success = false, message = "No group IDs provided." });
 
-            foreach (var groupIdStr in groupIds)
-            {
-                if (int.TryParse(groupIdStr, out var groupId))
-                {
+            foreach (var groupIdStr in groupIds) {
+                if (int.TryParse(groupIdStr, out var groupId)) {
                     var group = _context.AppointmentGroups.FirstOrDefault(g => g.GroupID == groupId);
-                    if (group != null && group.Status != "Finalized")
-                    {
+                    if (group != null && group.Status != "Finalized") {
                         group.Status = "Finalized";
                         group.FinalizedAt = DateTime.Now;
-                        _context.SystemLogs.Add(new SystemLog
-                        {
+                        _context.SystemLogs.Add(new SystemLog {
                             ActionType = "Update",
                             Module = "Appointment",
                             Description = $"Finalized appointment group #{groupId}.",
@@ -1948,9 +1740,7 @@ namespace PurrVet.Controllers
                             Timestamp = DateTime.Now
                         });
                     }
-                }
-                else
-                {
+                } else {
                     Console.WriteLine($"Skipped draft group {groupIdStr}");
                 }
             }
@@ -1961,8 +1751,7 @@ namespace PurrVet.Controllers
 
 
         [HttpGet]
-        public IActionResult GetDraftCart()
-        {
+        public IActionResult GetDraftCart() {
             var userId = HttpContext.Session.GetInt32("UserID");
             var ownerId = HttpContext.Session.GetInt32("OwnerID");
             var role = HttpContext.Session.GetString("UserRole");
@@ -1982,8 +1771,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpPost]
-        public IActionResult RemoveDraft(int draftId)
-        {
+        public IActionResult RemoveDraft(int draftId) {
             var draft = _context.AppointmentDrafts.FirstOrDefault(d => d.DraftID == draftId);
             if (draft == null)
                 return Json(new { success = false, message = "Item not found." });
@@ -1996,8 +1784,7 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult SaveAppointmentDrafts([FromBody] List<AppointmentDraft> drafts)
-        {
+        public IActionResult SaveAppointmentDrafts([FromBody] List<AppointmentDraft> drafts) {
             var role = HttpContext.Session.GetString("UserRole");
             var userId = HttpContext.Session.GetInt32("UserID");
             var ownerId = HttpContext.Session.GetInt32("OwnerID");
@@ -2008,17 +1795,14 @@ namespace PurrVet.Controllers
             if (drafts == null || !drafts.Any())
                 return Json(new { success = false, message = "No drafts received." });
 
-            try
-            {
+            try {
                 var notifications = new List<Notification>();
 
-                foreach (var draft in drafts)
-                {
+                foreach (var draft in drafts) {
                     if (draft.PetID == null || draft.CategoryID == null || draft.AppointmentDate == default)
                         continue;
 
-                    if (string.IsNullOrWhiteSpace(draft.GroupDraftId))
-                    {
+                    if (string.IsNullOrWhiteSpace(draft.GroupDraftId)) {
                         draft.GroupDraftId = Guid.NewGuid().ToString();
                     }
 
@@ -2033,8 +1817,7 @@ namespace PurrVet.Controllers
 
                     if (exists) continue;
 
-                    var newDraft = new AppointmentDraft
-                    {
+                    var newDraft = new AppointmentDraft {
                         UserID = userId,
                         OwnerID = ownerId ?? draft.OwnerID,
                         PetID = draft.PetID,
@@ -2052,16 +1835,13 @@ namespace PurrVet.Controllers
 
                 _context.SaveChanges();
 
-                if (notifications.Any())
-                {
+                if (notifications.Any()) {
                     _context.Notifications.AddRange(notifications);
                     _context.SaveChanges();
                 }
 
                 return Json(new { success = true, message = "Drafts saved successfully." });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error saving drafts: {ex.Message}" });
             }
 
@@ -2069,15 +1849,13 @@ namespace PurrVet.Controllers
         }
 
 
-        public class SaveDraftsToAppointmentsRequest
-        {
+        public class SaveDraftsToAppointmentsRequest {
             public List<string> GroupDraftIds { get; set; } = new List<string>();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult SaveDraftsToAppointments([FromBody] SaveDraftsToAppointmentsRequest request)
-        {
+        public IActionResult SaveDraftsToAppointments([FromBody] SaveDraftsToAppointmentsRequest request) {
             var userId = HttpContext.Session.GetInt32("UserID");
             var ownerId = HttpContext.Session.GetInt32("OwnerID");
 
@@ -2091,10 +1869,8 @@ namespace PurrVet.Controllers
             var notifications = new List<Notification>();
 
             using var tx = _context.Database.BeginTransaction();
-            try
-            {
-                foreach (var groupDraftId in request.GroupDraftIds.Distinct())
-                {
+            try {
+                foreach (var groupDraftId in request.GroupDraftIds.Distinct()) {
                     if (string.IsNullOrWhiteSpace(groupDraftId))
                         continue;
 
@@ -2110,13 +1886,11 @@ namespace PurrVet.Controllers
                     var first = drafts.First();
                     var groupTime = first.AppointmentDate;
                     if (!string.IsNullOrEmpty(first.AppointmentTime) &&
-                        TimeSpan.TryParse(first.AppointmentTime, out var ts))
-                    {
+                        TimeSpan.TryParse(first.AppointmentTime, out var ts)) {
                         groupTime = first.AppointmentDate.Date.Add(ts);
                     }
 
-                    var group = new AppointmentGroup
-                    {
+                    var group = new AppointmentGroup {
                         GroupTime = groupTime,
                         Notes = $"Converted from draft group {groupDraftId}",
                         Status = "Pending",
@@ -2125,8 +1899,7 @@ namespace PurrVet.Controllers
                     _context.AppointmentGroups.Add(group);
                     _context.SaveChanges();
 
-                    foreach (var draft in drafts)
-                    {
+                    foreach (var draft in drafts) {
                         var exists = _context.Appointments.Any(a =>
                             a.PetID == draft.PetID &&
                             a.CategoryID == draft.CategoryID &&
@@ -2135,8 +1908,7 @@ namespace PurrVet.Controllers
                         );
                         if (exists) continue;
 
-                        var appointment = new Appointment
-                        {
+                        var appointment = new Appointment {
                             PetID = draft.PetID.Value,
                             CategoryID = draft.CategoryID,
                             SubtypeID = draft.SubtypeID,
@@ -2153,10 +1925,8 @@ namespace PurrVet.Controllers
                             .Include(p => p.Owner)
                             .FirstOrDefault(p => p.PetID == draft.PetID);
 
-                        if (pet?.Owner != null)
-                        {
-                            notifications.Add(new Notification
-                            {
+                        if (pet?.Owner != null) {
+                            notifications.Add(new Notification {
                                 Message = $"Your pet has an upcoming appointment on {group.GroupTime:MMM dd, yyyy hh:mm tt}.",
                                 TargetUserId = pet.Owner.UserID,
                                 RedirectUrl = "/Owner/Appointments",
@@ -2166,8 +1936,7 @@ namespace PurrVet.Controllers
                             });
                         }
 
-                        notifications.Add(new Notification
-                        {
+                        notifications.Add(new Notification {
                             Message = $"A new appointment for Pet ID: {draft.PetID} has been created on {group.GroupTime:MMM dd, yyyy hh:mm tt}.",
                             RedirectUrl = $"/Staff/ViewPet/{draft.PetID}",
                             Type = "Appointment",
@@ -2183,8 +1952,7 @@ namespace PurrVet.Controllers
                     createdGroupIds.Add(group.GroupID);
                 }
 
-                if (notifications.Any())
-                {
+                if (notifications.Any()) {
                     _context.Notifications.AddRange(notifications);
                     _context.SaveChanges();
                 }
@@ -2194,23 +1962,19 @@ namespace PurrVet.Controllers
                 if (!createdGroupIds.Any())
                     return Json(new { success = false, message = "No drafts were converted." });
 
-                return Json(new
-                {
+                return Json(new {
                     success = true,
                     message = "Drafts converted to appointments!",
                     groupIds = createdGroupIds
                 });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 tx.Rollback();
                 return Json(new { success = false, message = $"Error saving drafts: {ex.Message}" });
             }
         }
 
         [HttpGet]
-        public IActionResult EditDraftGroup(string draftId)
-        {
+        public IActionResult EditDraftGroup(string draftId) {
             var userId = HttpContext.Session.GetInt32("UserID");
             var sessionOwnerId = HttpContext.Session.GetInt32("OwnerID");
 
@@ -2237,8 +2001,7 @@ namespace PurrVet.Controllers
 
             var ownerPets = _context.Pets
                 .Where(p => ownerIds.Contains(p.OwnerID))
-                .Select(p => new Pet
-                {
+                .Select(p => new Pet {
                     PetID = p.PetID,
                     Name = p.Name,
                     Type = p.Type,
@@ -2250,8 +2013,7 @@ namespace PurrVet.Controllers
             var categories = _context.ServiceCategories.ToList();
             var subtypes = _context.ServiceSubtypes.ToList();
 
-            var vm = new AppointmentDraftGroupVM
-            {
+            var vm = new AppointmentDraftGroupVM {
                 GroupDraftId = draftId,
                 Drafts = drafts,
                 Owners = owners,
@@ -2267,8 +2029,7 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SaveDraftGroup([FromBody] AppointmentDraftGroupVM form)
-        {
+        public async Task<IActionResult> SaveDraftGroup([FromBody] AppointmentDraftGroupVM form) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -2284,8 +2045,7 @@ namespace PurrVet.Controllers
 
             var validationList = new List<(DateTime dt, int index)>();
 
-            for (int i = 0; i < form.Drafts.Count; i++)
-            {
+            for (int i = 0; i < form.Drafts.Count; i++) {
                 var d = form.Drafts[i];
 
                 if (d.PetID == 0)
@@ -2313,12 +2073,9 @@ namespace PurrVet.Controllers
 
                 d.AppointmentDate = dateOnly;
             }
-            foreach (var item in validationList)
-            {
-                if (_context.Appointments.Any(a => a.AppointmentDate == item.dt))
-                {
-                    return Json(new
-                    {
+            foreach (var item in validationList) {
+                if (_context.Appointments.Any(a => a.AppointmentDate == item.dt)) {
+                    return Json(new {
                         success = false,
                         message = $"Time slot {item.dt:MMM dd, yyyy hh:mm tt} is already taken by an existing appointment (item #{item.index + 1})."
                     });
@@ -2330,12 +2087,9 @@ namespace PurrVet.Controllers
                 .Select(d => d.AppointmentDate.Date.Add(TimeSpan.Parse(d.AppointmentTime)))
                 .ToList();
 
-            foreach (var item in validationList)
-            {
-                if (otherDraftTimes.Contains(item.dt))
-                {
-                    return Json(new
-                    {
+            foreach (var item in validationList) {
+                if (otherDraftTimes.Contains(item.dt)) {
+                    return Json(new {
                         success = false,
                         message = $"Time slot {item.dt:MMM dd, yyyy hh:mm tt} is already used in another draft group."
                     });
@@ -2343,8 +2097,7 @@ namespace PurrVet.Controllers
             }
 
             using var tx = await _context.Database.BeginTransactionAsync();
-            try
-            {
+            try {
                 var existingDrafts = _context.AppointmentDrafts
                     .Where(d => d.GroupDraftId == form.GroupDraftId)
                     .ToList();
@@ -2362,14 +2115,11 @@ namespace PurrVet.Controllers
                 var userId = HttpContext.Session.GetInt32("UserID");
                 var userName = HttpContext.Session.GetString("UserName") ?? "Unknown";
 
-                foreach (var d in form.Drafts)
-                {
+                foreach (var d in form.Drafts) {
                     var target = existingDrafts.FirstOrDefault(x => x.DraftID == d.DraftID);
 
-                    if (target == null)
-                    {
-                        target = new AppointmentDraft
-                        {
+                    if (target == null) {
+                        target = new AppointmentDraft {
                             GroupDraftId = form.GroupDraftId,
                             CreatedAt = DateTime.Now
                         };
@@ -2390,17 +2140,14 @@ namespace PurrVet.Controllers
 
                 await _context.SaveChangesAsync();
 
-                _context.Notifications.Add(new Notification
-                {
+                _context.Notifications.Add(new Notification {
                     Message = $"Draft group {form.GroupDraftId} updated by {userName}. {savedList.Count} services.",
                     Type = "Appointment"
                 });
 
-                foreach (var sd in savedList)
-                {
+                foreach (var sd in savedList) {
                     var dt = sd.AppointmentDate.Date.Add(TimeSpan.Parse(sd.AppointmentTime));
-                    _context.SystemLogs.Add(new SystemLog
-                    {
+                    _context.SystemLogs.Add(new SystemLog {
                         ActionType = "Update",
                         Module = "AppointmentDraft",
                         Description = $"Upsert draft {sd.DraftID} (Group {sd.GroupDraftId}) for PetID {sd.PetID} at {dt:MMM dd, yyyy hh:mm tt}",
@@ -2411,13 +2158,11 @@ namespace PurrVet.Controllers
 
                 await _context.SaveChangesAsync();
                 await tx.CommitAsync();
-                return Json(new
-                {
+                return Json(new {
                     success = true,
                     message = $"Draft saved successfully. ({savedList.Count} services)",
                     groupDraftId = form.GroupDraftId,
-                    drafts = savedList.Select(d => new
-                    {
+                    drafts = savedList.Select(d => new {
                         d.DraftID,
                         d.GroupDraftId,
                         d.OwnerID,
@@ -2429,9 +2174,7 @@ namespace PurrVet.Controllers
                         d.Notes
                     }).ToList()
                 });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 await tx.RollbackAsync();
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
@@ -2440,12 +2183,10 @@ namespace PurrVet.Controllers
 
 
         [HttpGet]
-        public JsonResult GetSubtypesByCategoryId(int categoryId)
-        {
+        public JsonResult GetSubtypesByCategoryId(int categoryId) {
             var subtypes = _context.ServiceSubtypes
                 .Where(s => s.CategoryID == categoryId)
-                .Select(s => new
-                {
+                .Select(s => new {
                     subtypeID = s.SubtypeID,
                     serviceSubType = s.ServiceSubType
                 })
@@ -2456,8 +2197,7 @@ namespace PurrVet.Controllers
 
 
         [HttpGet]
-        public IActionResult GetAvailableTimeSlots(DateTime date)
-        {
+        public IActionResult GetAvailableTimeSlots(DateTime date) {
             var slots = new List<string>();
             var start = new TimeSpan(9, 0, 0);
             var end = new TimeSpan(18, 0, 0);
@@ -2477,8 +2217,7 @@ namespace PurrVet.Controllers
                 .Distinct()
                 .ToList();
 
-            for (var t = start; t <= end; t = t.Add(TimeSpan.FromMinutes(5)))
-            {
+            for (var t = start; t <= end; t = t.Add(TimeSpan.FromMinutes(5))) {
                 if (!allTaken.Contains(t))
                     slots.Add(DateTime.Today.Add(t).ToString("HH:mm"));
             }
@@ -2487,23 +2226,20 @@ namespace PurrVet.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAppointmentsJson()
-        {
+        public IActionResult GetAppointmentsJson() {
             var real = _context.Appointments
                 .Include(a => a.Pet)
                 .Include(a => a.ServiceCategory)
                 .Include(a => a.ServiceSubtype)
                 .ToList();
 
-            var realJson = real.Select(a => new
-            {
+            var realJson = real.Select(a => new {
                 id = a.AppointmentID.ToString(),
                 title = $"{a.Pet?.Name} — {a.ServiceCategory?.ServiceType ?? "No Category"} - {a.ServiceSubtype?.ServiceSubType ?? ""}",
                 start = a.AppointmentDate.ToString("yyyy-MM-ddTHH:mm:ss"),
                 allDay = false,
                 classNames = new[] { a.Status?.ToLower() ?? "unknown" },
-                extendedProps = new
-                {
+                extendedProps = new {
                     petName = a.Pet?.Name,
                     category = a.ServiceCategory?.ServiceType,
                     subtype = a.ServiceSubtype?.ServiceSubType,
@@ -2519,15 +2255,13 @@ namespace PurrVet.Controllers
                 .Include(a => a.ServiceSubtype)
                 .ToList();
 
-            var draftJson = drafts.Select(a => new
-            {
+            var draftJson = drafts.Select(a => new {
                 id = $"DRAFT-{a.DraftID}",
                 title = $"{a.Pet?.Name ?? "No Pet"} — {a.ServiceCategory?.ServiceType ?? "Draft"} - {a.ServiceSubtype?.ServiceSubType ?? ""}",
                 start = a.AppointmentDate.ToString("yyyy-MM-dd") + "T" + (a.AppointmentTime ?? "00:00"),
                 allDay = false,
                 classNames = new[] { "draft" },
-                extendedProps = new
-                {
+                extendedProps = new {
                     petName = a.Pet?.Name,
                     category = a.ServiceCategory?.ServiceType,
                     subtype = a.ServiceSubtype?.ServiceSubType,
@@ -2543,8 +2277,7 @@ namespace PurrVet.Controllers
             return Json(final);
         }
         [HttpPost]
-        public IActionResult DeleteDraftGroup([FromBody] JsonElement body)
-        {
+        public IActionResult DeleteDraftGroup([FromBody] JsonElement body) {
             string groupDraftId = body.GetProperty("groupDraftId").GetString();
 
             var drafts = _context.AppointmentDrafts
@@ -2560,8 +2293,7 @@ namespace PurrVet.Controllers
             return Json(new { success = true });
         }
         [HttpPost]
-        public IActionResult DeleteAllDraftGroups([FromBody] List<string> groupDraftIds)
-        {
+        public IActionResult DeleteAllDraftGroups([FromBody] List<string> groupDraftIds) {
             if (groupDraftIds == null || !groupDraftIds.Any())
                 return Json(new { success = false, message = "No draft IDs provided." });
 
@@ -2579,8 +2311,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpGet]
-        public IActionResult Pets(string searchQuery = "", string typeFilter = "", string sortField = "", string sortOrder = "", int page = 1)
-        {
+        public IActionResult Pets(string searchQuery = "", string typeFilter = "", string sortField = "", string sortOrder = "", int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -2592,21 +2323,18 @@ namespace PurrVet.Controllers
                 sortOrder = "asc";
             var query = _context.Pets.Include(p => p.Owner).AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
+            if (!string.IsNullOrEmpty(searchQuery)) {
                 query = query.Where(p =>
                     p.Name.Contains(searchQuery) ||
                     p.Type.Contains(searchQuery) ||
                     p.Breed.Contains(searchQuery) ||
                     p.Owner.Name.Contains(searchQuery));
             }
-            if (!string.IsNullOrEmpty(typeFilter) && typeFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(typeFilter) && typeFilter != "All") {
                 query = query.Where(p => p.Type == typeFilter);
             }
 
-            query = (sortField, sortOrder) switch
-            {
+            query = (sortField, sortOrder) switch {
                 ("id", "desc") => query.OrderByDescending(p => p.PetID),
                 ("id", "asc") => query.OrderBy(p => p.PetID),
 
@@ -2624,8 +2352,7 @@ namespace PurrVet.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            var viewModel = new PetsListViewModel
-            {
+            var viewModel = new PetsListViewModel {
                 Pets = pets,
                 CurrentPage = page,
                 TotalPages = totalPages,
@@ -2637,8 +2364,7 @@ namespace PurrVet.Controllers
             return View(viewModel);
         }
         [HttpGet]
-        public IActionResult AddPet()
-        {
+        public IActionResult AddPet() {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -2651,8 +2377,7 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddPet(string Name, string Type, string Breed, DateTime Birthdate, int OwnerID, IFormFile? Photo)
-        {
+        public async Task<IActionResult> AddPet(string Name, string Type, string Breed, DateTime Birthdate, int OwnerID, IFormFile? Photo) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -2660,17 +2385,14 @@ namespace PurrVet.Controllers
                 string.IsNullOrWhiteSpace(Type) ||
                 string.IsNullOrWhiteSpace(Breed) ||
                 Birthdate == default ||
-                OwnerID == 0)
-            {
+                OwnerID == 0) {
                 return Json(new { success = false, message = "All fields are required." });
             }
 
-            try
-            {
+            try {
                 string? photoPath = null;
 
-                if (Photo != null && Photo.Length > 0)
-                {
+                if (Photo != null && Photo.Length > 0) {
                     var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "pets");
                     if (!Directory.Exists(uploadsFolder))
                         Directory.CreateDirectory(uploadsFolder);
@@ -2678,13 +2400,11 @@ namespace PurrVet.Controllers
                     var fileName = $"{Guid.NewGuid()}.jpg";
                     var filePath = Path.Combine(uploadsFolder, fileName);
 
-                    using (var stream = new MemoryStream())
-                    {
+                    using (var stream = new MemoryStream()) {
                         await Photo.CopyToAsync(stream);
                         stream.Seek(0, SeekOrigin.Begin);
 
-                        using (var original = System.Drawing.Image.FromStream(stream))
-                        {
+                        using (var original = System.Drawing.Image.FromStream(stream)) {
                             int side = Math.Min(original.Width, original.Height);
                             var cropRect = new System.Drawing.Rectangle(
                                 (original.Width - side) / 2,
@@ -2692,10 +2412,8 @@ namespace PurrVet.Controllers
                                 side,
                                 side);
 
-                            using (var cropped = new System.Drawing.Bitmap(500, 500))
-                            {
-                                using (var g = System.Drawing.Graphics.FromImage(cropped))
-                                {
+                            using (var cropped = new System.Drawing.Bitmap(500, 500)) {
+                                using (var g = System.Drawing.Graphics.FromImage(cropped)) {
                                     g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
                                     g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
                                     g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
@@ -2714,8 +2432,7 @@ namespace PurrVet.Controllers
                     photoPath = $"/uploads/pets/{fileName}";
                 }
 
-                var pet = new Pet
-                {
+                var pet = new Pet {
                     OwnerID = OwnerID,
                     Name = Name,
                     Type = Type,
@@ -2727,8 +2444,7 @@ namespace PurrVet.Controllers
                 _context.Pets.Add(pet);
                 await _context.SaveChangesAsync();
 
-                _context.Notifications.Add(new Notification
-                {
+                _context.Notifications.Add(new Notification {
                     Message = $"A new pet '{pet.Name}' has been added by Owner ID:{pet.OwnerID}.",
                     Type = "Pet",
                     RedirectUrl = $"/Staff/ViewPet/{pet.PetID}",
@@ -2736,8 +2452,7 @@ namespace PurrVet.Controllers
                     IsRead = false
                 });
 
-                _context.SystemLogs.Add(new SystemLog
-                {
+                _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Create",
                     Module = "Pet",
                     Description = $"Added a Pet: {pet.Name} (OwnerID: {pet.OwnerID})",
@@ -2748,9 +2463,7 @@ namespace PurrVet.Controllers
                 await _context.SaveChangesAsync();
 
                 return Json(new { success = true, message = "Pet added successfully!" });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 Console.WriteLine(ex);
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
@@ -2758,8 +2471,7 @@ namespace PurrVet.Controllers
 
 
         [HttpGet]
-        public IActionResult EditPet(int id)
-        {
+        public IActionResult EditPet(int id) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -2776,8 +2488,7 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditPet(int id, string Name, string Type, string Breed, DateTime Birthdate, int OwnerID, IFormFile? Photo)
-        {
+        public async Task<IActionResult> EditPet(int id, string Name, string Type, string Breed, DateTime Birthdate, int OwnerID, IFormFile? Photo) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -2789,23 +2500,19 @@ namespace PurrVet.Controllers
                 string.IsNullOrWhiteSpace(Type) ||
                 string.IsNullOrWhiteSpace(Breed) ||
                 Birthdate == default ||
-                OwnerID == 0)
-            {
+                OwnerID == 0) {
                 return Json(new { success = false, message = "All fields are required." });
             }
 
-            try
-            {
+            try {
                 pet.Name = Name;
                 pet.Type = Type;
                 pet.Breed = Breed;
                 pet.Birthdate = Birthdate;
                 pet.OwnerID = OwnerID;
 
-                if (Photo != null && Photo.Length > 0)
-                {
-                    if (!string.IsNullOrEmpty(pet.PhotoPath))
-                    {
+                if (Photo != null && Photo.Length > 0) {
+                    if (!string.IsNullOrEmpty(pet.PhotoPath)) {
                         var oldPath = Path.Combine("wwwroot", pet.PhotoPath.TrimStart('/'));
                         if (System.IO.File.Exists(oldPath))
                             System.IO.File.Delete(oldPath);
@@ -2818,13 +2525,11 @@ namespace PurrVet.Controllers
                     var fileName = $"{Guid.NewGuid()}.jpg";
                     var filePath = Path.Combine(uploadsFolder, fileName);
 
-                    using (var stream = new MemoryStream())
-                    {
+                    using (var stream = new MemoryStream()) {
                         await Photo.CopyToAsync(stream);
                         stream.Seek(0, SeekOrigin.Begin);
 
-                        using (var original = System.Drawing.Image.FromStream(stream))
-                        {
+                        using (var original = System.Drawing.Image.FromStream(stream)) {
                             int side = Math.Min(original.Width, original.Height);
                             var cropRect = new System.Drawing.Rectangle(
                                 (original.Width - side) / 2,
@@ -2832,10 +2537,8 @@ namespace PurrVet.Controllers
                                 side,
                                 side);
 
-                            using (var cropped = new System.Drawing.Bitmap(500, 500))
-                            {
-                                using (var g = System.Drawing.Graphics.FromImage(cropped))
-                                {
+                            using (var cropped = new System.Drawing.Bitmap(500, 500)) {
+                                using (var g = System.Drawing.Graphics.FromImage(cropped)) {
                                     g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
                                     g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
                                     g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
@@ -2855,8 +2558,7 @@ namespace PurrVet.Controllers
                 }
 
                 _context.Pets.Update(pet);
-                _context.SystemLogs.Add(new SystemLog
-                {
+                _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Update",
                     Module = "Pet",
                     Description = $"Updated Pet: {pet.Name} (OwnerID: {pet.OwnerID})",
@@ -2867,9 +2569,7 @@ namespace PurrVet.Controllers
                 await _context.SaveChangesAsync();
 
                 return Json(new { success = true, message = "Pet updated successfully!" });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 Console.WriteLine($"[EditPet ERROR] {ex}");
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
@@ -2878,8 +2578,7 @@ namespace PurrVet.Controllers
 
 
         [HttpGet]
-        public IActionResult GetBreeds(string type)
-        {
+        public IActionResult GetBreeds(string type) {
             if (string.IsNullOrWhiteSpace(type))
                 return Json(new List<string>());
 
@@ -2890,8 +2589,7 @@ namespace PurrVet.Controllers
                 return Json(new List<string>());
 
             using (var reader = new StreamReader(filePath))
-            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-            {
+            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture)) {
                 var breeds = csv.GetRecords<dynamic>()
                                 .Select(r => r.Breed?.ToString())
                                 .Where(b => !string.IsNullOrWhiteSpace(b))
@@ -2904,8 +2602,7 @@ namespace PurrVet.Controllers
 
 
         [HttpGet]
-        public IActionResult ViewPet(int id, int page = 1, string searchQuery = "", int? categoryFilter = null)
-        {
+        public IActionResult ViewPet(int id, int page = 1, string searchQuery = "", int? categoryFilter = null) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -2937,8 +2634,7 @@ namespace PurrVet.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            var vm = new PetDetailsViewModel
-            {
+            var vm = new PetDetailsViewModel {
                 Pet = pet,
                 Appointments = appointments,
                 CurrentPage = page,
@@ -2953,8 +2649,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpGet]
-        public IActionResult PetCard(int id, int page = 1)
-        {
+        public IActionResult PetCard(int id, int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -2984,8 +2679,7 @@ namespace PurrVet.Controllers
 
             int ageMonths = (int)Math.Floor((DateTime.Now - pet.Birthdate).TotalDays / 30.4375);
 
-            return View("PetCard", new PetCardVM
-            {
+            return View("PetCard", new PetCardVM {
                 Pet = pet,
                 Records = completed,
                 PageData = pageData,
@@ -2996,8 +2690,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpGet]
-        public IActionResult DownloadPetCardPdf(int id)
-        {
+        public IActionResult DownloadPetCardPdf(int id) {
             var pet = _context.Pets
                 .Include(p => p.Owner)
                 .Include(p => p.Appointments).ThenInclude(a => a.ServiceCategory)
@@ -3018,16 +2711,13 @@ namespace PurrVet.Controllers
                 ? $"wwwroot{pet.PhotoPath}"
                 : "wwwroot/uploads/profiles/pet.png";
 
-            byte[] pdfBytes = QuestPDF.Fluent.Document.Create(container =>
-            {
-                container.Page(page =>
-                {
+            byte[] pdfBytes = QuestPDF.Fluent.Document.Create(container => {
+                container.Page(page => {
                     page.Size(PageSizes.A5);
                     page.Margin(15);
                     page.DefaultTextStyle(x => x.FontSize(10));
 
-                    page.Header().Column(col =>
-                    {
+                    page.Header().Column(col => {
                         col.Item()
                            .AlignCenter()
                            .Width(80)
@@ -3038,12 +2728,9 @@ namespace PurrVet.Controllers
                         col.Item().PaddingBottom(5).LineHorizontal(1);
                     });
 
-                    page.Content().Column(col =>
-                    {
-                        col.Item().Row(row =>
-                        {
-                            row.RelativeColumn().Column(info =>
-                            {
+                    page.Content().Column(col => {
+                        col.Item().Row(row => {
+                            row.RelativeColumn().Column(info => {
                                 info.Item().Text($"Name: {pet.Name}");
                                 info.Item().Text($"Species: {pet.Type}");
                                 info.Item().Text($"Breed: {pet.Breed}");
@@ -3068,10 +2755,8 @@ namespace PurrVet.Controllers
 
                         col.Item().PaddingTop(6).LineHorizontal(1);
 
-                        col.Item().PaddingTop(6).Table(table =>
-                        {
-                            table.ColumnsDefinition(cols =>
-                            {
+                        col.Item().PaddingTop(6).Table(table => {
+                            table.ColumnsDefinition(cols => {
                                 cols.RelativeColumn(1);
                                 cols.RelativeColumn(0.8f);
                                 cols.RelativeColumn(1.2f);
@@ -3080,8 +2765,7 @@ namespace PurrVet.Controllers
                                 cols.RelativeColumn(1);
                             });
 
-                            table.Header(h =>
-                            {
+                            table.Header(h => {
                                 h.Cell().Text("Date").SemiBold();
                                 h.Cell().Text("Wt.").SemiBold();
                                 h.Cell().Text("Vaccination").SemiBold();
@@ -3090,8 +2774,7 @@ namespace PurrVet.Controllers
                                 h.Cell().Text("Next").SemiBold();
                             });
 
-                            foreach (var r in records)
-                            {
+                            foreach (var r in records) {
                                 table.Cell().Text(r.AppointmentDate.ToString("MM/dd/yyyy"));
                                 table.Cell().Text(r.Notes?.Split("|")?[0] ?? "");
 
@@ -3123,8 +2806,7 @@ namespace PurrVet.Controllers
 
 
         [HttpGet]
-        public IActionResult ViewOwner(int id, int page = 1, string searchQuery = "", string typeFilter = "")
-        {
+        public IActionResult ViewOwner(int id, int page = 1, string searchQuery = "", string typeFilter = "") {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -3155,8 +2837,7 @@ namespace PurrVet.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            var vm = new OwnerDetailsViewModel
-            {
+            var vm = new OwnerDetailsViewModel {
                 Owner = owner,
                 Pets = pets,
                 SearchQuery = searchQuery,
@@ -3171,8 +2852,7 @@ namespace PurrVet.Controllers
 
 
         [HttpGet]
-        public IActionResult Owners(string searchQuery = "", string sortField = "", string sortOrder = "", string statusFilter = "", int page = 1)
-        {
+        public IActionResult Owners(string searchQuery = "", string sortField = "", string sortOrder = "", string statusFilter = "", int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -3185,18 +2865,15 @@ namespace PurrVet.Controllers
 
             var query = _context.Owners.Include(o => o.User).AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
+            if (!string.IsNullOrEmpty(searchQuery)) {
                 query = query.Where(o =>
                     o.Name.Contains(searchQuery) ||
                     o.Email.Contains(searchQuery));
             }
-            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All") {
                 query = query.Where(o => o.User.Status == statusFilter);
             }
-            query = (sortField, sortOrder) switch
-            {
+            query = (sortField, sortOrder) switch {
                 ("id", "desc") => query.OrderByDescending(o => o.OwnerID),
                 ("id", "asc") => query.OrderBy(o => o.OwnerID),
 
@@ -3220,8 +2897,7 @@ namespace PurrVet.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            var viewModel = new OwnerListViewModel
-            {
+            var viewModel = new OwnerListViewModel {
                 Owners = owners,
                 CurrentPage = page,
                 TotalPages = totalPages,
@@ -3237,8 +2913,7 @@ namespace PurrVet.Controllers
 
 
         [HttpGet]
-        public IActionResult EditOwner(int id)
-        {
+        public IActionResult EditOwner(int id) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -3251,8 +2926,7 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult EditOwner(Owner model)
-        {
+        public IActionResult EditOwner(Owner model) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -3260,16 +2934,14 @@ namespace PurrVet.Controllers
             if (owner == null)
                 return Json(new { success = false, message = "Owner not found." });
 
-            try
-            {
+            try {
                 owner.Name = model.Name;
                 owner.Email = model.Email;
                 owner.Phone = model.Phone;
 
                 _context.Update(owner);
                 _context.SaveChanges();
-                _context.Notifications.Add(new Notification
-                {
+                _context.Notifications.Add(new Notification {
                     Message = $"Owner '{owner.Name}' has been updated.",
                     Type = "Owner",
                     RedirectUrl = $"/Staff/ViewOwner/{owner.OwnerID}",
@@ -3277,8 +2949,7 @@ namespace PurrVet.Controllers
                     IsRead = false
                 });
 
-                _context.SystemLogs.Add(new SystemLog
-                {
+                _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Update",
                     Module = "Owner",
                     Description = $"Updated Owner: {owner.Name}",
@@ -3289,16 +2960,13 @@ namespace PurrVet.Controllers
                 _context.SaveChanges();
 
                 return Json(new { success = true, message = "Owner updated successfully!" });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
 
         [HttpGet]
-        public async Task<IActionResult> Logs(string typeFilter = "", string moduleFilter = "", string searchQuery = "", string sortField = "", string sortOrder = "", int page = 1)
-        {
+        public async Task<IActionResult> Logs(string typeFilter = "", string moduleFilter = "", string searchQuery = "", string sortField = "", string sortOrder = "", int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -3321,8 +2989,7 @@ namespace PurrVet.Controllers
             if (string.IsNullOrEmpty(sortField)) sortField = "timestamp";
             if (string.IsNullOrEmpty(sortOrder)) sortOrder = "desc";
 
-            logsQuery = (sortField, sortOrder) switch
-            {
+            logsQuery = (sortField, sortOrder) switch {
                 ("action", "asc") => logsQuery.OrderBy(l => l.ActionType),
                 ("action", "desc") => logsQuery.OrderByDescending(l => l.ActionType),
 
@@ -3344,8 +3011,7 @@ namespace PurrVet.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
-            var model = new LogListViewModel
-            {
+            var model = new LogListViewModel {
                 Logs = logs,
                 TypeFilter = typeFilter,
                 ModuleFilter = moduleFilter,
@@ -3361,32 +3027,25 @@ namespace PurrVet.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ClearLogs()
-        {
-            try
-            {
+        public async Task<IActionResult> ClearLogs() {
+            try {
                 var allLogs = _context.SystemLogs.ToList();
-                if (allLogs.Any())
-                {
+                if (allLogs.Any()) {
                     _context.SystemLogs.RemoveRange(allLogs);
                     await _context.SaveChangesAsync();
                 }
 
                 return Json(new { success = true, message = "All logs have been cleared successfully." });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error clearing logs: {ex.Message}" });
             }
         }
         [HttpGet]
-        public IActionResult Predictive_Analytics()
-        {
+        public IActionResult Predictive_Analytics() {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
-            var model = new DashboardViewModel
-            {
+            var model = new DashboardViewModel {
                 TotalCategory = _context.ServiceCategories.Count(),
                 TotalType = _context.ServiceSubtypes.Count(),
                 TotalAppointments = _context.Appointments.Count(),
@@ -3396,8 +3055,7 @@ namespace PurrVet.Controllers
             var path = Path.Combine(Directory.GetCurrentDirectory(), "App_Data", "MonthlySummary_HappyPaws.csv");
             List<ServiceDemandData> csvHistory;
             using (var reader = new StreamReader(path))
-            using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)))
-            {
+            using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture))) {
                 csv.Context.RegisterClassMap<ServiceDemandDataMap>();
                 csvHistory = csv.GetRecords<ServiceDemandData>().ToList();
             }
@@ -3409,17 +3067,14 @@ namespace PurrVet.Controllers
                 .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Category, Count = g.Count() })
                 .ToList();
 
-            foreach (var group in dbSummary)
-            {
+            foreach (var group in dbSummary) {
                 var existing = csvHistory.FirstOrDefault(x => x.Year == group.Year && x.Month == group.Month);
-                if (existing == null)
-                {
+                if (existing == null) {
                     existing = new ServiceDemandData { Year = group.Year, Month = group.Month };
                     csvHistory.Add(existing);
                 }
 
-                switch (group.Category)
-                {
+                switch (group.Category) {
                     case "Confinement / Hospitalization": existing.Confinement += group.Count; break;
                     case "Deworming & Preventives": existing.Deworming += group.Count; break;
                     case "End of Life Care": existing.EndOfLifeCare += group.Count; break;
@@ -3437,8 +3092,7 @@ namespace PurrVet.Controllers
 
             model.Years = csvHistory.Select(h => h.Year).Distinct().OrderBy(y => y).ToList();
             var currentYear = DateTime.Now.Year;
-            if (!model.Years.Contains(currentYear))
-            {
+            if (!model.Years.Contains(currentYear)) {
                 model.Years.Add(currentYear);
                 model.Years = model.Years.OrderBy(y => y).ToList();
             }
@@ -3450,14 +3104,12 @@ namespace PurrVet.Controllers
             var last = csvHistory.Last();
             int nextMonth = last.Month + 1;
             int nextYear = last.Year;
-            if (nextMonth > 12)
-            {
+            if (nextMonth > 12) {
                 nextMonth = 1;
                 nextYear++;
             }
 
-            var input = new ServiceDemandData
-            {
+            var input = new ServiceDemandData {
                 Year = nextYear,
                 Month = nextMonth,
                 Month_sin = (float)Math.Sin(2 * Math.PI * nextMonth / 12.0),
@@ -3481,13 +3133,11 @@ namespace PurrVet.Controllers
             return View(model);
         }
         [HttpGet]
-        public JsonResult GetForecastData(string service, string year)
-        {
+        public JsonResult GetForecastData(string service, string year) {
             var path = Path.Combine(Directory.GetCurrentDirectory(), "App_Data", "MonthlySummary_HappyPaws.csv");
             List<ServiceDemandData> csvHistory;
             using (var reader = new StreamReader(path))
-            using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)))
-            {
+            using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture))) {
                 csv.Context.RegisterClassMap<ServiceDemandDataMap>();
                 csvHistory = csv.GetRecords<ServiceDemandData>().ToList();
             }
@@ -3499,17 +3149,14 @@ namespace PurrVet.Controllers
                 .Select(g => new { g.Key.Year, g.Key.Month, g.Key.Category, Count = g.Count() })
                 .ToList();
 
-            foreach (var group in dbSummary)
-            {
+            foreach (var group in dbSummary) {
                 var existing = csvHistory.FirstOrDefault(x => x.Year == group.Year && x.Month == group.Month);
-                if (existing == null)
-                {
+                if (existing == null) {
                     existing = new ServiceDemandData { Year = group.Year, Month = group.Month };
                     csvHistory.Add(existing);
                 }
 
-                switch (group.Category)
-                {
+                switch (group.Category) {
                     case "Confinement / Hospitalization": existing.Confinement += group.Count; break;
                     case "Deworming & Preventives": existing.Deworming += group.Count; break;
                     case "End of Life Care": existing.EndOfLifeCare += group.Count; break;
@@ -3530,8 +3177,7 @@ namespace PurrVet.Controllers
 
             var result = predictor.GetForecastData(csvHistory, service, year);
 
-            return Json(new
-            {
+            return Json(new {
                 months = result.Months,
                 counts = result.ActualCounts,
                 predictedCounts = result.PredictedCounts,
@@ -3551,8 +3197,7 @@ namespace PurrVet.Controllers
         //   {
         //       return RedirectToAction("Dashboard");
         //   }
-        public JsonResult GetNotifications()
-        {
+        public JsonResult GetNotifications() {
             var currentUserId = HttpContext.Session.GetInt32("UserID");
 
             var notifications = _context.Notifications
@@ -3570,54 +3215,42 @@ namespace PurrVet.Controllers
 
             var unreadCount = notifications.Count(n => !n.isRead);
 
-            return Json(new
-            {
+            return Json(new {
                 notifications = notifications.Take(10),
                 totalUnread = unreadCount
             });
         }
 
         [HttpPost]
-        public IActionResult MarkAllNotificationsRead()
-        {
-            try
-            {
+        public IActionResult MarkAllNotificationsRead() {
+            try {
                 var unread = _context.Notifications.Where(n => !n.IsRead).ToList();
 
-                if (unread.Any())
-                {
+                if (unread.Any()) {
                     foreach (var n in unread)
                         n.IsRead = true;
 
                     _context.SaveChanges();
 
-                    return Json(new
-                    {
+                    return Json(new {
                         success = true,
                         message = "All notifications have been marked as read."
                     });
-                }
-                else
-                {
-                    return Json(new
-                    {
+                } else {
+                    return Json(new {
                         success = false,
                         message = "There are no unread notifications to mark."
                     });
                 }
-            }
-            catch (Exception ex)
-            {
-                return Json(new
-                {
+            } catch (Exception ex) {
+                return Json(new {
                     success = false,
                     message = "An error occurred while marking notifications as read: " + ex.Message
                 });
             }
         }
         [HttpPost]
-        public IActionResult MarkNotificationRead(int id)
-        {
+        public IActionResult MarkNotificationRead(int id) {
             var notif = _context.Notifications.FirstOrDefault(n => n.NotificationID == id);
             if (notif == null) return NotFound();
 
@@ -3629,8 +3262,7 @@ namespace PurrVet.Controllers
 
 
         [HttpGet]
-        public IActionResult AdminNotification(string typeFilter = "All", string statusFilter = "All", string searchQuery = "", int page = 1)
-        {
+        public IActionResult AdminNotification(string typeFilter = "All", string statusFilter = "All", string searchQuery = "", int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -3641,18 +3273,15 @@ namespace PurrVet.Controllers
 
             query = query.Where(n => n.TargetUserId == null || n.TargetUserId == currentUserId);
 
-            if (!string.IsNullOrEmpty(typeFilter) && typeFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(typeFilter) && typeFilter != "All") {
                 query = query.Where(n => n.Type == typeFilter);
             }
 
-            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All")
-            {
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All") {
                 query = statusFilter == "Read" ? query.Where(n => n.IsRead) : query.Where(n => !n.IsRead);
             }
 
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
+            if (!string.IsNullOrEmpty(searchQuery)) {
                 query = query.Where(n => n.Message.Contains(searchQuery));
             }
 
@@ -3663,8 +3292,7 @@ namespace PurrVet.Controllers
                 .OrderByDescending(n => n.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(n => new NotificationViewModel
-                {
+                .Select(n => new NotificationViewModel {
                     NotificationID = n.NotificationID,
                     Message = n.Message,
                     Type = n.Type,
@@ -3674,8 +3302,7 @@ namespace PurrVet.Controllers
                 })
                 .ToList();
 
-            var model = new NotificationListViewModel
-            {
+            var model = new NotificationListViewModel {
                 Notifications = notifications,
                 TypeFilter = typeFilter,
                 StatusFilter = statusFilter,
@@ -3688,8 +3315,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpGet]
-        public IActionResult ServiceCategory(string searchQuery = "", string sortOrder = "", string sortField = "", int page = 1)
-        {
+        public IActionResult ServiceCategory(string searchQuery = "", string sortOrder = "", string sortField = "", int page = 1) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -3700,14 +3326,12 @@ namespace PurrVet.Controllers
                 sortOrder = "asc";
             var query = _context.ServiceCategories.AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
+            if (!string.IsNullOrEmpty(searchQuery)) {
                 query = query.Where(c =>
                     c.ServiceType.Contains(searchQuery) ||
                     c.Description.Contains(searchQuery));
             }
-            query = (sortField, sortOrder) switch
-            {
+            query = (sortField, sortOrder) switch {
                 ("id", "desc") => query.OrderByDescending(c => c.CategoryID),
                 ("id", "asc") => query.OrderBy(c => c.CategoryID),
 
@@ -3728,8 +3352,7 @@ namespace PurrVet.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            var viewModel = new ServiceCategoryListViewModel
-            {
+            var viewModel = new ServiceCategoryListViewModel {
                 ServiceCategories = categories,
                 CurrentPage = page,
                 TotalPages = totalPages,
@@ -3742,8 +3365,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpGet]
-        public IActionResult ServiceType(string searchQuery = "", string sortOrder = "", string sortField = "", int page = 1, int? categoryFilter = null)
-        {
+        public IActionResult ServiceType(string searchQuery = "", string sortOrder = "", string sortField = "", int page = 1, int? categoryFilter = null) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -3756,14 +3378,12 @@ namespace PurrVet.Controllers
                 .Include(st => st.ServiceCategory)
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchQuery))
-            {
+            if (!string.IsNullOrEmpty(searchQuery)) {
                 query = query.Where(st =>
                     st.ServiceSubType.Contains(searchQuery) ||
                     st.ServiceCategory.ServiceType.Contains(searchQuery));
             }
-            query = (sortField, sortOrder) switch
-            {
+            query = (sortField, sortOrder) switch {
                 ("id", "desc") => query.OrderByDescending(st => st.SubtypeID),
                 ("id", "asc") => query.OrderBy(st => st.SubtypeID),
 
@@ -3776,8 +3396,7 @@ namespace PurrVet.Controllers
                 _ => query.OrderBy(st => st.SubtypeID)
             };
 
-            if (categoryFilter.HasValue && categoryFilter > 0)
-            {
+            if (categoryFilter.HasValue && categoryFilter > 0) {
                 query = query.Where(st => st.CategoryID == categoryFilter.Value);
             }
 
@@ -3789,8 +3408,7 @@ namespace PurrVet.Controllers
                 .Take(pageSize)
                 .ToList();
 
-            var viewModel = new ServiceTypeListViewModel
-            {
+            var viewModel = new ServiceTypeListViewModel {
                 ServiceSubtypes = subtypes,
                 CurrentPage = page,
                 TotalPages = totalPages,
@@ -3804,8 +3422,7 @@ namespace PurrVet.Controllers
             return View(viewModel);
         }
         [HttpGet]
-        public IActionResult AddServiceCategory()
-        {
+        public IActionResult AddServiceCategory() {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -3814,28 +3431,24 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddServiceCategory(ServiceCategory model)
-        {
+        public IActionResult AddServiceCategory(ServiceCategory model) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return Json(new { success = false, message = "Unauthorized access." });
 
             if (string.IsNullOrWhiteSpace(model.ServiceType))
                 return Json(new { success = false, message = "Service type is required." });
 
-            try
-            {
+            try {
                 _context.ServiceCategories.Add(model);
 
-                _context.Notifications.Add(new Notification
-                {
+                _context.Notifications.Add(new Notification {
                     Message = $"A new service category '{model.ServiceType}' has been added.",
                     Type = "Service Category",
                     RedirectUrl = $"/Staff/EditServiceCategory/{model.CategoryID}",
                     CreatedAt = DateTime.Now,
                     IsRead = false
                 });
-                _context.SystemLogs.Add(new SystemLog
-                {
+                _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Create",
                     Module = "Service",
                     Description = $"Added a Service Category: {model.ServiceType}",
@@ -3844,16 +3457,13 @@ namespace PurrVet.Controllers
                 });
                 _context.SaveChanges();
                 return Json(new { success = true, message = "Service category added successfully!" });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
 
         [HttpGet]
-        public IActionResult EditServiceCategory(int id)
-        {
+        public IActionResult EditServiceCategory(int id) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -3866,8 +3476,7 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult EditServiceCategory(ServiceCategory model)
-        {
+        public IActionResult EditServiceCategory(ServiceCategory model) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -3875,22 +3484,19 @@ namespace PurrVet.Controllers
             if (category == null)
                 return Json(new { success = false, message = "Service category not found." });
 
-            try
-            {
+            try {
                 category.ServiceType = model.ServiceType;
                 category.Description = model.Description;
                 _context.Update(category);
 
-                _context.Notifications.Add(new Notification
-                {
+                _context.Notifications.Add(new Notification {
                     Message = $"Service category '{model.ServiceType}' has been updated.",
                     Type = "Service Category",
                     RedirectUrl = $"/Staff/EditServiceCategory/{model.CategoryID}",
                     CreatedAt = DateTime.Now,
                     IsRead = false
                 });
-                _context.SystemLogs.Add(new SystemLog
-                {
+                _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Update",
                     Module = "Service",
                     Description = $"Updated a Service Category: {model.ServiceType}",
@@ -3899,21 +3505,17 @@ namespace PurrVet.Controllers
                 });
                 _context.SaveChanges();
                 return Json(new { success = true, message = "Service category updated successfully!" });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
         [HttpGet]
-        public IActionResult AddServiceSubtype()
-        {
+        public IActionResult AddServiceSubtype() {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
             ViewBag.ServiceCategories = _context.ServiceCategories
-                .Select(c => new
-                {
+                .Select(c => new {
                     c.CategoryID,
                     c.ServiceType
                 }).ToList();
@@ -3923,27 +3525,23 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult AddServiceSubtype(ServiceSubtype model)
-        {
+        public IActionResult AddServiceSubtype(ServiceSubtype model) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return Json(new { success = false, message = "Unauthorized access." });
 
             if (string.IsNullOrWhiteSpace(model.ServiceSubType) || model.CategoryID == 0)
                 return Json(new { success = false, message = "Please fill all required fields." });
 
-            try
-            {
+            try {
                 _context.ServiceSubtypes.Add(model);
-                _context.Notifications.Add(new Notification
-                {
+                _context.Notifications.Add(new Notification {
                     Message = $"New service subtype '{model.ServiceSubType}' has been added under Category ID {model.CategoryID}.",
                     Type = "Service Subtype",
                     RedirectUrl = $"/Staff/EditServiceSubtype/{model.SubtypeID}",
                     CreatedAt = DateTime.Now,
                     IsRead = false
                 });
-                _context.SystemLogs.Add(new SystemLog
-                {
+                _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Create",
                     Module = "Service",
                     Description = $"Added a Service Type: {model.ServiceSubType}",
@@ -3952,15 +3550,12 @@ namespace PurrVet.Controllers
                 });
                 _context.SaveChanges();
                 return Json(new { success = true, message = "Service Subtype added successfully!" });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
         [HttpGet]
-        public IActionResult EditServiceSubtype(int id)
-        {
+        public IActionResult EditServiceSubtype(int id) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return RedirectToAction("Login", "Account");
 
@@ -3969,8 +3564,7 @@ namespace PurrVet.Controllers
                 return NotFound();
 
             ViewBag.ServiceCategories = _context.ServiceCategories
-                .Select(c => new
-                {
+                .Select(c => new {
                     c.CategoryID,
                     c.ServiceType
                 }).ToList();
@@ -3980,8 +3574,7 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult EditServiceSubtype(ServiceSubtype model)
-        {
+        public IActionResult EditServiceSubtype(ServiceSubtype model) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -3989,24 +3582,21 @@ namespace PurrVet.Controllers
             if (existingSubtype == null)
                 return Json(new { success = false, message = "Service subtype not found." });
 
-            try
-            {
+            try {
                 existingSubtype.ServiceSubType = model.ServiceSubType;
                 existingSubtype.Description = model.Description;
                 existingSubtype.CategoryID = model.CategoryID;
 
                 _context.Update(existingSubtype);
 
-                _context.Notifications.Add(new Notification
-                {
+                _context.Notifications.Add(new Notification {
                     Message = $"Service subtype '{model.ServiceSubType}' has been updated.",
                     Type = "Service Subtype",
                     RedirectUrl = $"/Staff/EditServiceSubtype/{model.SubtypeID}",
                     CreatedAt = DateTime.Now,
                     IsRead = false
                 });
-                _context.SystemLogs.Add(new SystemLog
-                {
+                _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Update",
                     Module = "Service",
                     Description = $"Updated Service Subtype: {model.ServiceSubType}",
@@ -4016,42 +3606,35 @@ namespace PurrVet.Controllers
                 _context.SaveChanges();
 
                 return Json(new { success = true, message = "Service subtype updated successfully!" });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
         [HttpGet]
-        public JsonResult GetServiceCategories()
-        {
+        public JsonResult GetServiceCategories() {
             var categories = _context.ServiceCategories
                 .Select(c => new { c.CategoryID, c.ServiceType })
                 .ToList();
             return Json(categories);
         }
         [HttpGet]
-        public JsonResult GetServiceTypes(int categoryId)
-        {
+        public JsonResult GetServiceTypes(int categoryId) {
             var types = _context.ServiceSubtypes
                 .Where(t => t.CategoryID == categoryId)
                 .Select(t => new { t.SubtypeID, t.ServiceSubType })
                 .ToList();
             return Json(types);
         }
-        public IActionResult Reports()
-        {
+        public IActionResult Reports() {
             ViewBag.ServiceCategories = _context.ServiceCategories
-                .Select(c => new
-                {
+                .Select(c => new {
                     c.CategoryID,
                     c.ServiceType
                 })
                 .ToList();
 
             ViewBag.ServiceSubtypes = _context.ServiceSubtypes
-                .Select(s => new
-                {
+                .Select(s => new {
                     s.SubtypeID,
                     s.ServiceSubType,
                     s.CategoryID
@@ -4079,8 +3662,7 @@ namespace PurrVet.Controllers
 
         [HttpGet]
         public JsonResult GenerateReport(string type, DateTime? from, DateTime? to, string categoryFilter = "0", string typeFilter = "0", string statusFilter = "All", string dateSort = "desc", string readFilter = "All", string notifTypeFilter = "All",
-        string logActionTypeFilter = "All", string logModuleFilter = "All")
-        {
+        string logActionTypeFilter = "All", string logModuleFilter = "All") {
             var result = new List<object>();
             if (string.IsNullOrWhiteSpace(type)) return Json(result);
 
@@ -4091,8 +3673,7 @@ namespace PurrVet.Controllers
             if (to.HasValue)
                 toInclusive = to.Value.Date.AddDays(1).AddTicks(-1);
 
-            switch (normalizedType)
-            {
+            switch (normalizedType) {
                 case "appointments":
                     var appts = _context.Appointments
                         .Include(a => a.Pet)
@@ -4116,8 +3697,7 @@ namespace PurrVet.Controllers
                         ? appts.OrderBy(a => a.AppointmentDate)
                         : appts.OrderByDescending(a => a.AppointmentDate);
 
-                    result = appts.Select(a => new
-                    {
+                    result = appts.Select(a => new {
                         ID = a.AppointmentID,
                         Pet = a.Pet != null ? a.Pet.Name : "N/A",
                         Category = a.ServiceSubtype != null && a.ServiceSubtype.ServiceCategory != null
@@ -4135,8 +3715,7 @@ namespace PurrVet.Controllers
                         .Where(n => (!from.HasValue || n.CreatedAt >= from.Value) &&
                                     (!toInclusive.HasValue || n.CreatedAt <= toInclusive.Value));
 
-                    if (!string.IsNullOrEmpty(readFilter) && !string.Equals(readFilter, "All", StringComparison.OrdinalIgnoreCase))
-                    {
+                    if (!string.IsNullOrEmpty(readFilter) && !string.Equals(readFilter, "All", StringComparison.OrdinalIgnoreCase)) {
                         if (string.Equals(readFilter, "Yes", StringComparison.OrdinalIgnoreCase))
                             notif = notif.Where(n => n.IsRead);
                         else if (string.Equals(readFilter, "No", StringComparison.OrdinalIgnoreCase))
@@ -4148,8 +3727,7 @@ namespace PurrVet.Controllers
 
                     notif = normalizedDateSort == "asc" ? notif.OrderBy(n => n.CreatedAt) : notif.OrderByDescending(n => n.CreatedAt);
 
-                    result = notif.Select(n => new
-                    {
+                    result = notif.Select(n => new {
                         ID = n.NotificationID,
                         Type = n.Type,
                         Message = n.Message,
@@ -4172,8 +3750,7 @@ namespace PurrVet.Controllers
 
                     logs = normalizedDateSort == "asc" ? logs.OrderBy(l => l.Timestamp) : logs.OrderByDescending(l => l.Timestamp);
 
-                    result = logs.Select(l => new
-                    {
+                    result = logs.Select(l => new {
                         ID = l.LogID,
                         ActionType = l.ActionType,
                         Module = l.Module,
@@ -4199,15 +3776,12 @@ namespace PurrVet.Controllers
             string readFilter = "All",
             string notifTypeFilter = "All",
             string logActionTypeFilter = "All",
-            string logModuleFilter = "All")
-        {
-            var json = GenerateReport(type, from, to, categoryFilter, typeFilter, statusFilter, dateSort, readFilter, notifTypeFilter, logActionTypeFilter, logModuleFilter) as JsonResult;
+            string logModuleFilter = "All") {
+            var json = GenerateReport(type, from, to, categoryFilter, typeFilter, statusFilter, dateSort, readFilter, notifTypeFilter, logActionTypeFilter, logModuleFilter);
             var list = json?.Value as IEnumerable<object> ?? Enumerable.Empty<object>();
 
-            byte[] pdfBytes = QuestPDF.Fluent.Document.Create(container =>
-            {
-                container.Page(page =>
-                {
+            byte[] pdfBytes = QuestPDF.Fluent.Document.Create(container => {
+                container.Page(page => {
                     page.Size(PageSizes.A4);
                     page.Margin(20);
                     page.DefaultTextStyle(x => x.FontSize(10));
@@ -4219,41 +3793,32 @@ namespace PurrVet.Controllers
 
                     page.Content()
                         .PaddingVertical(10)
-                        .Column(col =>
-                        {
+                        .Column(col => {
                             col.Item().Text($"Report Type: {type?.ToUpper() ?? "N/A"}").AlignCenter();
                             col.Item().Text($"Date Range: {from?.ToString("yyyy-MM-dd") ?? "All"} to {to?.ToString("yyyy-MM-dd") ?? "All"}").AlignCenter();
                             col.Item().PaddingTop(10);
 
-                            if (list.Any())
-                            {
+                            if (list.Any()) {
                                 var props = list.First().GetType().GetProperties();
-                                col.Item().Table(table =>
-                                {
-                                    table.ColumnsDefinition(columns =>
-                                    {
+                                col.Item().Table(table => {
+                                    table.ColumnsDefinition(columns => {
                                         for (int i = 0; i < props.Length; i++)
                                             columns.RelativeColumn();
                                     });
 
-                                    table.Header(header =>
-                                    {
+                                    table.Header(header => {
                                         foreach (var prop in props)
                                             header.Cell().Text(prop.Name).SemiBold();
                                     });
 
-                                    foreach (var item in list)
-                                    {
-                                        foreach (var prop in props)
-                                        {
+                                    foreach (var item in list) {
+                                        foreach (var prop in props) {
                                             var value = prop.GetValue(item)?.ToString() ?? "";
                                             table.Cell().Text(value);
                                         }
                                     }
                                 });
-                            }
-                            else
-                            {
+                            } else {
                                 col.Item().Text("No data available for this report.").AlignCenter().Italic();
                             }
                         });
@@ -4275,9 +3840,8 @@ namespace PurrVet.Controllers
             string readFilter = "All",
             string notifTypeFilter = "All",
             string logActionTypeFilter = "All",
-            string logModuleFilter = "All")
-        {
-            var json = GenerateReport(type, from, to, categoryFilter, typeFilter, statusFilter, dateSort, readFilter, notifTypeFilter, logActionTypeFilter, logModuleFilter) as JsonResult;
+            string logModuleFilter = "All") {
+            var json = GenerateReport(type, from, to, categoryFilter, typeFilter, statusFilter, dateSort, readFilter, notifTypeFilter, logActionTypeFilter, logModuleFilter);
             var list = json?.Value as IEnumerable<object> ?? Enumerable.Empty<object>();
 
             if (!list.Any())
@@ -4287,8 +3851,7 @@ namespace PurrVet.Controllers
             var props = list.First().GetType().GetProperties();
 
             sb.AppendLine(string.Join(",", props.Select(p => p.Name)));
-            foreach (var item in list)
-            {
+            foreach (var item in list) {
                 sb.AppendLine(string.Join(",", props.Select(p => (p.GetValue(item)?.ToString() ?? "").Replace(",", " "))));
             }
 
@@ -4296,8 +3859,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpGet]
-        public IActionResult Profile()
-        {
+        public IActionResult Profile() {
             var role = HttpContext.Session.GetString("UserRole");
             var userId = HttpContext.Session.GetInt32("UserID");
 
@@ -4337,8 +3899,7 @@ namespace PurrVet.Controllers
     string Phone,
     string CurrentPassword,
     string Password,
-    string ConfirmPassword)
-        {
+    string ConfirmPassword) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -4358,8 +3919,7 @@ namespace PurrVet.Controllers
             user.LastName = LastName.Trim();
             user.Phone = Phone?.Trim();
 
-            if (!string.IsNullOrWhiteSpace(Password))
-            {
+            if (!string.IsNullOrWhiteSpace(Password)) {
                 if (string.IsNullOrWhiteSpace(CurrentPassword))
                     return Json(new { success = false, message = "Enter your current password to change it." });
 
@@ -4377,11 +3937,9 @@ namespace PurrVet.Controllers
                 user.Password = hasher.HashPassword(user, Password);
             }
 
-            try
-            {
+            try {
                 _context.Users.Update(user);
-                _context.SystemLogs.Add(new SystemLog
-                {
+                _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Update",
                     Module = "User",
                     Description = $"Updated profile: {user.FirstName} {user.LastName}",
@@ -4391,16 +3949,13 @@ namespace PurrVet.Controllers
                 await _context.SaveChangesAsync();
 
                 return Json(new { success = true, message = "Profile updated successfully!" });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditUserPhoto(int id, IFormFile? ProfileImage)
-        {
+        public async Task<IActionResult> EditUserPhoto(int id, IFormFile? ProfileImage) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -4411,10 +3966,8 @@ namespace PurrVet.Controllers
             if (ProfileImage == null || ProfileImage.Length == 0)
                 return Json(new { success = false, message = "No file selected." });
 
-            try
-            {
-                if (!string.IsNullOrEmpty(user.ProfileImage))
-                {
+            try {
+                if (!string.IsNullOrEmpty(user.ProfileImage)) {
                     var oldPath = Path.Combine("wwwroot", user.ProfileImage.TrimStart('/'));
                     if (System.IO.File.Exists(oldPath))
                         System.IO.File.Delete(oldPath);
@@ -4435,9 +3988,7 @@ namespace PurrVet.Controllers
                 await _context.SaveChangesAsync();
 
                 return Json(new { success = true, message = "Profile photo updated successfully!", profileImageUrl = user.ProfileImage });
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 return Json(new { success = false, message = $"Error: {ex.Message}" });
             }
         }

@@ -1,7 +1,5 @@
-﻿namespace PurrVet.Services
-{
-    public class GmailSettings
-    {
+﻿namespace PurrVet.Services {
+    public class GmailSettings {
         public string Email { get; set; } = "";
         public string AppPassword { get; set; } = "";
         public string DisplayName { get; set; } = "";

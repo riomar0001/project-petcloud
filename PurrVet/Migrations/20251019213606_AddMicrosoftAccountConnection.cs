@@ -1,16 +1,12 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace PurrVet.Migrations
-{
+namespace PurrVet.Migrations {
     /// <inheritdoc />
-    public partial class AddMicrosoftAccountConnection : Migration
-    {
+    public partial class AddMicrosoftAccountConnection : Migration {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.AlterColumn<string>(
                 name: "Notes",
                 table: "AppointmentGroups",
@@ -23,8 +19,7 @@ namespace PurrVet.Migrations
 
             migrationBuilder.CreateTable(
                 name: "MicrosoftAccountConnections",
-                columns: table => new
-                {
+                columns: table => new {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserID = table.Column<int>(type: "int", nullable: false),
@@ -34,8 +29,7 @@ namespace PurrVet.Migrations
                     TokenExpiry = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ConnectedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_MicrosoftAccountConnections", x => x.Id);
                     table.ForeignKey(
                         name: "FK_MicrosoftAccountConnections_Users_UserID",
@@ -52,8 +46,7 @@ namespace PurrVet.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "MicrosoftAccountConnections");
 

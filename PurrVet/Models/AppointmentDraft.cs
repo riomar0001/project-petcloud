@@ -1,16 +1,13 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace PurrVet.Models
-{
-    public class AppointmentDraft
-    {
+namespace PurrVet.Models {
+    public class AppointmentDraft {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int DraftID { get; set; }
 
-        public int? UserID { get; set; } 
+        public int? UserID { get; set; }
         public int? OwnerID { get; set; }
 
         [ForeignKey("Pet")]

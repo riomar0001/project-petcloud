@@ -1,11 +1,9 @@
-﻿namespace PurrVet.Models
-{
+﻿namespace PurrVet.Models {
+    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
-    using System.Collections.Generic;
 
-    public class Owner
-    {
+    public class Owner {
         [Key]
         public int OwnerID { get; set; }
 

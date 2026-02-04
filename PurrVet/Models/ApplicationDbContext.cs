@@ -1,11 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PurrVet.Migrations;
-using PurrVet.Models;
 
-namespace PurrVet.Models
-{
-    public class ApplicationDbContext : DbContext
-    {
+namespace PurrVet.Models {
+    public class ApplicationDbContext : DbContext {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options) { }
 
@@ -22,8 +18,7 @@ namespace PurrVet.Models
         public DbSet<MicrosoftAccountConnection> MicrosoftAccountConnections { get; set; }
         public DbSet<AppointmentDraft> AppointmentDrafts { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
+        protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<ServiceCategory>()

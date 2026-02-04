@@ -1,10 +1,7 @@
-﻿namespace PurrVet.Models
-{
-    using System.Collections.Generic;
+﻿namespace PurrVet.Models {
     using System.ComponentModel.DataAnnotations;
 
-    public class User
-    {
+    public class User {
         [Key]
         public int UserID { get; set; }
 
@@ -34,9 +31,9 @@
         public string ProfileImage { get; set; }
         public string? ResetToken { get; set; }
         public DateTime? TokenExpiry { get; set; }
-        public bool TwoFactorEnabled { get; set; } = true; 
-        public string? TwoFactorCode { get; set; } 
-        public DateTime? TwoFactorExpiry { get; set; } 
+        public bool TwoFactorEnabled { get; set; } = true;
+        public string? TwoFactorCode { get; set; }
+        public DateTime? TwoFactorExpiry { get; set; }
         public DateTime? LastTwoFactorVerification { get; set; }
         public string? LastLoginIP { get; set; }
         public string? LastLoginDevice { get; set; }

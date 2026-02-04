@@ -1,7 +1,5 @@
-﻿namespace PurrVet.Models
-{
-    public class OwnerDashboardViewModel
-    {
+﻿namespace PurrVet.Models {
+    public class OwnerDashboardViewModel {
         public string UserName { get; set; }
         public List<dynamic> Pets { get; set; } = new();
         public List<dynamic> UpcomingAppointments { get; set; } = new();

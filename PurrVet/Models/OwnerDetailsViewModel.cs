@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-
-namespace PurrVet.Models
-{
-    public class OwnerDetailsViewModel
-    {
+﻿namespace PurrVet.Models {
+    public class OwnerDetailsViewModel {
         public Owner Owner { get; set; }
         public List<Pet> Pets { get; set; }
 

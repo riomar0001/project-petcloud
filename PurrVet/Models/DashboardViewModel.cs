@@ -1,7 +1,5 @@
-﻿namespace PurrVet.Models
-{
-    public class DashboardViewModel
-    {
+﻿namespace PurrVet.Models {
+    public class DashboardViewModel {
         public int TotalUsers { get; set; }
         public int TotalPets { get; set; }
         public int TotalAppointments { get; set; }

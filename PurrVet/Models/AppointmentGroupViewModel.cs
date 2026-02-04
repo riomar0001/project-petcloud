@@ -1,7 +1,5 @@
-﻿namespace PurrVet.Models
-{
-    public class AppointmentGroupViewModel
-    {
+﻿namespace PurrVet.Models {
+    public class AppointmentGroupViewModel {
         public int GroupID { get; set; }
         public List<Appointment> Appointments { get; set; } = new();
         public int AppointmentCount => Appointments?.Count ?? 0;

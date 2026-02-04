@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-
-namespace PurrVet.Models
-{
-    public class LogListViewModel
-    {
+﻿namespace PurrVet.Models {
+    public class LogListViewModel {
         public IEnumerable<SystemLog> Logs { get; set; } = new List<SystemLog>();
 
         public string TypeFilter { get; set; }

@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace PurrVet.Models
-{
-    public class AppointmentBulkForm
-    {
+namespace PurrVet.Models {
+    public class AppointmentBulkForm {
         [Required]
         public List<AppointmentInput> Appointments { get; set; } = new();
     }
 
-    public class AppointmentInput
-    {
+    public class AppointmentInput {
         [Required(ErrorMessage = "Pet selection is required.")]
         public int PetID { get; set; }
 

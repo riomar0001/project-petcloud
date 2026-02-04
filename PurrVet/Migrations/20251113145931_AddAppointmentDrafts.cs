@@ -2,14 +2,11 @@
 
 #nullable disable
 
-namespace PurrVet.Migrations
-{
+namespace PurrVet.Migrations {
     /// <inheritdoc />
-    public partial class AddAppointmentDrafts : Migration
-    {
+    public partial class AddAppointmentDrafts : Migration {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.CreateIndex(
                 name: "IX_AppointmentDrafts_CategoryID",
                 table: "AppointmentDrafts",
@@ -48,8 +45,7 @@ namespace PurrVet.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropForeignKey(
                 name: "FK_AppointmentDrafts_Pets_PetID",
                 table: "AppointmentDrafts");

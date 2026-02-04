@@ -1,7 +1,5 @@
-﻿namespace PurrVet.Models
-{
-    public class EndLifeListViewModel
-    {
+﻿namespace PurrVet.Models {
+    public class EndLifeListViewModel {
         public IEnumerable<Appointment> EndLife { get; set; } = new List<Appointment>();
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }

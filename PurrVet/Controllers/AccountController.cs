@@ -1,37 +1,30 @@
-﻿using System;
-using System.Security.Claims;
-using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Graph.Models.TermStore;
 using PurrVet.Models;
 using PurrVet.Services;
+using System.Security.Claims;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
-namespace PurrVet.Controllers
-{
-    public class AccountController : Controller
-    {
+namespace PurrVet.Controllers {
+    public class AccountController : Controller {
         private readonly ApplicationDbContext _context;
         private readonly IPasswordHasher<User> _passwordHasher;
         private readonly EmailService _emailService;
         private readonly IConfiguration _configuration;
 
-        public AccountController(ApplicationDbContext context, IPasswordHasher<User> passwordHasher, EmailService emailService, IConfiguration configuration)
-        {
+        public AccountController(ApplicationDbContext context, IPasswordHasher<User> passwordHasher, EmailService emailService, IConfiguration configuration) {
             _context = context;
             _passwordHasher = passwordHasher;
             _emailService = emailService;
             _configuration = configuration;
         }
-        private void CreateNotification(string type, string message)
-        {
-            var notif = new Notification
-            {
+        private void CreateNotification(string type, string message) {
+            var notif = new Notification {
                 Type = type,
                 Message = message,
                 CreatedAt = DateTime.Now,
@@ -48,19 +41,18 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(string email, string password, [FromForm(Name = "g-recaptcha-response")] string gRecaptcha, bool rememberMe = false)
-        {
-          var secretKey = _configuration["GoogleReCaptcha:SecretKey"];
-          var httpClient = new HttpClient();
+        public async Task<IActionResult> Login(string email, string password, [FromForm(Name = "g-recaptcha-response")] string gRecaptcha, bool rememberMe = false) {
+            var secretKey = _configuration["GoogleReCaptcha:SecretKey"];
+            var httpClient = new HttpClient();
 
-          var googleReply = await httpClient.GetStringAsync(
-               $"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={gRecaptcha}"
-            );
+            var googleReply = await httpClient.GetStringAsync(
+                 $"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={gRecaptcha}"
+              );
 
-           var captchaResult = JsonSerializer.Deserialize<ReCaptchaResponse>(googleReply);
+            var captchaResult = JsonSerializer.Deserialize<ReCaptchaResponse>(googleReply);
 
             if (captchaResult == null || !captchaResult.success)
-              return Json(new { success = false, message = "reCAPTCHA verification failed." });
+                return Json(new { success = false, message = "reCAPTCHA verification failed." });
 
             var currentIp = HttpContext.Connection.RemoteIpAddress?.ToString();
             var currentDevice = Request.Headers["User-Agent"].ToString();
@@ -69,39 +61,33 @@ namespace PurrVet.Controllers
             if (user == null)
                 return Json(new { success = false, message = "Invalid email or password." });
 
-            if (user.Status == "Inactive")
-            {
+            if (user.Status == "Inactive") {
                 return Json(new { success = false, message = "Your account is disabled due to inactivity. Please contact us at hpawsvetclinic@gmail.com\r\n" });
             }
 
             if (user.LastTwoFactorVerification.HasValue &&
-                user.LastTwoFactorVerification.Value.AddDays(100) < DateTime.Now)
-            {
+                user.LastTwoFactorVerification.Value.AddDays(100) < DateTime.Now) {
                 user.Status = "Inactive";
                 await _context.SaveChangesAsync();
                 return Json(new { success = false, message = "Your account has been inactive for over 100 days and has been disabled. Please contact us at hpawsvetclinic@gmail.com\r\n" });
             }
 
             if (!user.LastTwoFactorVerification.HasValue &&
-                user.CreatedAt.AddDays(100) < DateTime.Now)
-            {
+                user.CreatedAt.AddDays(100) < DateTime.Now) {
                 user.Status = "Inactive";
                 await _context.SaveChangesAsync();
                 return Json(new { success = false, message = "Your account has been inactive for over 100 days and has been disabled. Please contact us at hpawsvetclinic@gmail.com\r\n" });
             }
 
-            if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.Now)
-            {
+            if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.Now) {
                 var remaining = (user.LockoutEnd.Value - DateTime.Now).Minutes;
                 return Json(new { success = false, message = $"Account locked. Try again in {remaining} minutes." });
             }
 
             var result = _passwordHasher.VerifyHashedPassword(user, user.Password, password);
-            if (result == PasswordVerificationResult.Failed)
-            {
+            if (result == PasswordVerificationResult.Failed) {
                 user.FailedLoginAttempts++;
-                if (user.FailedLoginAttempts >= 5)
-                {
+                if (user.FailedLoginAttempts >= 5) {
                     user.LockoutEnd = DateTime.Now.AddMinutes(3);
                     user.FailedLoginAttempts = 0;
                 }
@@ -122,8 +108,7 @@ namespace PurrVet.Controllers
                                    newDeviceOrLocation
                                );
 
-            if (requires2FA)
-            {
+            if (requires2FA) {
                 var code = new Random().Next(100000, 999999).ToString();
                 user.TwoFactorCode = code;
                 user.TwoFactorExpiry = DateTime.Now.AddMinutes(10);
@@ -149,8 +134,7 @@ namespace PurrVet.Controllers
 
             await SignInUser(user);
 
-            string redirectUrl = user.Type switch
-            {
+            string redirectUrl = user.Type switch {
                 "Admin" => Url.Action("Dashboard", "Admin"),
                 "Owner" => Url.Action("Dashboard", "Owner"),
                 "Staff" => Url.Action("Dashboard", "Staff"),
@@ -160,15 +144,13 @@ namespace PurrVet.Controllers
             return Json(new { success = true, redirectUrl });
         }
 
-        private async Task SignInUser(User user)
-        {
+        private async Task SignInUser(User user) {
             HttpContext.Session.SetString("ProfileImage", string.IsNullOrEmpty(user.ProfileImage) ? "golden.png" : Path.GetFileName(user.ProfileImage));
             HttpContext.Session.SetString("UserRole", user.Type);
             HttpContext.Session.SetString("UserName", $"{user.FirstName} {user.LastName}");
             HttpContext.Session.SetInt32("UserID", user.UserID);
 
-            if (user.Type == "Owner")
-            {
+            if (user.Type == "Owner") {
                 var owner = await _context.Owners.FirstOrDefaultAsync(o => o.UserID == user.UserID);
                 if (owner != null) HttpContext.Session.SetInt32("OwnerID", owner.OwnerID);
             }
@@ -185,24 +167,21 @@ namespace PurrVet.Controllers
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
 
-            var authProperties = new AuthenticationProperties
-            {
+            var authProperties = new AuthenticationProperties {
                 IsPersistent = true,
-                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30) 
+                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30)
             };
 
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
         }
 
         [HttpGet]
-        public IActionResult Verify2FA(int userId)
-        {
+        public IActionResult Verify2FA(int userId) {
             ViewBag.UserId = userId;
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> Verify2FA(int userId, string code, bool rememberMe = false)
-        {
+        public async Task<IActionResult> Verify2FA(int userId, string code, bool rememberMe = false) {
             var user = await _context.Users.FindAsync(userId);
             if (user == null) return Json(new { success = false, message = "User not found." });
 
@@ -218,8 +197,7 @@ namespace PurrVet.Controllers
 
             await SignInUser(user);
 
-            string redirectUrl = user.Type switch
-            {
+            string redirectUrl = user.Type switch {
                 "Admin" => Url.Action("Dashboard", "Admin"),
                 "Owner" => Url.Action("Dashboard", "Owner"),
                 "Staff" => Url.Action("Dashboard", "Staff"),
@@ -230,8 +208,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpPost]
-        public IActionResult RefreshProfileImage()
-        {
+        public IActionResult RefreshProfileImage() {
             var userId = HttpContext.Session.GetInt32("UserID");
             if (userId == null) return Json(new { success = false });
 
@@ -244,18 +221,15 @@ namespace PurrVet.Controllers
             return Json(new { success = true, image = imageFile });
         }
         [HttpGet]
-        public async Task<IActionResult> Logout()
-        {
+        public async Task<IActionResult> Logout() {
             var userEmail = HttpContext.Session.GetString("UserEmail");
             var userId = HttpContext.Session.GetInt32("UserID");
 
-            if (!string.IsNullOrEmpty(userEmail) || userId != null)
-            {
+            if (!string.IsNullOrEmpty(userEmail) || userId != null) {
                 var connection = _context.MicrosoftAccountConnections
                     .FirstOrDefault(x => x.MicrosoftEmail == userEmail || x.UserID == userId);
 
-                if (connection != null)
-                {
+                if (connection != null) {
                     _context.MicrosoftAccountConnections.Remove(connection);
                     _context.SaveChanges();
                 }
@@ -272,8 +246,7 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Register(string firstname, string lastname, string email, string phone, string password, string confirmPassword)
-        {
+        public IActionResult Register(string firstname, string lastname, string email, string phone, string password, string confirmPassword) {
             if (_context.Users.Any(u => u.Email == email))
                 return Json(new { success = false, message = "Email already exists." });
 
@@ -289,8 +262,7 @@ namespace PurrVet.Controllers
             if (password != confirmPassword)
                 return Json(new { success = false, message = "Passwords do not match." });
 
-            var newUser = new User
-            {
+            var newUser = new User {
                 FirstName = firstname,
                 LastName = lastname,
                 Email = email,
@@ -304,8 +276,7 @@ namespace PurrVet.Controllers
             _context.Users.Add(newUser);
             _context.SaveChanges();
 
-            var owner = new Owner
-            {
+            var owner = new Owner {
                 UserID = newUser.UserID,
                 Name = $"{firstname} {lastname}",
                 Email = email,
@@ -313,8 +284,7 @@ namespace PurrVet.Controllers
             };
 
             _context.Owners.Add(owner);
-            _context.SystemLogs.Add(new SystemLog
-            {
+            _context.SystemLogs.Add(new SystemLog {
                 ActionType = "Create",
                 Module = "User",
                 Description = $"A new user has signed up: {firstname} {lastname}",
@@ -331,8 +301,7 @@ namespace PurrVet.Controllers
         public IActionResult ForgotPassword() => View();
 
         [HttpPost]
-        public async Task<IActionResult> ForgotPassword(string email, [FromServices] EmailService emailService)
-        {
+        public async Task<IActionResult> ForgotPassword(string email, [FromServices] EmailService emailService) {
             if (string.IsNullOrWhiteSpace(email))
                 return Json(new { success = false, message = "Please enter your email address." });
 
@@ -361,8 +330,7 @@ namespace PurrVet.Controllers
         }
 
         [HttpGet]
-        public IActionResult ResetPassword(string token)
-        {
+        public IActionResult ResetPassword(string token) {
             var user = _context.Users.FirstOrDefault(u => u.ResetToken == token && u.TokenExpiry > DateTime.Now);
             if (user == null)
                 return RedirectToAction("ForgotPassword");
@@ -373,8 +341,7 @@ namespace PurrVet.Controllers
 
         [HttpPost]
         [IgnoreAntiforgeryToken]
-        public IActionResult ResetPassword(string token, string newPassword, string confirmPassword)
-        {
+        public IActionResult ResetPassword(string token, string newPassword, string confirmPassword) {
             var user = _context.Users.FirstOrDefault(u => u.ResetToken == token && u.TokenExpiry > DateTime.Now);
             if (user == null)
                 return Json(new { success = false, message = "Invalid or expired reset token." });

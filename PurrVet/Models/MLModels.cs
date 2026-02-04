@@ -1,13 +1,7 @@
-﻿using Microsoft.ML;
-using Microsoft.ML.Data;
-using CsvHelper;
-using CsvHelper.Configuration;
-using System.Globalization;
+﻿using Microsoft.ML.Data;
 
-namespace PurrVet.Services
-{
-    public class ServiceDemandData
-    {
+namespace PurrVet.Services {
+    public class ServiceDemandData {
         public int Year { get; set; }
         public int Month { get; set; }
         public float Month_sin { get; set; }
@@ -31,10 +25,8 @@ namespace PurrVet.Services
         public float EndOfLifeCare { get; set; }
         public float Confinement { get; set; }
         public float Diagnostics { get; set; }
-        public float GetServiceCount(string service)
-        {
-            switch (service)
-            {
+        public float GetServiceCount(string service) {
+            switch (service) {
                 case "Confinement / Hospitalization": return Confinement;
                 case "Deworming & Preventives": return Deworming;
                 case "End of Life Care": return EndOfLifeCare;
@@ -52,10 +44,9 @@ namespace PurrVet.Services
 
     }
 
-    public class ServiceDemandPrediction
-    {
+    public class ServiceDemandPrediction {
         [ColumnName("Score")]
         public float Score { get; set; }
     }
-   
+
 }

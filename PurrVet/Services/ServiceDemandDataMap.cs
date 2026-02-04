@@ -1,12 +1,8 @@
 ﻿using CsvHelper.Configuration;
-using PurrVet.Models;
 
-namespace PurrVet.Services
-{
-    public class ServiceDemandDataMap : ClassMap<ServiceDemandData>
-    {
-        public ServiceDemandDataMap()
-        {
+namespace PurrVet.Services {
+    public class ServiceDemandDataMap : ClassMap<ServiceDemandData> {
+        public ServiceDemandDataMap() {
             Map(m => m.Year).Name("Year");
             Map(m => m.Month).Name("Month");
             Map(m => m.Month_sin).Name("Month_sin");

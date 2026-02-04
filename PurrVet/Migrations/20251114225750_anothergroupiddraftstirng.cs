@@ -2,14 +2,11 @@
 
 #nullable disable
 
-namespace PurrVet.Migrations
-{
+namespace PurrVet.Migrations {
     /// <inheritdoc />
-    public partial class anothergroupiddraftstirng : Migration
-    {
+    public partial class anothergroupiddraftstirng : Migration {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.AlterColumn<string>(
                 name: "GroupDraftId",
                 table: "AppointmentDrafts",
@@ -21,8 +18,7 @@ namespace PurrVet.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.AlterColumn<int>(
                 name: "GroupDraftId",
                 table: "AppointmentDrafts",

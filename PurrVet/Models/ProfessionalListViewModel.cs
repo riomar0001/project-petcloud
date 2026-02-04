@@ -1,7 +1,5 @@
-﻿namespace PurrVet.Models
-{
-    public class ProfessionalListViewModel
-    {
+﻿namespace PurrVet.Models {
+    public class ProfessionalListViewModel {
         public IEnumerable<Appointment> ProfessionalAppointments { get; set; } = new List<Appointment>();
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }

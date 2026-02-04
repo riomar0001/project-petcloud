@@ -1,15 +1,12 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace PurrVet.Models
-{
-    public class MicrosoftAccountConnection
-    {
+namespace PurrVet.Models {
+    public class MicrosoftAccountConnection {
         [Key]
         public int Id { get; set; }
 
-        [ForeignKey(nameof(User))] 
+        [ForeignKey(nameof(User))]
         public int UserID { get; set; }
 
         [Required, MaxLength(255)]

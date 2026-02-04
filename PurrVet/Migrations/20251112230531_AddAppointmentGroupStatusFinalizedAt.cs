@@ -1,16 +1,12 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace PurrVet.Migrations
-{
+namespace PurrVet.Migrations {
     /// <inheritdoc />
-    public partial class AddAppointmentGroupStatusFinalizedAt : Migration
-    {
+    public partial class AddAppointmentGroupStatusFinalizedAt : Migration {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.AddColumn<DateTime>(
                 name: "FinalizedAt",
                 table: "AppointmentGroups",
@@ -26,8 +22,7 @@ namespace PurrVet.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropColumn(
                 name: "FinalizedAt",
                 table: "AppointmentGroups");

@@ -1,7 +1,5 @@
-﻿namespace PurrVet.Models
-{
-    public class ServiceCategoryListViewModel
-    {
+﻿namespace PurrVet.Models {
+    public class ServiceCategoryListViewModel {
         public List<ServiceCategory> ServiceCategories { get; set; } = new();
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }

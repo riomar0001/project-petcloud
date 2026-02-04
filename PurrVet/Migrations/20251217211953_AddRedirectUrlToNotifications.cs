@@ -2,14 +2,11 @@
 
 #nullable disable
 
-namespace PurrVet.Migrations
-{
+namespace PurrVet.Migrations {
     /// <inheritdoc />
-    public partial class AddRedirectUrlToNotifications : Migration
-    {
+    public partial class AddRedirectUrlToNotifications : Migration {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.AddColumn<string>(
                 name: "RedirectUrl",
                 table: "Notifications",
@@ -19,8 +16,7 @@ namespace PurrVet.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropColumn(
                 name: "RedirectUrl",
                 table: "Notifications");

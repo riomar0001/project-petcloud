@@ -1,10 +1,7 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace PurrVet.Models
-{
-    public class SystemLog
-    {
+namespace PurrVet.Models {
+    public class SystemLog {
         [Key]
         public int LogID { get; set; }
 
@@ -19,9 +16,9 @@ namespace PurrVet.Models
         public DateTime Timestamp { get; set; }
 
         [MaxLength(500)]
-        public string Description { get; set; } 
+        public string Description { get; set; }
 
         [MaxLength(50)]
-        public string Module { get; set; } 
+        public string Module { get; set; }
     }
 }

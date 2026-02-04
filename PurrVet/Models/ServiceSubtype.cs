@@ -1,10 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace PurrVet.Models
-{
-    public class ServiceSubtype
-    {
+namespace PurrVet.Models {
+    public class ServiceSubtype {
         [Key]
         public int SubtypeID { get; set; }
 
@@ -13,7 +11,7 @@ namespace PurrVet.Models
 
         [Required]
         [MaxLength(100)]
-        public string ServiceSubType { get; set; } 
+        public string ServiceSubType { get; set; }
 
         public string? Description { get; set; }
 

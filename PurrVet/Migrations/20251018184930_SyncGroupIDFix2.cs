@@ -1,35 +1,28 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace PurrVet.Migrations
-{
+namespace PurrVet.Migrations {
     /// <inheritdoc />
-    public partial class SyncGroupIDFix2 : Migration
-    {
+    public partial class SyncGroupIDFix2 : Migration {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.CreateTable(
                 name: "AppointmentGroups",
-                columns: table => new
-                {
+                columns: table => new {
                     GroupID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     GroupTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_AppointmentGroups", x => x.GroupID);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Notifications",
-                columns: table => new
-                {
+                columns: table => new {
                     NotificationID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Message = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
@@ -37,29 +30,25 @@ namespace PurrVet.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsRead = table.Column<bool>(type: "bit", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_Notifications", x => x.NotificationID);
                 });
 
             migrationBuilder.CreateTable(
                 name: "ServiceCategories",
-                columns: table => new
-                {
+                columns: table => new {
                     CategoryID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ServiceType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_ServiceCategories", x => x.CategoryID);
                 });
 
             migrationBuilder.CreateTable(
                 name: "SystemLogs",
-                columns: table => new
-                {
+                columns: table => new {
                     LogID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ActionType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
@@ -68,15 +57,13 @@ namespace PurrVet.Migrations
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     Module = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_SystemLogs", x => x.LogID);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Users",
-                columns: table => new
-                {
+                columns: table => new {
                     UserID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
@@ -89,23 +76,20 @@ namespace PurrVet.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ProfileImage = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_Users", x => x.UserID);
                 });
 
             migrationBuilder.CreateTable(
                 name: "ServiceSubtypes",
-                columns: table => new
-                {
+                columns: table => new {
                     SubtypeID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     CategoryID = table.Column<int>(type: "int", nullable: false),
                     ServiceSubType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_ServiceSubtypes", x => x.SubtypeID);
                     table.ForeignKey(
                         name: "FK_ServiceSubtypes_ServiceCategories_CategoryID",
@@ -117,8 +101,7 @@ namespace PurrVet.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Owners",
-                columns: table => new
-                {
+                columns: table => new {
                     OwnerID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     UserID = table.Column<int>(type: "int", nullable: false),
@@ -126,8 +109,7 @@ namespace PurrVet.Migrations
                     Email = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(12)", maxLength: 12, nullable: false)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_Owners", x => x.OwnerID);
                     table.ForeignKey(
                         name: "FK_Owners_Users_UserID",
@@ -139,8 +121,7 @@ namespace PurrVet.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Pets",
-                columns: table => new
-                {
+                columns: table => new {
                     PetID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     OwnerID = table.Column<int>(type: "int", nullable: false),
@@ -151,8 +132,7 @@ namespace PurrVet.Migrations
                     Birthdate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PhotoPath = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_Pets", x => x.PetID);
                     table.ForeignKey(
                         name: "FK_Pets_Owners_OwnerID",
@@ -164,8 +144,7 @@ namespace PurrVet.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Appointments",
-                columns: table => new
-                {
+                columns: table => new {
                     AppointmentID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     PetID = table.Column<int>(type: "int", nullable: false),
@@ -178,8 +157,7 @@ namespace PurrVet.Migrations
                     AdministeredBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_Appointments", x => x.AppointmentID);
                     table.ForeignKey(
                         name: "FK_Appointments_AppointmentGroups_GroupID",
@@ -209,16 +187,14 @@ namespace PurrVet.Migrations
 
             migrationBuilder.CreateTable(
                 name: "PetCards",
-                columns: table => new
-                {
+                columns: table => new {
                     PetCardID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     AppointmentID = table.Column<int>(type: "int", nullable: false),
                     DateAdministered = table.Column<DateTime>(type: "datetime2", nullable: false),
                     NextDueDate = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
-                constraints: table =>
-                {
+                constraints: table => {
                     table.PrimaryKey("PK_PetCards", x => x.PetCardID);
                     table.ForeignKey(
                         name: "FK_PetCards_Appointments_AppointmentID",
@@ -271,8 +247,7 @@ namespace PurrVet.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropTable(
                 name: "Notifications");
 

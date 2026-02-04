@@ -1,16 +1,12 @@
-﻿using System.IO;
-using Microsoft.ML;
-using PurrVet.Models;
+﻿using Microsoft.ML;
 using PurrVet.Services;
 
-public class ModelExporter
-{
+public class ModelExporter {
     private readonly MLContext _mlContext;
     private readonly string _csvPath;
     private readonly string _exportFolder;
 
-    public ModelExporter(string csvPath, string exportFolder)
-    {
+    public ModelExporter(string csvPath, string exportFolder) {
         _mlContext = new MLContext();
         _csvPath = csvPath;
         _exportFolder = exportFolder;
@@ -19,8 +15,7 @@ public class ModelExporter
             Directory.CreateDirectory(_exportFolder);
     }
 
-    public void ExportAllServiceModels()
-    {
+    public void ExportAllServiceModels() {
         var records = LoadCsv(_csvPath);
 
         string[] services = new[]
@@ -30,8 +25,7 @@ public class ModelExporter
             "EndOfLifeCare", "Confinement", "Diagnostics"
         };
 
-        foreach (var service in services)
-        {
+        foreach (var service in services) {
             var model = TrainServiceModel(records, service);
             var path = Path.Combine(_exportFolder, $"{service}.zip");
             _mlContext.Model.Save(model, _mlContext.Data.LoadFromEnumerable(records).Schema, path);
@@ -39,10 +33,8 @@ public class ModelExporter
         }
     }
 
-    private List<ServiceDemandData> LoadCsv(string path)
-    {
-        var config = new CsvHelper.Configuration.CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture)
-        {
+    private List<ServiceDemandData> LoadCsv(string path) {
+        var config = new CsvHelper.Configuration.CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture) {
             HasHeaderRecord = true,
             MissingFieldFound = null,
             HeaderValidated = null
@@ -54,8 +46,7 @@ public class ModelExporter
         return csv.GetRecords<ServiceDemandData>().ToList();
     }
 
-    private ITransformer TrainServiceModel(List<ServiceDemandData> records, string serviceColumn)
-    {
+    private ITransformer TrainServiceModel(List<ServiceDemandData> records, string serviceColumn) {
         var data = _mlContext.Data.LoadFromEnumerable(records);
 
         var pipeline = _mlContext.Transforms

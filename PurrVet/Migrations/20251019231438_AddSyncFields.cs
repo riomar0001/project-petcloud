@@ -2,14 +2,11 @@
 
 #nullable disable
 
-namespace PurrVet.Migrations
-{
+namespace PurrVet.Migrations {
     /// <inheritdoc />
-    public partial class AddSyncFields : Migration
-    {
+    public partial class AddSyncFields : Migration {
         /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        protected override void Up(MigrationBuilder migrationBuilder) {
             migrationBuilder.AddColumn<bool>(
                 name: "IsAutoSyncEnabled",
                 table: "MicrosoftAccountConnections",
@@ -26,8 +23,7 @@ namespace PurrVet.Migrations
         }
 
         /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+        protected override void Down(MigrationBuilder migrationBuilder) {
             migrationBuilder.DropColumn(
                 name: "IsAutoSyncEnabled",
                 table: "MicrosoftAccountConnections");
