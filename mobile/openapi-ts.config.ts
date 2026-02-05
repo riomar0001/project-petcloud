@@ -13,6 +13,7 @@ export default defineConfig({
       // or an absolute path to your config file
       runtimeConfigPath: "../client-config",
     },
+    "@hey-api/client-axios",
     {
       name: "@hey-api/sdk",
       validator: "zod",
