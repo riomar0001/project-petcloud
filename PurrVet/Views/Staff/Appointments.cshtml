@@ -10,6 +10,12 @@
 <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js"></script>
 <link href="/css/appointment.css" rel="stylesheet" />
+
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <h2>Appointments</h2>
+    <p>Schedule and manage all appointments</p>
+</div>
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
     <div id="syncToast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
@@ -87,7 +93,7 @@
 
 <div class="d-flex flex-column p-3" style="height: calc(100vh - 50px); background-color:#f4f4f4;">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="fw-bold mb-2">Manage Appointments</h5>
+        <div></div>
         <div class="form-check form-switch d-flex align-items-center">
             <input class="form-check-input me-2" type="checkbox" id="syncToggle" onchange="toggleSync(this)">
             <label class="form-check-label fw-semibold" for="syncToggle">
@@ -118,7 +124,7 @@
 
             <div class="container mt-4">
                 <div class="card shadow-sm" style="max-width: 600px; width: 100%;">
-                    <div class="card-header fw-bold">
+                    <div class="card-header fw-bold text-white" style="background: var(--primary-green, #10B981);">
                         Appointment Details
                     </div>
                     <div class="card-body" id="details-content">
@@ -283,7 +289,7 @@
                     .then(data => {
                         data.forEach(e => {
                             if (e.isDraft) {
-                                e.classNames = ["draft"]; 
+                                e.classNames = ["draft"];
                             }
                         });
                         successCallback(data);
@@ -305,14 +311,14 @@
                     return {
                         html: `
                             <div style="${style}">${pet}</div>
-                            <div style="${style}">${timeStr}</div> 
+                            <div style="${style}">${timeStr}</div>
                             <div style="${style}">${category}</div>
                         `
                     };
                 }
 
                 if (viewType === "timeGridWeek" || viewType === "timeGridDay") {
-                    const groupID = event.extendedProps.groupID || "�";
+                    const groupID = event.extendedProps.groupID || "—";
                     return {
                         html: `
                             <div style="${style}">${timeStr}</div>
@@ -325,7 +331,7 @@
             eventClick: function (info) {
 
                 if (info.event.extendedProps.isDraft) {
-                    return false; 
+                    return false;
                 }
 
                 const detailsDiv = document.getElementById('details-content');
@@ -361,23 +367,23 @@
                             </a>
                         </div>
                         <p><strong>Pet Name:</strong> ${event.extendedProps.petName}</p>
-                        <p><strong>Category:</strong> ${event.extendedProps.category ?? '�'}</p>
-                        <p><strong>Subtype:</strong> ${event.extendedProps.subtype ?? '�'}</p>
+                        <p><strong>Category:</strong> ${event.extendedProps.category ?? '—'}</p>
+                        <p><strong>Subtype:</strong> ${event.extendedProps.subtype ?? '—'}</p>
                         <p><strong>Date:</strong> ${event.start.toLocaleString()}</p>
                         <p><strong>Status:</strong> <span class="badge ${statusClass}">${event.extendedProps.status}</span></p>
                         <p><strong>Notes:</strong> ${event.extendedProps.notes ?? 'N/A'}</p>
                              ${
                                 event.extendedProps.status === "Completed"
                                 ? ``
-                                : `<button class="btn btn-outline-success btn-sm" onclick="openMarkCompletedModal(${event.id}, ${event.extendedProps.groupID})">Mark as Completed</button>`
+                                : `<button class="btn btn btn-sm" style="background-color: var(--primary-green, #10B981); color: white; border-radius: 8px;" onclick="openMarkCompletedModal(${event.id}, ${event.extendedProps.groupID})">Mark as Completed</button>`
                             }
                         <div class="d-flex justify-content-between mt-3">
-                            <button class="btn btn-outline-primary btn-sm"
+                            <button class="btn btn btn-sm" style="background-color: var(--primary-green, #10B981); color: white; border-radius: 8px;"
                                     onclick="sendReminderAgain(${event.id})">
                                 Resend Reminder
                             </button>
 
-                            <a href="${editLink}" class="btn btn-outline-primary btn-sm">${editLabel}</a>
+                            <a href="${editLink}" class="btn btn btn-sm" style="background-color: var(--primary-green, #10B981); color: white; border-radius: 8px;">${editLabel}</a>
                         </div>
                     `;
 
@@ -449,7 +455,7 @@
             html += `
                 <div class="border rounded p-2 mb-2">
                     <strong>${appt.petName}</strong><br>
-                    ${appt.category} � ${appt.subtype}<br>
+                    ${appt.category} — ${appt.subtype}<br>
                     <small>${appt.date}</small><br>
 
                     <div class="mt-2">
@@ -551,7 +557,7 @@
     async function syncAllAppointments() {
         showToast("Syncing appointments...", "primary");
 
-        const res = await fetch('/Admin/SyncAllAppointments', {
+        const res = await fetch('/Staff/SyncAllAppointments', {
             method: "POST",
             headers: {
                 "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]')?.value || "",
@@ -714,11 +720,11 @@
                 groupHtml += `
                     <tr>
                         <td>${idx + 1}</td>
-                        <td>${item.petName || "�"}</td>
-                        <td>${item.categoryName || "�"}</td>
-                        <td>${item.subtypeName || "�"}</td>
-                        <td>${item.date || "�"}</td>
-                        <td>${item.time || "�"}</td>
+                        <td>${item.petName || "—"}</td>
+                        <td>${item.categoryName || "—"}</td>
+                        <td>${item.subtypeName || "—"}</td>
+                        <td>${item.date || "—"}</td>
+                        <td>${item.time || "—"}</td>
                         <td>${item.notes || "No notes."}</td>
                     </tr>
                 `;

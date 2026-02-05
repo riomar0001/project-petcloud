@@ -3,119 +3,132 @@
     ViewBag.Title = "Reports";
 }
 
-<div class="card shadow-sm border-0 p-4">
-    <h5 class="fw-bold mb-4">Generate Reports</h5>
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <h2>Reports</h2>
+    <p>Generate and export system reports</p>
+</div>
 
-    <!-- Toast -->
-    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
-        <div id="messageToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body"></div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+<div class="page-card-modern">
+    <div class="card-header-modern">
+        <h6>GENERATE REPORTS</h6>
+    </div>
+
+    <div class="card-body p-4">
+        <!-- Toast -->
+        <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
+            <div id="messageToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body"></div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        </div>
+
+        <form id="reportForm" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Report Type</label>
+                <select id="reportType" class="form-select">
+                    <option value="">-- Select Report Type --</option>
+                    <option value="appointments">Appointments</option>
+                    <option value="notifications">Notifications</option>
+                    <option value="logs">System Logs</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">From</label>
+                <input type="date" id="dateFrom" class="form-control" />
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">To</label>
+                <input type="date" id="dateTo" class="form-control" />
+            </div>
+
+            <div class="col-md-3" id="categoryContainer" style="display:none;">
+                <label class="form-label fw-semibold">Category</label>
+                <select id="categoryFilter" class="form-select dropdown">
+                    <option value="0">All</option>
+                </select>
+            </div>
+
+            <div class="col-md-3" id="typeContainer" style="display:none;">
+                <label class="form-label fw-semibold">Type</label>
+                <select id="typeFilter" class="form-select">
+                    <option value="0">All</option>
+                </select>
+            </div>
+
+            <div class="col-md-2" id="statusContainer" style="display:none;">
+                <label class="form-label fw-semibold">Status</label>
+                <select id="statusFilter" class="form-select">
+                    <option value="All">All</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+
+            <div class="col-md-2" id="notifTypeContainer" style="display:none;">
+                <label class="form-label fw-semibold">Notification Type</label>
+                <select id="notifTypeFilter" class="form-select">
+                    <option value="All">All</option>
+                </select>
+            </div>
+
+            <div class="col-md-2" id="isReadContainer" style="display:none;">
+                <label class="form-label fw-semibold">Read</label>
+                <select id="readFilter" class="form-select">
+                    <option value="All">All</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+
+            <div class="col-md-2" id="actionTypeContainer" style="display:none;">
+                <label class="form-label fw-semibold">Action Type</label>
+                <select id="logActionTypeFilter" class="form-select">
+                    <option value="All">All</option>
+                </select>
+            </div>
+
+            <div class="col-md-2" id="moduleContainer" style="display:none;">
+                <label class="form-label fw-semibold">Module</label>
+                <select id="logModuleFilter" class="form-select">
+                    <option value="All">All</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Sort Date</label>
+                <select id="dateSort" class="form-select">
+                    <option value="desc">Newest First</option>
+                    <option value="asc">Oldest First</option>
+                </select>
+            </div>
+
+            <div class="col-12 mt-3 d-flex justify-content-end gap-2">
+                <button type="button" id="generateReport" class="btn-add-modern">Generate</button>
+                <button type="button" id="downloadPdf" class="btn btn-secondary fw-semibold" style="border-radius: 8px;">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> PDF
+                </button>
+                <button type="button" id="downloadCsv" class="btn btn-secondary fw-semibold" style="border-radius: 8px;">
+                    <i class="bi bi-filetype-csv me-1"></i> CSV
+                </button>
+            </div>
+        </form>
+
+        <div id="reportResult" class="mt-4" style="display:none;">
+            <h6 class="fw-bold mb-3">Report Results</h6>
+            <div class="table-responsive" style="max-height:400px; overflow-y:auto;">
+                <table id="reportTable" class="table-modern-list">
+                    <thead id="reportHeaders"></thead>
+                    <tbody id="reportBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
-
-    <form id="reportForm" class="row g-3">
-        <div class="col-md-3">
-            <label class="form-label fw-semibold">Report Type</label>
-            <select id="reportType" class="form-select">
-                <option value="">-- Select Report Type --</option>
-                <option value="appointments">Appointments</option>
-                <option value="notifications">Notifications</option>
-                <option value="logs">System Logs</option>
-            </select>
-        </div>
-
-        <div class="col-md-2">
-            <label class="form-label fw-semibold">From</label>
-            <input type="date" id="dateFrom" class="form-control" />
-        </div>
-
-        <div class="col-md-2">
-            <label class="form-label fw-semibold">To</label>
-            <input type="date" id="dateTo" class="form-control" />
-        </div>
-
-        <div class="col-md-3" id="categoryContainer" style="display:none;">
-            <label class="form-label fw-semibold">Category</label>
-            <select id="categoryFilter" class="form-select dropdown">
-                <option value="0">All</option>
-            </select>
-        </div>
-
-        <div class="col-md-3" id="typeContainer" style="display:none;">
-            <label class="form-label fw-semibold">Type</label>
-            <select id="typeFilter" class="form-select">
-                <option value="0">All</option>
-            </select>
-        </div>
-
-        <div class="col-md-2" id="statusContainer" style="display:none;">
-            <label class="form-label fw-semibold">Status</label>
-            <select id="statusFilter" class="form-select">
-                <option value="All">All</option>
-                <option value="Pending">Pending</option>
-                <option value="Completed">Completed</option>
-                <option value="Cancelled">Cancelled</option>
-            </select>
-        </div>
-
-        <div class="col-md-2" id="notifTypeContainer" style="display:none;">
-            <label class="form-label fw-semibold">Notification Type</label>
-            <select id="notifTypeFilter" class="form-select">
-                <option value="All">All</option>
-            </select>
-        </div>
-
-        <div class="col-md-2" id="isReadContainer" style="display:none;">
-            <label class="form-label fw-semibold">Read</label>
-            <select id="readFilter" class="form-select">
-                <option value="All">All</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-            </select>
-        </div>
-
-        <div class="col-md-2" id="actionTypeContainer" style="display:none;">
-            <label class="form-label fw-semibold">Action Type</label>
-            <select id="logActionTypeFilter" class="form-select">
-                <option value="All">All</option>
-            </select>
-        </div>
-
-        <div class="col-md-2" id="moduleContainer" style="display:none;">
-            <label class="form-label fw-semibold">Module</label>
-            <select id="logModuleFilter" class="form-select">
-                <option value="All">All</option>
-            </select>
-        </div>
-
-        <div class="col-md-2">
-            <label class="form-label fw-semibold">Sort Date</label>
-            <select id="dateSort" class="form-select">
-                <option value="desc">Newest First</option>
-                <option value="asc">Oldest First</option>
-            </select>
-        </div>
-
-        <div class="col-12 mt-3 d-flex justify-content-end gap-2">
-            <button type="button" id="generateReport" class="btn btn-primary">Generate</button>
-            <button type="button" id="downloadPdf" class="btn btn-success">PDF</button>
-            <button type="button" id="downloadCsv" class="btn btn-success">CSV</button>
-        </div>
-    </form>
-
-    <div id="reportResult" class="mt-4" style="display:none;">
-        <h6 class="fw-bold mb-3">Report Results</h6>
-        <div class="table-responsive" style="max-height:400px; overflow-y:auto;">
-            <table id="reportTable" class="table table-bordered text-center">
-                <thead id="reportHeaders"></thead>
-                <tbody id="reportBody"></tbody>
-            </table>
-        </div>
-    </div>
-
 </div>
 
 @section Scripts {
@@ -214,7 +227,7 @@
                 const data = getFormData();
                 if (!data.type) { showToast('Please select report type', 'bg-danger'); return; }
 
-                $.getJSON('@Url.Action("GenerateReport", "Admin")', data, function (res) {
+                $.getJSON('@Url.Action("GenerateReport", "Staff")', data, function (res) {
                     $('#reportHeaders, #reportBody').empty();
                     $('#reportResult').fadeIn();
 
@@ -234,8 +247,8 @@
                 });
             });
 
-            $('#downloadPdf').click(() => window.open('@Url.Action("DownloadReportPdf", "Admin")?' + $.param(getFormData())));
-            $('#downloadCsv').click(() => window.open('@Url.Action("DownloadReportCsv", "Admin")?' + $.param(getFormData())));
+            $('#downloadPdf').click(() => window.open('@Url.Action("DownloadReportPdf", "Staff")?' + $.param(getFormData())));
+            $('#downloadCsv').click(() => window.open('@Url.Action("DownloadReportCsv", "Staff")?' + $.param(getFormData())));
         });
     </script>
 }

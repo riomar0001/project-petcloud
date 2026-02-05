@@ -243,7 +243,7 @@
                         <i class="bi bi-bell-fill"></i>
                         <span class="notification-badge d-none" id="notifCount">0</span>
                     </div>
-                    <div class="dropdown-menu dropdown-menu-end shadow p-0" style="min-width: 320px;">
+                    <div class="dropdown-menu dropdown-menu-end shadow p-0" style="min-width: 320px;" onclick="event.stopPropagation();">
                         <div class="p-3 border-bottom">
                             <h6 class="mb-0 fw-bold">Notifications</h6>
                         </div>
@@ -251,7 +251,7 @@
                         </ul>
                         <div class="p-3 border-top d-flex justify-content-between">
                             <a href="#" id="markAllRead" class="text-decoration-none small">Mark all as read</a>
-                            <a href="@(role == "Admin" || role == "Staff" ? "/Admin/AdminNotification" : "/Owner/OwnerNotification")" class="text-decoration-none small fw-semibold text-green">See all</a>
+                            <a href="@(role == "Admin" ? "/Admin/AdminNotification" : role == "Staff" ? "/Staff/AdminNotification" : "/Owner/OwnerNotification")" class="text-decoration-none small fw-semibold text-green">See all</a>
                         </div>
                     </div>
                 </div>
@@ -304,9 +304,10 @@
 
             // Notifications
             const role = '@role';
+            const baseUrl = role === "Admin" ? "/Admin" : role === "Staff" ? "/Staff" : "/Owner";
             const notifEndpoint = role === "Owner"
                 ? '/Owner/GetOwnerNotifications'
-                : '/Admin/GetNotifications';
+                : `${baseUrl}/GetNotifications`;
 
             fetch(notifEndpoint)
                 .then(res => res.json())
@@ -332,7 +333,7 @@
                         notifList.innerHTML += `
                             <li>
                                 <a href="#" class="d-flex align-items-start gap-3 p-3 text-decoration-none notif-item ${!n.isRead ? 'bg-light' : ''}"
-                                   data-id="${n.notificationID}" data-url="${n.redirectUrl}">
+                                   data-id="${n.notificationID}" data-url="${n.redirectUrl}" style="cursor: pointer;">
                                     <div class="flex-shrink-0">
                                         <div class="rounded-circle bg-green-light d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
                                             <i class="bi ${n.type === 'User' ? 'bi-person' : n.type === 'Pet' ? 'bi-heart' : 'bi-calendar'} text-green"></i>
@@ -352,7 +353,7 @@
             if (markAllBtn) {
                 markAllBtn.addEventListener("click", function (e) {
                     e.preventDefault();
-                    fetch('/Admin/MarkAllNotificationsRead', { method: 'POST' })
+                    fetch(`${baseUrl}/MarkAllNotificationsRead`, { method: 'POST' })
                         .then(res => res.json())
                         .then(data => {
                             if (data.success) {
@@ -374,7 +375,7 @@
                 const id = item.dataset.id;
                 const url = item.dataset.url;
 
-                fetch(`/Admin/MarkNotificationRead/${id}`, { method: "POST" })
+                fetch(`${baseUrl}/MarkNotificationRead/${id}`, { method: "POST" })
                     .finally(() => {
                         if (url && url !== "null") {
                             window.location.href = url;

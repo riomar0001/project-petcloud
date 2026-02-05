@@ -264,13 +264,15 @@ namespace PurrVet.Controllers {
 
             _context.Notifications.Add(new Notification {
                 Message = $"New group appointment (#{group.GroupID}) requested by {userName} for {dateText} ({added.Count} services).",
-                Type = "Appointment"
+                Type = "Appointment",
+                TargetRole = "Staff"
             });
 
             foreach (var appt in added) {
                 _context.Notifications.Add(new Notification {
                     Message = $"Appointment requested by {userName} for Pet ID: {appt.PetID} on {dateText}.",
-                    Type = "Appointment"
+                    Type = "Appointment",
+                    TargetRole = "Staff"
                 });
             }
 
@@ -320,7 +322,8 @@ namespace PurrVet.Controllers {
                 _context.Appointments.Add(model);
                 _context.Notifications.Add(new Notification {
                     Message = $"New appointment requested by Owner #{ownerId} for Pet ID: {model.PetID} on {model.AppointmentDate:MMM dd, yyyy hh:mm tt}.",
-                    Type = "Appointment"
+                    Type = "Appointment",
+                    TargetRole = "Staff"
                 });
 
                 _context.SaveChanges();
@@ -490,7 +493,8 @@ namespace PurrVet.Controllers {
                 _context.Pets.Add(pet);
                 _context.Notifications.Add(new Notification {
                     Message = $"A new pet '{pet.Name}' has been added by Owner ID:{pet.OwnerID}.",
-                    Type = "Pet"
+                    Type = "Pet",
+                    TargetRole = "Staff"
                 });
                 _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Create",

@@ -149,6 +149,7 @@ namespace PurrVet.Controllers {
             HttpContext.Session.SetString("UserRole", user.Type);
             HttpContext.Session.SetString("UserName", $"{user.FirstName} {user.LastName}");
             HttpContext.Session.SetInt32("UserID", user.UserID);
+            HttpContext.Session.SetString("UserEmail", user.Email);
 
             if (user.Type == "Owner") {
                 var owner = await _context.Owners.FirstOrDefaultAsync(o => o.UserID == user.UserID);
@@ -161,7 +162,8 @@ namespace PurrVet.Controllers {
         new("UserID", user.UserID.ToString()),
         new("UserName", $"{user.FirstName} {user.LastName}"),
         new("UserRole", user.Type),
-        new("ProfileImage", string.IsNullOrEmpty(user.ProfileImage) ? "golden.png" : Path.GetFileName(user.ProfileImage))
+        new("ProfileImage", string.IsNullOrEmpty(user.ProfileImage) ? "golden.png" : Path.GetFileName(user.ProfileImage)),
+        new("UserEmail", user.Email)
     };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

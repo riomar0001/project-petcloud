@@ -206,9 +206,10 @@ namespace PurrVet.Controllers {
                 _context.Notifications.Add(new Notification {
                     Message = $"A new user '{model.FirstName} {model.LastName}' has been added.",
                     Type = "User",
-                    RedirectUrl = $"/Admin/EditUser/{model.UserID}",
+                    RedirectUrl = $"/{{role}}/EditUser/{model.UserID}",
                     CreatedAt = DateTime.Now,
-                    IsRead = false
+                    IsRead = false,
+                    TargetRole = "Staff"
                 });
                 _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Create",
@@ -526,9 +527,10 @@ namespace PurrVet.Controllers {
                     _context.Notifications.Add(new Notification {
                         Message = $"Appointment for {appt.Pet?.Name ?? "a pet"} scheduled on {appt.AppointmentDate:MMM dd, yyyy hh:mm tt} was marked as missed.",
                         Type = "Appointment",
-                        RedirectUrl = $"/Admin/ViewPet/{appt.Pet?.PetID}",
+                        RedirectUrl = $"/{{role}}/ViewPet/{appt.Pet?.PetID}",
                         CreatedAt = DateTime.Now,
-                        IsRead = false
+                        IsRead = false,
+                        TargetRole = "Staff"
                     });
 
                     _context.SystemLogs.Add(new SystemLog {
@@ -1293,7 +1295,8 @@ namespace PurrVet.Controllers {
                 _context.Notifications.Add(new Notification {
                     Message = $"A new appointment for Pet ID: {model.PetID} has been created on {model.AppointmentDate:MMM dd, yyyy hh:mm tt}.",
                     Type = "Appointment",
-                    RedirectUrl = $"/Admin/ViewPet/{model.PetID}"
+                    RedirectUrl = $"/{{role}}/ViewPet/{model.PetID}",
+                    TargetRole = "Staff"
                 });
                 _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Create",
@@ -1381,13 +1384,15 @@ namespace PurrVet.Controllers {
 
                 _context.Notifications.Add(new Notification {
                     Message = $"A new group appointment (#{group.GroupID}) was created for {dateText}, containing {added.Count} appointments.",
-                    Type = "Appointment"
+                    Type = "Appointment",
+                    TargetRole = "Staff"
                 });
 
                 foreach (var appt in added) {
                     _context.Notifications.Add(new Notification {
                         Message = $"New appointment for Pet ID: {appt.PetID} on {dateText}.",
-                        Type = "Appointment"
+                        Type = "Appointment",
+                        TargetRole = "Staff"
                     });
 
                     _context.SystemLogs.Add(new SystemLog {
@@ -1560,7 +1565,8 @@ namespace PurrVet.Controllers {
                         Message = message,
                         Type = "Appointment",
                         CreatedAt = DateTime.Now,
-                        IsRead = false
+                        IsRead = false,
+                        TargetRole = "Staff"
                     });
                 }
 
@@ -1930,6 +1936,7 @@ namespace PurrVet.Controllers {
                             notifications.Add(new Notification {
                                 Message = $"Your pet has an upcoming appointment on {group.GroupTime:MMM dd, yyyy hh:mm tt}.",
                                 TargetUserId = pet.Owner.UserID,
+                                TargetRole = "Owner",
                                 RedirectUrl = "/Owner/Appointments",
                                 Type = "Appointment",
                                 CreatedAt = DateTime.Now,
@@ -1939,10 +1946,11 @@ namespace PurrVet.Controllers {
 
                         notifications.Add(new Notification {
                             Message = $"A new appointment for Pet ID: {draft.PetID} has been created on {group.GroupTime:MMM dd, yyyy hh:mm tt}.",
-                            RedirectUrl = $"/Admin/ViewPet/{draft.PetID}",
+                            RedirectUrl = $"/{{role}}/ViewPet/{draft.PetID}",
                             Type = "Appointment",
                             CreatedAt = DateTime.Now,
-                            IsRead = false
+                            IsRead = false,
+                            TargetRole = "Staff"
                         });
                     }
 
@@ -2143,7 +2151,8 @@ namespace PurrVet.Controllers {
 
                 _context.Notifications.Add(new Notification {
                     Message = $"Draft group {form.GroupDraftId} updated by {userName}. {savedList.Count} services.",
-                    Type = "Appointment"
+                    Type = "Appointment",
+                    TargetRole = "Staff"
                 });
 
                 foreach (var sd in savedList) {
@@ -2448,9 +2457,10 @@ namespace PurrVet.Controllers {
                 _context.Notifications.Add(new Notification {
                     Message = $"A new pet '{pet.Name}' has been added by Owner ID:{pet.OwnerID}.",
                     Type = "Pet",
-                    RedirectUrl = $"/Admin/ViewPet/{pet.PetID}",
+                    RedirectUrl = $"/{{role}}/ViewPet/{pet.PetID}",
                     CreatedAt = DateTime.Now,
-                    IsRead = false
+                    IsRead = false,
+                    TargetRole = "Staff"
                 });
 
                 _context.SystemLogs.Add(new SystemLog {
@@ -2945,9 +2955,10 @@ namespace PurrVet.Controllers {
                 _context.Notifications.Add(new Notification {
                     Message = $"Owner '{owner.Name}' has been updated.",
                     Type = "Owner",
-                    RedirectUrl = $"/Admin/ViewOwner/{owner.OwnerID}",
+                    RedirectUrl = $"/{{role}}/ViewOwner/{owner.OwnerID}",
                     CreatedAt = DateTime.Now,
-                    IsRead = false
+                    IsRead = false,
+                    TargetRole = "Staff"
                 });
 
                 _context.SystemLogs.Add(new SystemLog {
@@ -3200,19 +3211,21 @@ namespace PurrVet.Controllers {
         //   }
         public JsonResult GetNotifications() {
             var currentUserId = HttpContext.Session.GetInt32("UserID");
+            var userRole = HttpContext.Session.GetString("UserRole") ?? "Admin";
 
-            var notifications = _context.Notifications
-                .Where(n => n.TargetUserId == null || n.TargetUserId == currentUserId)
+            var notificationsRaw = _context.Notifications
+                .Where(n => (n.TargetRole == "Staff" || n.TargetRole == null) && (n.TargetUserId == null || n.TargetUserId == currentUserId))
                 .OrderByDescending(n => n.CreatedAt)
-                .Select(n => new {
+                .ToList();
+
+            var notifications = notificationsRaw.Select(n => new {
                     notificationID = n.NotificationID,
                     message = n.Message,
                     type = n.Type,
                     createdAt = n.CreatedAt.ToString("MMM dd, yyyy hh:mm tt"),
                     isRead = n.IsRead,
-                    redirectUrl = n.RedirectUrl
-                })
-                .ToList();
+                    redirectUrl = n.RedirectUrl?.Replace("{role}", userRole).Replace("/Admin/", $"/{userRole}/").Replace("/Staff/", $"/{userRole}/")
+                }).ToList();
 
             var unreadCount = notifications.Count(n => !n.isRead);
 
@@ -3272,7 +3285,7 @@ namespace PurrVet.Controllers {
 
             var query = _context.Notifications.AsQueryable();
 
-            query = query.Where(n => n.TargetUserId == null || n.TargetUserId == currentUserId);
+            query = query.Where(n => (n.TargetRole == "Staff" || n.TargetRole == null) && (n.TargetUserId == null || n.TargetUserId == currentUserId));
 
             if (!string.IsNullOrEmpty(typeFilter) && typeFilter != "All") {
                 query = query.Where(n => n.Type == typeFilter);
@@ -3289,19 +3302,20 @@ namespace PurrVet.Controllers {
             var totalCount = query.Count();
             var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-            var notifications = query
+            var notificationsRaw = query
                 .OrderByDescending(n => n.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(n => new NotificationViewModel {
+                .ToList();
+
+            var notifications = notificationsRaw.Select(n => new NotificationViewModel {
                     NotificationID = n.NotificationID,
                     Message = n.Message,
                     Type = n.Type,
                     CreatedAt = n.CreatedAt,
                     IsRead = n.IsRead,
-                    RedirectUrl = n.RedirectUrl
-                })
-                .ToList();
+                    RedirectUrl = n.RedirectUrl?.Replace("{role}", "Admin").Replace("/Staff/", "/Admin/")
+                }).ToList();
 
             var model = new NotificationListViewModel {
                 Notifications = notifications,
@@ -3445,9 +3459,10 @@ namespace PurrVet.Controllers {
                 _context.Notifications.Add(new Notification {
                     Message = $"A new service category '{model.ServiceType}' has been added.",
                     Type = "Service Category",
-                    RedirectUrl = $"/Admin/EditServiceCategory/{model.CategoryID}",
+                    RedirectUrl = $"/{{role}}/EditServiceCategory/{model.CategoryID}",
                     CreatedAt = DateTime.Now,
-                    IsRead = false
+                    IsRead = false,
+                    TargetRole = "Staff"
                 });
                 _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Create",
@@ -3493,9 +3508,10 @@ namespace PurrVet.Controllers {
                 _context.Notifications.Add(new Notification {
                     Message = $"Service category '{model.ServiceType}' has been updated.",
                     Type = "Service Category",
-                    RedirectUrl = $"/Admin/EditServiceCategory/{model.CategoryID}",
+                    RedirectUrl = $"/{{role}}/EditServiceCategory/{model.CategoryID}",
                     CreatedAt = DateTime.Now,
-                    IsRead = false
+                    IsRead = false,
+                    TargetRole = "Staff"
                 });
                 _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Update",
@@ -3538,9 +3554,10 @@ namespace PurrVet.Controllers {
                 _context.Notifications.Add(new Notification {
                     Message = $"New service subtype '{model.ServiceSubType}' has been added under Category ID {model.CategoryID}.",
                     Type = "Service Subtype",
-                    RedirectUrl = $"/Admin/EditServiceSubtype/{model.SubtypeID}",
+                    RedirectUrl = $"/{{role}}/EditServiceSubtype/{model.SubtypeID}",
                     CreatedAt = DateTime.Now,
-                    IsRead = false
+                    IsRead = false,
+                    TargetRole = "Staff"
                 });
                 _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Create",
@@ -3593,9 +3610,10 @@ namespace PurrVet.Controllers {
                 _context.Notifications.Add(new Notification {
                     Message = $"Service subtype '{model.ServiceSubType}' has been updated.",
                     Type = "Service Subtype",
-                    RedirectUrl = $"/Admin/EditServiceSubtype/{model.SubtypeID}",
+                    RedirectUrl = $"/{{role}}/EditServiceSubtype/{model.SubtypeID}",
                     CreatedAt = DateTime.Now,
-                    IsRead = false
+                    IsRead = false,
+                    TargetRole = "Staff"
                 });
                 _context.SystemLogs.Add(new SystemLog {
                     ActionType = "Update",
