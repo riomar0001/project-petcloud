@@ -14,6 +14,7 @@ using PurrVet.DTOs.Common;
 using PurrVet.Infrastructure;
 using PurrVet.Models;
 using PurrVet.Services;
+using Scalar.AspNetCore;
 using System.Globalization;
 using System.Text;
 
@@ -84,6 +85,7 @@ builder.Services.AddCors(options => {
 });
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddOpenApi();
 builder.Services.Configure<ApiBehaviorOptions>(options => {
     options.InvalidModelStateResponseFactory = context => {
         var errors = context.ModelState
@@ -128,7 +130,15 @@ builder.Services.AddSession(options => {
 
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment()) {
+if (app.Environment.IsDevelopment()) {
+    //// Explicitly set the route for the JSON file
+    app.MapOpenApi("/api/docs/openapi.json"); 
+
+    //// Tell Scalar where to find that custom route
+    app.MapScalarApiReference("/api/docs", options => {
+        options.WithOpenApiRoutePattern("/api/docs/openapi.json");
+    });
+} else {
     app.UseExceptionHandler("/Error/Error");
     app.UseStatusCodePagesWithReExecute("/Error/{0}");
 }
