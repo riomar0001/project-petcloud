@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ using System.Text.RegularExpressions;
 namespace PurrVet.Controllers.Api.V1 {
     [ApiController]
     [Route("api/v1/auth")]
+    [Tags("Authentication")]
     public class AuthController : ControllerBase {
         private readonly ApplicationDbContext _context;
         private readonly IPasswordHasher<User> _passwordHasher;
@@ -30,6 +32,11 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpPost("login")]
+        [EndpointSummary("Log in")]
+        [EndpointDescription("Authenticate with email and password. Returns JWT tokens directly, or a 2FA challenge if verification is required.")]
+        [ProducesResponseType(typeof(ApiResponse<LoginResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status429TooManyRequests)]
         public async Task<IActionResult> Login([FromBody] LoginRequest request) {
             var currentIp = HttpContext.Connection.RemoteIpAddress?.ToString();
             var currentDevice = request.DeviceInfo ?? Request.Headers["User-Agent"].ToString();
@@ -146,6 +153,11 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpPost("verify-2fa")]
+        [EndpointSummary("Verify 2FA code")]
+        [EndpointDescription("Submit the 6-digit code sent to the user's email to complete two-factor authentication and receive JWT tokens.")]
+        [ProducesResponseType(typeof(ApiResponse<TokenResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Verify2FA([FromBody] Verify2FARequest request) {
             var user = await _context.Users.FindAsync(request.UserId);
             if (user == null)
@@ -194,6 +206,11 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpPost("register")]
+        [EndpointSummary("Register a new owner")]
+        [EndpointDescription("Create a new pet owner account. The account is immediately active and the user can log in after registration.")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status409Conflict)]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request) {
             if (await _context.Users.AnyAsync(u => u.Email == request.Email))
                 return Conflict(new ApiErrorResponse { Message = "Email already exists." });
@@ -245,6 +262,10 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpPost("refresh")]
+        [EndpointSummary("Refresh access token")]
+        [EndpointDescription("Exchange a valid refresh token for a new access/refresh token pair. The old refresh token is revoked (rotation).")]
+        [ProducesResponseType(typeof(ApiResponse<TokenResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request) {
             var (success, newAccessToken, newRefreshToken, expiresAt, error) =
                 await _jwtService.RotateRefreshTokenAsync(request.RefreshToken);
@@ -264,12 +285,20 @@ namespace PurrVet.Controllers.Api.V1 {
 
         [HttpPost("logout")]
         [Authorize(AuthenticationSchemes = "Bearer", Policy = "OwnerOnly")]
+        [EndpointSummary("Log out")]
+        [EndpointDescription("Revoke the provided refresh token, ending the session on this device.")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest request) {
             await _jwtService.RevokeRefreshTokenAsync(request.RefreshToken);
             return Ok(new ApiResponse { Success = true, Message = "Logged out successfully." });
         }
 
         [HttpPost("forgot-password")]
+        [EndpointSummary("Request password reset")]
+        [EndpointDescription("Send a password reset link to the user's email address. The link expires in 1 hour.")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request) {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
             if (user == null)
@@ -296,6 +325,10 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpPost("reset-password")]
+        [EndpointSummary("Reset password")]
+        [EndpointDescription("Set a new password using the token from the password reset email. The new password cannot match the current one.")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request) {
             var user = await _context.Users.FirstOrDefaultAsync(
                 u => u.ResetToken == request.Token && u.TokenExpiry > DateTime.Now);

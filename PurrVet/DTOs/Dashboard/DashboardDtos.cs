@@ -3,8 +3,8 @@ namespace PurrVet.DTOs.Dashboard {
         public string UserName { get; set; } = string.Empty;
         public List<DashboardPetDto> Pets { get; set; } = new();
         public List<DashboardAppointmentDto> UpcomingAppointments { get; set; } = new();
-        public List<DashboardDueItemDto> VaccineDue { get; set; } = new();
-        public List<DashboardDueItemDto> DewormDue { get; set; } = new();
+        public List<DashboardVaccineDueDto> VaccineDue { get; set; } = new();
+        public List<DashboardDewormDueDto> DewormDue { get; set; } = new();
     }
 
     public class DashboardPetDto {
@@ -24,7 +24,17 @@ namespace PurrVet.DTOs.Dashboard {
         public string? ServiceType { get; set; }
     }
 
-    public class DashboardDueItemDto {
+    // Separate types to work around ASP.NET Core OpenAPI 9.0.x schema dedup bug
+    // (two List<T> properties with the same T generate broken $ref)
+    public class DashboardVaccineDueDto {
+        public int AppointmentId { get; set; }
+        public DateTime? DueDate { get; set; }
+        public int PetId { get; set; }
+        public string PetName { get; set; } = string.Empty;
+        public string? ServiceType { get; set; }
+    }
+
+    public class DashboardDewormDueDto {
         public int AppointmentId { get; set; }
         public DateTime? DueDate { get; set; }
         public int PetId { get; set; }

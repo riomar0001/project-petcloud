@@ -10,6 +10,7 @@ namespace PurrVet.Controllers.Api.V1 {
     [ApiController]
     [Route("api/v1/appointments")]
     [Authorize(Policy = "OwnerOnly")]
+    [Tags("Appointments")]
     public class AppointmentsController : ControllerBase {
         private readonly ApplicationDbContext _context;
 
@@ -18,6 +19,10 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpGet]
+        [EndpointSummary("List all appointments")]
+        [EndpointDescription("Returns all appointments across the clinic. The owner's own appointments include full details; other owners' appointments show limited info.")]
+        [ProducesResponseType(typeof(ApiResponse<List<AppointmentListItemDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
         public IActionResult GetAppointments() {
             var ownerId = User.GetOwnerId();
 
@@ -44,6 +49,12 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpPost]
+        [EndpointSummary("Create an appointment")]
+        [EndpointDescription("Book a single appointment for a pet. The time slot must not already be taken.")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status409Conflict)]
         public IActionResult CreateAppointment([FromBody] CreateAppointmentRequest request) {
             var ownerId = User.GetOwnerId();
             var userName = User.GetUserName();
@@ -89,6 +100,10 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpPost("bulk")]
+        [EndpointSummary("Create grouped appointments")]
+        [EndpointDescription("Book multiple services at the same time slot as a grouped appointment. All services share the same date/time from the first valid item.")]
+        [ProducesResponseType(typeof(ApiResponse<BulkAppointmentResponse>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
         public IActionResult CreateBulkAppointment([FromBody] CreateBulkAppointmentRequest request) {
             var ownerId = User.GetOwnerId();
             var userName = User.GetUserName();
@@ -182,6 +197,12 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpPost("{id}/cancel")]
+        [EndpointSummary("Request cancellation")]
+        [EndpointDescription("Request cancellation for all appointments in a group. Only groups where every appointment is still pending/requested can be cancelled.")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
         public IActionResult RequestCancellation(int id) {
             var ownerId = User.GetOwnerId();
             var userName = User.GetUserName();
@@ -232,6 +253,9 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpGet("time-slots")]
+        [EndpointSummary("Get available time slots")]
+        [EndpointDescription("Returns all 5-minute time slots between 09:00 and 18:00 for a given date, indicating which are available or already booked.")]
+        [ProducesResponseType(typeof(ApiResponse<TimeSlotsResponse>), StatusCodes.Status200OK)]
         public IActionResult GetAvailableTimeSlots([FromQuery] DateTime date) {
             var start = new TimeSpan(9, 0, 0);
             var end = new TimeSpan(18, 0, 0);
@@ -268,6 +292,9 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpGet("services")]
+        [EndpointSummary("List service categories")]
+        [EndpointDescription("Returns all available service categories with their subtypes, used when creating appointments.")]
+        [ProducesResponseType(typeof(ApiResponse<List<ServiceCategoryDto>>), StatusCodes.Status200OK)]
         public IActionResult GetServices() {
             var categories = _context.ServiceCategories
                 .Include(c => c.Subtypes)

@@ -16,6 +16,7 @@ namespace PurrVet.Controllers.Api.V1 {
     [ApiController]
     [Route("api/v1/pets")]
     [Authorize(Policy = "OwnerOnly")]
+    [Tags("Pets")]
     public class PetsController : ControllerBase {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _hostEnvironment;
@@ -36,6 +37,10 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpGet]
+        [EndpointSummary("List all pets")]
+        [EndpointDescription("Returns all pets belonging to the authenticated owner, ordered by most recently added.")]
+        [ProducesResponseType(typeof(ApiResponse<List<PetListItemDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
         public IActionResult GetPets() {
             var ownerId = User.GetOwnerId();
 
@@ -61,6 +66,11 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpGet("{id}")]
+        [EndpointSummary("Get pet details")]
+        [EndpointDescription("Returns detailed information for a specific pet including paginated appointment history. Supports filtering by service category and text search on notes.")]
+        [ProducesResponseType(typeof(ApiResponse<PetDetailDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
         public IActionResult GetPet(int id, [FromQuery] int page = 1, [FromQuery] int pageSize = 5,
             [FromQuery] string? search = null, [FromQuery] int? categoryFilter = null) {
             var ownerId = User.GetOwnerId();
@@ -122,6 +132,10 @@ namespace PurrVet.Controllers.Api.V1 {
 
         [HttpPost]
         [Consumes("multipart/form-data")]
+        [EndpointSummary("Add a new pet")]
+        [EndpointDescription("Create a new pet for the authenticated owner. Accepts an optional photo that will be cropped to 500x500 JPEG.")]
+        [ProducesResponseType(typeof(ApiResponse<PetListItemDto>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> CreatePet([FromForm] CreatePetRequest request) {
             var ownerId = User.GetOwnerId();
             var userName = User.GetUserName();
@@ -204,6 +218,10 @@ namespace PurrVet.Controllers.Api.V1 {
 
         [HttpPut("{id}")]
         [Consumes("multipart/form-data")]
+        [EndpointSummary("Update a pet")]
+        [EndpointDescription("Update pet information. All fields are optional — only provided fields are updated. A new photo replaces the existing one.")]
+        [ProducesResponseType(typeof(ApiResponse<PetListItemDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdatePet(int id, [FromForm] UpdatePetRequest request) {
             var ownerId = User.GetOwnerId();
             var userName = User.GetUserName();
@@ -265,6 +283,10 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpGet("breeds")]
+        [EndpointSummary("Get breed list")]
+        [EndpointDescription("Returns a sorted list of breed names for the given pet type (`dog` or `cat`), sourced from the clinic's breed dataset.")]
+        [ProducesResponseType(typeof(ApiResponse<List<string>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
         public IActionResult GetBreeds([FromQuery] string type) {
             if (string.IsNullOrWhiteSpace(type))
                 return BadRequest(new ApiErrorResponse { Message = "Type parameter is required (dog or cat)." });
@@ -288,6 +310,10 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpGet("{id}/card")]
+        [EndpointSummary("Get pet health card")]
+        [EndpointDescription("Returns the pet's health card with paginated completed appointment records, owner contact info, and age in months.")]
+        [ProducesResponseType(typeof(ApiResponse<PetCardResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
         public IActionResult GetPetCard(int id, [FromQuery] int page = 1, [FromQuery] int pageSize = 12) {
             var ownerId = User.GetOwnerId();
 
@@ -346,6 +372,11 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpGet("{id}/card/pdf")]
+        [EndpointSummary("Download pet card PDF")]
+        [EndpointDescription("Generate and download an A5 PDF of the pet's vaccination and deworming health card.")]
+        [Produces("application/pdf")]
+        [ProducesResponseType(typeof(byte[]), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
         public IActionResult DownloadPetCardPdf(int id) {
             var ownerId = User.GetOwnerId();
 

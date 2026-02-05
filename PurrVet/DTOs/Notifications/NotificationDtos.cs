@@ -1,3 +1,5 @@
+using PurrVet.DTOs.Common;
+
 namespace PurrVet.DTOs.Notifications {
     public class NotificationDto {
         public int NotificationId { get; set; }
@@ -6,6 +8,10 @@ namespace PurrVet.DTOs.Notifications {
         public DateTime CreatedAt { get; set; }
         public bool IsRead { get; set; }
         public string? RedirectUrl { get; set; }
+    }
+
+    public class NotificationListResponse : PaginatedResponse<NotificationDto> {
+        public int UnreadCount { get; set; }
     }
 
     public class UnreadCountResponse {

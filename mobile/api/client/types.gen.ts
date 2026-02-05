@@ -4,6 +4,122 @@ export type ClientOptions = {
     baseURL: 'https://localhost:7055' | 'http://localhost:5090' | (string & {});
 };
 
+export type ApiErrorResponse = {
+    success?: boolean;
+    message?: string;
+    errors?: {
+        [key: string]: Array<string>;
+    } | null;
+};
+
+export type ApiResponse = {
+    success?: boolean;
+    message?: string | null;
+};
+
+export type ApiResponseOfBulkAppointmentResponse = {
+    success?: boolean;
+    message?: string | null;
+    data?: BulkAppointmentResponse;
+};
+
+export type ApiResponseOfDashboardResponse = {
+    success?: boolean;
+    message?: string | null;
+    data?: DashboardResponse;
+};
+
+export type ApiResponseOfListOfAppointmentListItemDto = {
+    success?: boolean;
+    message?: string | null;
+    data?: Array<AppointmentListItemDto> | null;
+};
+
+export type ApiResponseOfListOfPetListItemDto = {
+    success?: boolean;
+    message?: string | null;
+    data?: Array<PetListItemDto> | null;
+};
+
+export type ApiResponseOfListOfServiceCategoryDto = {
+    success?: boolean;
+    message?: string | null;
+    data?: Array<ServiceCategoryDto> | null;
+};
+
+export type ApiResponseOfListOfstring = {
+    success?: boolean;
+    message?: string | null;
+    data?: Array<string> | null;
+};
+
+export type ApiResponseOfLoginResponse = {
+    success?: boolean;
+    message?: string | null;
+    data?: LoginResponse;
+};
+
+export type ApiResponseOfPetCardResponse = {
+    success?: boolean;
+    message?: string | null;
+    data?: PetCardResponse;
+};
+
+export type ApiResponseOfPetDetailDto = {
+    success?: boolean;
+    message?: string | null;
+    data?: PetDetailDto;
+};
+
+export type ApiResponseOfPetListItemDto = {
+    success?: boolean;
+    message?: string | null;
+    data?: PetListItemDto2;
+};
+
+export type ApiResponseOfProfileResponse = {
+    success?: boolean;
+    message?: string | null;
+    data?: ProfileResponse;
+};
+
+export type ApiResponseOfTimeSlotsResponse = {
+    success?: boolean;
+    message?: string | null;
+    data?: TimeSlotsResponse;
+};
+
+export type ApiResponseOfTokenResponse = {
+    success?: boolean;
+    message?: string | null;
+    data?: TokenResponse;
+};
+
+export type ApiResponseOfUnreadCountResponse = {
+    success?: boolean;
+    message?: string | null;
+    data?: UnreadCountResponse;
+};
+
+export type ApiResponseOfUpdatePhotoResponse = {
+    success?: boolean;
+    message?: string | null;
+    data?: UpdatePhotoResponse;
+};
+
+export type AppointmentListItemDto = {
+    appointmentId?: number;
+    appointmentDate?: string;
+    status?: string;
+    groupId?: number | null;
+    notes?: string | null;
+    petId?: number;
+    petName?: string;
+    serviceType?: string | null;
+    serviceSubtype?: string | null;
+    isOwnAppointment?: boolean;
+};
+
 export type BulkAppointmentItemRequest = {
     petId: number;
     categoryId: number;
@@ -12,6 +128,11 @@ export type BulkAppointmentItemRequest = {
     appointmentTime: string;
     notes?: string | null;
 };
+
+export type BulkAppointmentResponse = {
+    groupId?: number;
+    count?: number;
+} | null;
 
 export type ChangePasswordRequest = {
     currentPassword: string;
@@ -32,6 +153,47 @@ export type CreateBulkAppointmentRequest = {
     appointments: Array<BulkAppointmentItemRequest>;
 };
 
+export type DashboardAppointmentDto = {
+    appointmentId?: number;
+    appointmentDate?: string;
+    status?: string;
+    petId?: number;
+    petName?: string;
+    serviceType?: string | null;
+};
+
+export type DashboardDewormDueDto = {
+    appointmentId?: number;
+    dueDate?: string | null;
+    petId?: number;
+    petName?: string;
+    serviceType?: string | null;
+};
+
+export type DashboardPetDto = {
+    petId?: number;
+    name?: string;
+    breed?: string;
+    photoUrl?: string | null;
+    birthdate?: string;
+};
+
+export type DashboardResponse = {
+    userName?: string;
+    pets?: Array<DashboardPetDto>;
+    upcomingAppointments?: Array<DashboardAppointmentDto>;
+    vaccineDue?: Array<DashboardVaccineDueDto>;
+    dewormDue?: Array<DashboardDewormDueDto>;
+} | null;
+
+export type DashboardVaccineDueDto = {
+    appointmentId?: number;
+    dueDate?: string | null;
+    petId?: number;
+    petName?: string;
+    serviceType?: string | null;
+};
+
 export type ForgotPasswordRequest = {
     email: string;
 };
@@ -43,6 +205,111 @@ export type LoginRequest = {
     password: string;
     deviceInfo?: string | null;
 };
+
+export type LoginResponse = {
+    requires2FA?: boolean;
+    twoFactorUserId?: number | null;
+    accessToken?: string | null;
+    refreshToken?: string | null;
+    expiresAt?: string | null;
+    owner?: OwnerBasicDto;
+} | null;
+
+export type NotificationDto = {
+    notificationId?: number;
+    message?: string;
+    type?: string;
+    createdAt?: string;
+    isRead?: boolean;
+    redirectUrl?: string | null;
+};
+
+export type NotificationListResponse = {
+    unreadCount?: number;
+    success?: boolean;
+    items?: Array<NotificationDto>;
+    currentPage?: number;
+    totalPages?: number;
+    totalCount?: number;
+    pageSize?: number;
+    hasPrevious?: boolean;
+    hasNext?: boolean;
+};
+
+export type OwnerBasicDto = {
+    userId?: number;
+    ownerId?: number;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    profileImage?: string | null;
+} | null;
+
+export type PetCardRecordDto = {
+    appointmentId?: number;
+    appointmentDate?: string;
+    notes?: string | null;
+    serviceType?: string | null;
+    serviceSubtype?: string | null;
+    administeredBy?: string | null;
+    dueDate?: string | null;
+};
+
+export type PetCardResponse = {
+    pet?: PetListItemDto;
+    ownerName?: string;
+    ownerPhone?: string;
+    ownerEmail?: string;
+    ageInMonths?: number;
+    records?: Array<PetCardRecordDto>;
+    currentPage?: number;
+    totalPages?: number;
+    totalRecords?: number;
+} | null;
+
+export type PetDetailDto = {
+    petId?: number;
+    name?: string;
+    type?: string;
+    breed?: string;
+    birthdate?: string;
+    photoUrl?: string | null;
+    age?: string;
+    ownerName?: string;
+} | null;
+
+export type PetListItemDto = {
+    petId?: number;
+    name?: string;
+    type?: string;
+    breed?: string;
+    birthdate?: string;
+    photoUrl?: string | null;
+    age?: string;
+    createdAt?: string;
+};
+
+export type PetListItemDto2 = {
+    petId?: number;
+    name?: string;
+    type?: string;
+    breed?: string;
+    birthdate?: string;
+    photoUrl?: string | null;
+    age?: string;
+    createdAt?: string;
+} | null;
+
+export type ProfileResponse = {
+    userId?: number;
+    ownerId?: number;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string | null;
+    profileImageUrl?: string | null;
+    createdAt?: string;
+} | null;
 
 export type RefreshTokenRequest = {
     refreshToken: string;
@@ -63,6 +330,42 @@ export type ResetPasswordRequest = {
     confirmPassword: string;
 };
 
+export type ServiceCategoryDto = {
+    categoryId?: number;
+    serviceType?: string;
+    subtypes?: Array<ServiceSubtypeDto>;
+};
+
+export type ServiceSubtypeDto = {
+    subtypeId?: number;
+    serviceSubType?: string;
+};
+
+export type TimeSlotDto = {
+    time?: string;
+    available?: boolean;
+};
+
+export type TimeSlotsResponse = {
+    date?: string;
+    slots?: Array<TimeSlotDto>;
+} | null;
+
+export type TokenResponse = {
+    accessToken?: string;
+    refreshToken?: string;
+    expiresAt?: string;
+    owner?: OwnerBasicDto;
+} | null;
+
+export type UnreadCountResponse = {
+    unreadCount?: number;
+} | null;
+
+export type UpdatePhotoResponse = {
+    profileImageUrl?: string;
+} | null;
+
 export type UpdateProfileRequest = {
     firstName: string;
     lastName: string;
@@ -75,20 +378,6 @@ export type Verify2FaRequest = {
     deviceInfo?: string | null;
 };
 
-export type PostApiSmsRelaySendData = {
-    body: unknown;
-    path?: never;
-    query?: never;
-    url: '/api/SmsRelay/send';
-};
-
-export type PostApiSmsRelaySendResponses = {
-    /**
-     * OK
-     */
-    200: unknown;
-};
-
 export type GetApiV1AppointmentsData = {
     body?: never;
     path?: never;
@@ -96,12 +385,23 @@ export type GetApiV1AppointmentsData = {
     url: '/api/v1/appointments';
 };
 
+export type GetApiV1AppointmentsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+};
+
+export type GetApiV1AppointmentsError = GetApiV1AppointmentsErrors[keyof GetApiV1AppointmentsErrors];
+
 export type GetApiV1AppointmentsResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponseOfListOfAppointmentListItemDto;
 };
+
+export type GetApiV1AppointmentsResponse = GetApiV1AppointmentsResponses[keyof GetApiV1AppointmentsResponses];
 
 export type PostApiV1AppointmentsData = {
     body: CreateAppointmentRequest;
@@ -110,12 +410,31 @@ export type PostApiV1AppointmentsData = {
     url: '/api/v1/appointments';
 };
 
+export type PostApiV1AppointmentsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+};
+
+export type PostApiV1AppointmentsError = PostApiV1AppointmentsErrors[keyof PostApiV1AppointmentsErrors];
+
 export type PostApiV1AppointmentsResponses = {
     /**
-     * OK
+     * Created
      */
-    200: unknown;
+    201: ApiResponse;
 };
+
+export type PostApiV1AppointmentsResponse = PostApiV1AppointmentsResponses[keyof PostApiV1AppointmentsResponses];
 
 export type PostApiV1AppointmentsBulkData = {
     body: CreateBulkAppointmentRequest;
@@ -124,12 +443,23 @@ export type PostApiV1AppointmentsBulkData = {
     url: '/api/v1/appointments/bulk';
 };
 
+export type PostApiV1AppointmentsBulkErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+};
+
+export type PostApiV1AppointmentsBulkError = PostApiV1AppointmentsBulkErrors[keyof PostApiV1AppointmentsBulkErrors];
+
 export type PostApiV1AppointmentsBulkResponses = {
     /**
-     * OK
+     * Created
      */
-    200: unknown;
+    201: ApiResponseOfBulkAppointmentResponse;
 };
+
+export type PostApiV1AppointmentsBulkResponse = PostApiV1AppointmentsBulkResponses[keyof PostApiV1AppointmentsBulkResponses];
 
 export type PostApiV1AppointmentsByIdCancelData = {
     body?: never;
@@ -140,12 +470,31 @@ export type PostApiV1AppointmentsByIdCancelData = {
     url: '/api/v1/appointments/{id}/cancel';
 };
 
+export type PostApiV1AppointmentsByIdCancelErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+};
+
+export type PostApiV1AppointmentsByIdCancelError = PostApiV1AppointmentsByIdCancelErrors[keyof PostApiV1AppointmentsByIdCancelErrors];
+
 export type PostApiV1AppointmentsByIdCancelResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponse;
 };
+
+export type PostApiV1AppointmentsByIdCancelResponse = PostApiV1AppointmentsByIdCancelResponses[keyof PostApiV1AppointmentsByIdCancelResponses];
 
 export type GetApiV1AppointmentsTimeSlotsData = {
     body?: never;
@@ -160,8 +509,10 @@ export type GetApiV1AppointmentsTimeSlotsResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponseOfTimeSlotsResponse;
 };
+
+export type GetApiV1AppointmentsTimeSlotsResponse = GetApiV1AppointmentsTimeSlotsResponses[keyof GetApiV1AppointmentsTimeSlotsResponses];
 
 export type GetApiV1AppointmentsServicesData = {
     body?: never;
@@ -174,8 +525,10 @@ export type GetApiV1AppointmentsServicesResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponseOfListOfServiceCategoryDto;
 };
+
+export type GetApiV1AppointmentsServicesResponse = GetApiV1AppointmentsServicesResponses[keyof GetApiV1AppointmentsServicesResponses];
 
 export type PostApiV1AuthLoginData = {
     body: LoginRequest;
@@ -184,12 +537,27 @@ export type PostApiV1AuthLoginData = {
     url: '/api/v1/auth/login';
 };
 
+export type PostApiV1AuthLoginErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Too Many Requests
+     */
+    429: ApiErrorResponse;
+};
+
+export type PostApiV1AuthLoginError = PostApiV1AuthLoginErrors[keyof PostApiV1AuthLoginErrors];
+
 export type PostApiV1AuthLoginResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponseOfLoginResponse;
 };
+
+export type PostApiV1AuthLoginResponse = PostApiV1AuthLoginResponses[keyof PostApiV1AuthLoginResponses];
 
 export type PostApiV1AuthVerify2FaData = {
     body: Verify2FaRequest;
@@ -198,12 +566,27 @@ export type PostApiV1AuthVerify2FaData = {
     url: '/api/v1/auth/verify-2fa';
 };
 
+export type PostApiV1AuthVerify2FaErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+};
+
+export type PostApiV1AuthVerify2FaError = PostApiV1AuthVerify2FaErrors[keyof PostApiV1AuthVerify2FaErrors];
+
 export type PostApiV1AuthVerify2FaResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponseOfTokenResponse;
 };
+
+export type PostApiV1AuthVerify2FaResponse = PostApiV1AuthVerify2FaResponses[keyof PostApiV1AuthVerify2FaResponses];
 
 export type PostApiV1AuthRegisterData = {
     body: RegisterRequest;
@@ -212,12 +595,27 @@ export type PostApiV1AuthRegisterData = {
     url: '/api/v1/auth/register';
 };
 
+export type PostApiV1AuthRegisterErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Conflict
+     */
+    409: ApiErrorResponse;
+};
+
+export type PostApiV1AuthRegisterError = PostApiV1AuthRegisterErrors[keyof PostApiV1AuthRegisterErrors];
+
 export type PostApiV1AuthRegisterResponses = {
     /**
-     * OK
+     * Created
      */
-    200: unknown;
+    201: ApiResponse;
 };
+
+export type PostApiV1AuthRegisterResponse = PostApiV1AuthRegisterResponses[keyof PostApiV1AuthRegisterResponses];
 
 export type PostApiV1AuthRefreshData = {
     body: RefreshTokenRequest;
@@ -226,12 +624,23 @@ export type PostApiV1AuthRefreshData = {
     url: '/api/v1/auth/refresh';
 };
 
+export type PostApiV1AuthRefreshErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+};
+
+export type PostApiV1AuthRefreshError = PostApiV1AuthRefreshErrors[keyof PostApiV1AuthRefreshErrors];
+
 export type PostApiV1AuthRefreshResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponseOfTokenResponse;
 };
+
+export type PostApiV1AuthRefreshResponse = PostApiV1AuthRefreshResponses[keyof PostApiV1AuthRefreshResponses];
 
 export type PostApiV1AuthLogoutData = {
     body: RefreshTokenRequest;
@@ -240,12 +649,23 @@ export type PostApiV1AuthLogoutData = {
     url: '/api/v1/auth/logout';
 };
 
+export type PostApiV1AuthLogoutErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+};
+
+export type PostApiV1AuthLogoutError = PostApiV1AuthLogoutErrors[keyof PostApiV1AuthLogoutErrors];
+
 export type PostApiV1AuthLogoutResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponse;
 };
+
+export type PostApiV1AuthLogoutResponse = PostApiV1AuthLogoutResponses[keyof PostApiV1AuthLogoutResponses];
 
 export type PostApiV1AuthForgotPasswordData = {
     body: ForgotPasswordRequest;
@@ -254,12 +674,23 @@ export type PostApiV1AuthForgotPasswordData = {
     url: '/api/v1/auth/forgot-password';
 };
 
+export type PostApiV1AuthForgotPasswordErrors = {
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+};
+
+export type PostApiV1AuthForgotPasswordError = PostApiV1AuthForgotPasswordErrors[keyof PostApiV1AuthForgotPasswordErrors];
+
 export type PostApiV1AuthForgotPasswordResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponse;
 };
+
+export type PostApiV1AuthForgotPasswordResponse = PostApiV1AuthForgotPasswordResponses[keyof PostApiV1AuthForgotPasswordResponses];
 
 export type PostApiV1AuthResetPasswordData = {
     body: ResetPasswordRequest;
@@ -268,12 +699,23 @@ export type PostApiV1AuthResetPasswordData = {
     url: '/api/v1/auth/reset-password';
 };
 
+export type PostApiV1AuthResetPasswordErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+};
+
+export type PostApiV1AuthResetPasswordError = PostApiV1AuthResetPasswordErrors[keyof PostApiV1AuthResetPasswordErrors];
+
 export type PostApiV1AuthResetPasswordResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponse;
 };
+
+export type PostApiV1AuthResetPasswordResponse = PostApiV1AuthResetPasswordResponses[keyof PostApiV1AuthResetPasswordResponses];
 
 export type GetApiV1DashboardData = {
     body?: never;
@@ -282,12 +724,23 @@ export type GetApiV1DashboardData = {
     url: '/api/v1/dashboard';
 };
 
+export type GetApiV1DashboardErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+};
+
+export type GetApiV1DashboardError = GetApiV1DashboardErrors[keyof GetApiV1DashboardErrors];
+
 export type GetApiV1DashboardResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponseOfDashboardResponse;
 };
+
+export type GetApiV1DashboardResponse = GetApiV1DashboardResponses[keyof GetApiV1DashboardResponses];
 
 export type GetApiV1NotificationsData = {
     body?: never;
@@ -302,12 +755,23 @@ export type GetApiV1NotificationsData = {
     url: '/api/v1/notifications';
 };
 
+export type GetApiV1NotificationsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+};
+
+export type GetApiV1NotificationsError = GetApiV1NotificationsErrors[keyof GetApiV1NotificationsErrors];
+
 export type GetApiV1NotificationsResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: NotificationListResponse;
 };
+
+export type GetApiV1NotificationsResponse = GetApiV1NotificationsResponses[keyof GetApiV1NotificationsResponses];
 
 export type GetApiV1NotificationsUnreadCountData = {
     body?: never;
@@ -320,8 +784,10 @@ export type GetApiV1NotificationsUnreadCountResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponseOfUnreadCountResponse;
 };
+
+export type GetApiV1NotificationsUnreadCountResponse = GetApiV1NotificationsUnreadCountResponses[keyof GetApiV1NotificationsUnreadCountResponses];
 
 export type PutApiV1NotificationsByIdReadData = {
     body?: never;
@@ -332,12 +798,23 @@ export type PutApiV1NotificationsByIdReadData = {
     url: '/api/v1/notifications/{id}/read';
 };
 
+export type PutApiV1NotificationsByIdReadErrors = {
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+};
+
+export type PutApiV1NotificationsByIdReadError = PutApiV1NotificationsByIdReadErrors[keyof PutApiV1NotificationsByIdReadErrors];
+
 export type PutApiV1NotificationsByIdReadResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponse;
 };
+
+export type PutApiV1NotificationsByIdReadResponse = PutApiV1NotificationsByIdReadResponses[keyof PutApiV1NotificationsByIdReadResponses];
 
 export type PutApiV1NotificationsReadAllData = {
     body?: never;
@@ -350,8 +827,10 @@ export type PutApiV1NotificationsReadAllResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponse;
 };
+
+export type PutApiV1NotificationsReadAllResponse = PutApiV1NotificationsReadAllResponses[keyof PutApiV1NotificationsReadAllResponses];
 
 export type GetApiV1PetsData = {
     body?: never;
@@ -360,12 +839,23 @@ export type GetApiV1PetsData = {
     url: '/api/v1/pets';
 };
 
+export type GetApiV1PetsErrors = {
+    /**
+     * Unauthorized
+     */
+    401: ApiErrorResponse;
+};
+
+export type GetApiV1PetsError = GetApiV1PetsErrors[keyof GetApiV1PetsErrors];
+
 export type GetApiV1PetsResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponseOfListOfPetListItemDto;
 };
+
+export type GetApiV1PetsResponse = GetApiV1PetsResponses[keyof GetApiV1PetsResponses];
 
 export type PostApiV1PetsData = {
     body: {
@@ -380,12 +870,23 @@ export type PostApiV1PetsData = {
     url: '/api/v1/pets';
 };
 
+export type PostApiV1PetsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+};
+
+export type PostApiV1PetsError = PostApiV1PetsErrors[keyof PostApiV1PetsErrors];
+
 export type PostApiV1PetsResponses = {
     /**
-     * OK
+     * Created
      */
-    200: unknown;
+    201: ApiResponseOfPetListItemDto;
 };
+
+export type PostApiV1PetsResponse = PostApiV1PetsResponses[keyof PostApiV1PetsResponses];
 
 export type GetApiV1PetsByIdData = {
     body?: never;
@@ -401,12 +902,27 @@ export type GetApiV1PetsByIdData = {
     url: '/api/v1/pets/{id}';
 };
 
+export type GetApiV1PetsByIdErrors = {
+    /**
+     * Forbidden
+     */
+    403: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+};
+
+export type GetApiV1PetsByIdError = GetApiV1PetsByIdErrors[keyof GetApiV1PetsByIdErrors];
+
 export type GetApiV1PetsByIdResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponseOfPetDetailDto;
 };
+
+export type GetApiV1PetsByIdResponse = GetApiV1PetsByIdResponses[keyof GetApiV1PetsByIdResponses];
 
 export type PutApiV1PetsByIdData = {
     body: {
@@ -423,12 +939,23 @@ export type PutApiV1PetsByIdData = {
     url: '/api/v1/pets/{id}';
 };
 
+export type PutApiV1PetsByIdErrors = {
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+};
+
+export type PutApiV1PetsByIdError = PutApiV1PetsByIdErrors[keyof PutApiV1PetsByIdErrors];
+
 export type PutApiV1PetsByIdResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponseOfPetListItemDto;
 };
+
+export type PutApiV1PetsByIdResponse = PutApiV1PetsByIdResponses[keyof PutApiV1PetsByIdResponses];
 
 export type GetApiV1PetsBreedsData = {
     body?: never;
@@ -439,12 +966,23 @@ export type GetApiV1PetsBreedsData = {
     url: '/api/v1/pets/breeds';
 };
 
+export type GetApiV1PetsBreedsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+};
+
+export type GetApiV1PetsBreedsError = GetApiV1PetsBreedsErrors[keyof GetApiV1PetsBreedsErrors];
+
 export type GetApiV1PetsBreedsResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponseOfListOfstring;
 };
+
+export type GetApiV1PetsBreedsResponse = GetApiV1PetsBreedsResponses[keyof GetApiV1PetsBreedsResponses];
 
 export type GetApiV1PetsByIdCardData = {
     body?: never;
@@ -458,12 +996,23 @@ export type GetApiV1PetsByIdCardData = {
     url: '/api/v1/pets/{id}/card';
 };
 
+export type GetApiV1PetsByIdCardErrors = {
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+};
+
+export type GetApiV1PetsByIdCardError = GetApiV1PetsByIdCardErrors[keyof GetApiV1PetsByIdCardErrors];
+
 export type GetApiV1PetsByIdCardResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponseOfPetCardResponse;
 };
+
+export type GetApiV1PetsByIdCardResponse = GetApiV1PetsByIdCardResponses[keyof GetApiV1PetsByIdCardResponses];
 
 export type GetApiV1PetsByIdCardPdfData = {
     body?: never;
@@ -474,12 +1023,23 @@ export type GetApiV1PetsByIdCardPdfData = {
     url: '/api/v1/pets/{id}/card/pdf';
 };
 
+export type GetApiV1PetsByIdCardPdfErrors = {
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+};
+
+export type GetApiV1PetsByIdCardPdfError = GetApiV1PetsByIdCardPdfErrors[keyof GetApiV1PetsByIdCardPdfErrors];
+
 export type GetApiV1PetsByIdCardPdfResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: string;
 };
+
+export type GetApiV1PetsByIdCardPdfResponse = GetApiV1PetsByIdCardPdfResponses[keyof GetApiV1PetsByIdCardPdfResponses];
 
 export type GetApiV1ProfileData = {
     body?: never;
@@ -488,12 +1048,23 @@ export type GetApiV1ProfileData = {
     url: '/api/v1/profile';
 };
 
+export type GetApiV1ProfileErrors = {
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+};
+
+export type GetApiV1ProfileError = GetApiV1ProfileErrors[keyof GetApiV1ProfileErrors];
+
 export type GetApiV1ProfileResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponseOfProfileResponse;
 };
+
+export type GetApiV1ProfileResponse = GetApiV1ProfileResponses[keyof GetApiV1ProfileResponses];
 
 export type PutApiV1ProfileData = {
     body: UpdateProfileRequest;
@@ -502,12 +1073,27 @@ export type PutApiV1ProfileData = {
     url: '/api/v1/profile';
 };
 
+export type PutApiV1ProfileErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+};
+
+export type PutApiV1ProfileError = PutApiV1ProfileErrors[keyof PutApiV1ProfileErrors];
+
 export type PutApiV1ProfileResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponse;
 };
+
+export type PutApiV1ProfileResponse = PutApiV1ProfileResponses[keyof PutApiV1ProfileResponses];
 
 export type PutApiV1ProfilePasswordData = {
     body: ChangePasswordRequest;
@@ -516,12 +1102,27 @@ export type PutApiV1ProfilePasswordData = {
     url: '/api/v1/profile/password';
 };
 
+export type PutApiV1ProfilePasswordErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+};
+
+export type PutApiV1ProfilePasswordError = PutApiV1ProfilePasswordErrors[keyof PutApiV1ProfilePasswordErrors];
+
 export type PutApiV1ProfilePasswordResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponse;
 };
+
+export type PutApiV1ProfilePasswordResponse = PutApiV1ProfilePasswordResponses[keyof PutApiV1ProfilePasswordResponses];
 
 export type PutApiV1ProfilePhotoData = {
     body: {
@@ -532,9 +1133,24 @@ export type PutApiV1ProfilePhotoData = {
     url: '/api/v1/profile/photo';
 };
 
+export type PutApiV1ProfilePhotoErrors = {
+    /**
+     * Bad Request
+     */
+    400: ApiErrorResponse;
+    /**
+     * Not Found
+     */
+    404: ApiErrorResponse;
+};
+
+export type PutApiV1ProfilePhotoError = PutApiV1ProfilePhotoErrors[keyof PutApiV1ProfilePhotoErrors];
+
 export type PutApiV1ProfilePhotoResponses = {
     /**
      * OK
      */
-    200: unknown;
+    200: ApiResponseOfUpdatePhotoResponse;
 };
+
+export type PutApiV1ProfilePhotoResponse = PutApiV1ProfilePhotoResponses[keyof PutApiV1ProfilePhotoResponses];

@@ -14,6 +14,7 @@ using PurrVet.DTOs.Common;
 using PurrVet.Infrastructure;
 using PurrVet.Models;
 using PurrVet.Services;
+using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 using System.Globalization;
 using System.Text;
@@ -85,7 +86,56 @@ builder.Services.AddCors(options => {
 });
 
 builder.Services.AddControllersWithViews();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi("v1", options => {
+    options.AddDocumentTransformer((document, context, ct) => {
+        document.Info = new OpenApiInfo {
+            Title = "PurrVet Mobile API",
+            Version = "1.0.0",
+            Description = "REST API for the PurrVet mobile application. Provides pet owners with access to pet management, appointments, notifications, and profile features.",
+            Contact = new OpenApiContact {
+                Name = "PurrVet Support",
+                Email = "support@happypawsvet.com"
+            }
+        };
+
+        // JWT Bearer security scheme
+        document.Components ??= new OpenApiComponents();
+        document.Components.SecuritySchemes["Bearer"] = new OpenApiSecurityScheme {
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            Description = "Enter your JWT access token. Obtain one via `POST /api/v1/auth/login`."
+        };
+
+        // Filter to only include /api/v1/ routes
+        var apiPaths = document.Paths
+            .Where(p => p.Key.StartsWith("/api/v1/"))
+            .ToDictionary(p => p.Key, p => p.Value);
+        document.Paths = new OpenApiPaths();
+        foreach (var path in apiPaths)
+            document.Paths.Add(path.Key, path.Value);
+
+        return Task.CompletedTask;
+    });
+
+    // Auto-apply security requirement to authorized endpoints
+    options.AddOperationTransformer((operation, context, ct) => {
+        var metadata = context.Description.ActionDescriptor.EndpointMetadata;
+        if (metadata.OfType<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>().Any()) {
+            operation.Security = new List<OpenApiSecurityRequirement> {
+                new() {
+                    [new OpenApiSecurityScheme {
+                        Reference = new OpenApiReference {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    }] = Array.Empty<string>()
+                }
+            };
+        }
+        return Task.CompletedTask;
+    });
+});
 builder.Services.Configure<ApiBehaviorOptions>(options => {
     options.InvalidModelStateResponseFactory = context => {
         var errors = context.ModelState
@@ -131,12 +181,13 @@ builder.Services.AddSession(options => {
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment()) {
-    //// Explicitly set the route for the JSON file
-    app.MapOpenApi("/api/docs/openapi.json"); 
+    app.MapOpenApi("/api/docs/openapi/{documentName}.json");
 
-    //// Tell Scalar where to find that custom route
     app.MapScalarApiReference("/api/docs", options => {
-        options.WithOpenApiRoutePattern("/api/docs/openapi.json");
+        options
+            .WithTitle("PurrVet Mobile API")
+            .WithOpenApiRoutePattern("/api/docs/openapi/{documentName}.json")
+            .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
     });
 } else {
     app.UseExceptionHandler("/Error/Error");

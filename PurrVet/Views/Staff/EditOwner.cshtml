@@ -54,7 +54,7 @@
 
             <div class="mt-4 d-flex justify-content-end gap-2">
                 <button type="submit" class="btn btn-primary px-4">Update</button>
-                <a href="@Url.Action("Owners", "Admin")" class="btn btn-secondary px-4">Cancel</a>
+                <a href="@Url.Action("Owners", "Staff")" class="btn btn-secondary px-4">Cancel</a>
             </div>
         </form>
     </div>
@@ -98,7 +98,7 @@
                     var formData = $(form).serialize();
 
                     $.ajax({
-                        url: '@Url.Action("EditOwner", "Admin")',
+                        url: '@Url.Action("EditOwner", "Staff")',
                         type: 'POST',
                         data: formData,
                         success: function (res) {
@@ -109,7 +109,7 @@
 
                             if (res.success) {
                                 setTimeout(() => {
-                                    window.location.href = '@Url.Action("Owners", "Admin")';
+                                    window.location.href = '@Url.Action("Owners", "Staff")';
                                 }, 1200);
                             }
                         }

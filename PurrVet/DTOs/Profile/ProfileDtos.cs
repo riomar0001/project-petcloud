@@ -23,6 +23,10 @@ namespace PurrVet.DTOs.Profile {
         public string Phone { get; set; } = string.Empty;
     }
 
+    public class UpdatePhotoResponse {
+        public string ProfileImageUrl { get; set; } = string.Empty;
+    }
+
     public class ChangePasswordRequest {
         [Required]
         public string CurrentPassword { get; set; } = string.Empty;

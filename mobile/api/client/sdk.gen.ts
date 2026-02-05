@@ -2,8 +2,8 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetApiV1AppointmentsData, GetApiV1AppointmentsResponses, GetApiV1AppointmentsServicesData, GetApiV1AppointmentsServicesResponses, GetApiV1AppointmentsTimeSlotsData, GetApiV1AppointmentsTimeSlotsResponses, GetApiV1DashboardData, GetApiV1DashboardResponses, GetApiV1NotificationsData, GetApiV1NotificationsResponses, GetApiV1NotificationsUnreadCountData, GetApiV1NotificationsUnreadCountResponses, GetApiV1PetsBreedsData, GetApiV1PetsBreedsResponses, GetApiV1PetsByIdCardData, GetApiV1PetsByIdCardPdfData, GetApiV1PetsByIdCardPdfResponses, GetApiV1PetsByIdCardResponses, GetApiV1PetsByIdData, GetApiV1PetsByIdResponses, GetApiV1PetsData, GetApiV1PetsResponses, GetApiV1ProfileData, GetApiV1ProfileResponses, PostApiSmsRelaySendData, PostApiSmsRelaySendResponses, PostApiV1AppointmentsBulkData, PostApiV1AppointmentsBulkResponses, PostApiV1AppointmentsByIdCancelData, PostApiV1AppointmentsByIdCancelResponses, PostApiV1AppointmentsData, PostApiV1AppointmentsResponses, PostApiV1AuthForgotPasswordData, PostApiV1AuthForgotPasswordResponses, PostApiV1AuthLoginData, PostApiV1AuthLoginResponses, PostApiV1AuthLogoutData, PostApiV1AuthLogoutResponses, PostApiV1AuthRefreshData, PostApiV1AuthRefreshResponses, PostApiV1AuthRegisterData, PostApiV1AuthRegisterResponses, PostApiV1AuthResetPasswordData, PostApiV1AuthResetPasswordResponses, PostApiV1AuthVerify2FaData, PostApiV1AuthVerify2FaResponses, PostApiV1PetsData, PostApiV1PetsResponses, PutApiV1NotificationsByIdReadData, PutApiV1NotificationsByIdReadResponses, PutApiV1NotificationsReadAllData, PutApiV1NotificationsReadAllResponses, PutApiV1PetsByIdData, PutApiV1PetsByIdResponses, PutApiV1ProfileData, PutApiV1ProfilePasswordData, PutApiV1ProfilePasswordResponses, PutApiV1ProfilePhotoData, PutApiV1ProfilePhotoResponses, PutApiV1ProfileResponses } from './types.gen';
-import { zGetApiV1AppointmentsData, zGetApiV1AppointmentsServicesData, zGetApiV1AppointmentsTimeSlotsData, zGetApiV1DashboardData, zGetApiV1NotificationsData, zGetApiV1NotificationsUnreadCountData, zGetApiV1PetsBreedsData, zGetApiV1PetsByIdCardData, zGetApiV1PetsByIdCardPdfData, zGetApiV1PetsByIdData, zGetApiV1PetsData, zGetApiV1ProfileData, zPostApiSmsRelaySendData, zPostApiV1AppointmentsBulkData, zPostApiV1AppointmentsByIdCancelData, zPostApiV1AppointmentsData, zPostApiV1AuthForgotPasswordData, zPostApiV1AuthLoginData, zPostApiV1AuthLogoutData, zPostApiV1AuthRefreshData, zPostApiV1AuthRegisterData, zPostApiV1AuthResetPasswordData, zPostApiV1AuthVerify2FaData, zPostApiV1PetsData, zPutApiV1NotificationsByIdReadData, zPutApiV1NotificationsReadAllData, zPutApiV1PetsByIdData, zPutApiV1ProfileData, zPutApiV1ProfilePasswordData, zPutApiV1ProfilePhotoData } from './zod.gen';
+import type { GetApiV1AppointmentsData, GetApiV1AppointmentsErrors, GetApiV1AppointmentsResponses, GetApiV1AppointmentsServicesData, GetApiV1AppointmentsServicesResponses, GetApiV1AppointmentsTimeSlotsData, GetApiV1AppointmentsTimeSlotsResponses, GetApiV1DashboardData, GetApiV1DashboardErrors, GetApiV1DashboardResponses, GetApiV1NotificationsData, GetApiV1NotificationsErrors, GetApiV1NotificationsResponses, GetApiV1NotificationsUnreadCountData, GetApiV1NotificationsUnreadCountResponses, GetApiV1PetsBreedsData, GetApiV1PetsBreedsErrors, GetApiV1PetsBreedsResponses, GetApiV1PetsByIdCardData, GetApiV1PetsByIdCardErrors, GetApiV1PetsByIdCardPdfData, GetApiV1PetsByIdCardPdfErrors, GetApiV1PetsByIdCardPdfResponses, GetApiV1PetsByIdCardResponses, GetApiV1PetsByIdData, GetApiV1PetsByIdErrors, GetApiV1PetsByIdResponses, GetApiV1PetsData, GetApiV1PetsErrors, GetApiV1PetsResponses, GetApiV1ProfileData, GetApiV1ProfileErrors, GetApiV1ProfileResponses, PostApiV1AppointmentsBulkData, PostApiV1AppointmentsBulkErrors, PostApiV1AppointmentsBulkResponses, PostApiV1AppointmentsByIdCancelData, PostApiV1AppointmentsByIdCancelErrors, PostApiV1AppointmentsByIdCancelResponses, PostApiV1AppointmentsData, PostApiV1AppointmentsErrors, PostApiV1AppointmentsResponses, PostApiV1AuthForgotPasswordData, PostApiV1AuthForgotPasswordErrors, PostApiV1AuthForgotPasswordResponses, PostApiV1AuthLoginData, PostApiV1AuthLoginErrors, PostApiV1AuthLoginResponses, PostApiV1AuthLogoutData, PostApiV1AuthLogoutErrors, PostApiV1AuthLogoutResponses, PostApiV1AuthRefreshData, PostApiV1AuthRefreshErrors, PostApiV1AuthRefreshResponses, PostApiV1AuthRegisterData, PostApiV1AuthRegisterErrors, PostApiV1AuthRegisterResponses, PostApiV1AuthResetPasswordData, PostApiV1AuthResetPasswordErrors, PostApiV1AuthResetPasswordResponses, PostApiV1AuthVerify2FaData, PostApiV1AuthVerify2FaErrors, PostApiV1AuthVerify2FaResponses, PostApiV1PetsData, PostApiV1PetsErrors, PostApiV1PetsResponses, PutApiV1NotificationsByIdReadData, PutApiV1NotificationsByIdReadErrors, PutApiV1NotificationsByIdReadResponses, PutApiV1NotificationsReadAllData, PutApiV1NotificationsReadAllResponses, PutApiV1PetsByIdData, PutApiV1PetsByIdErrors, PutApiV1PetsByIdResponses, PutApiV1ProfileData, PutApiV1ProfileErrors, PutApiV1ProfilePasswordData, PutApiV1ProfilePasswordErrors, PutApiV1ProfilePasswordResponses, PutApiV1ProfilePhotoData, PutApiV1ProfilePhotoErrors, PutApiV1ProfilePhotoResponses, PutApiV1ProfileResponses } from './types.gen';
+import { zGetApiV1AppointmentsData, zGetApiV1AppointmentsResponse, zGetApiV1AppointmentsServicesData, zGetApiV1AppointmentsServicesResponse, zGetApiV1AppointmentsTimeSlotsData, zGetApiV1AppointmentsTimeSlotsResponse, zGetApiV1DashboardData, zGetApiV1DashboardResponse, zGetApiV1NotificationsData, zGetApiV1NotificationsResponse, zGetApiV1NotificationsUnreadCountData, zGetApiV1NotificationsUnreadCountResponse, zGetApiV1PetsBreedsData, zGetApiV1PetsBreedsResponse, zGetApiV1PetsByIdCardData, zGetApiV1PetsByIdCardPdfData, zGetApiV1PetsByIdCardPdfResponse, zGetApiV1PetsByIdCardResponse, zGetApiV1PetsByIdData, zGetApiV1PetsByIdResponse, zGetApiV1PetsData, zGetApiV1PetsResponse, zGetApiV1ProfileData, zGetApiV1ProfileResponse, zPostApiV1AppointmentsBulkData, zPostApiV1AppointmentsBulkResponse, zPostApiV1AppointmentsByIdCancelData, zPostApiV1AppointmentsByIdCancelResponse, zPostApiV1AppointmentsData, zPostApiV1AppointmentsResponse, zPostApiV1AuthForgotPasswordData, zPostApiV1AuthForgotPasswordResponse, zPostApiV1AuthLoginData, zPostApiV1AuthLoginResponse, zPostApiV1AuthLogoutData, zPostApiV1AuthLogoutResponse, zPostApiV1AuthRefreshData, zPostApiV1AuthRefreshResponse, zPostApiV1AuthRegisterData, zPostApiV1AuthRegisterResponse, zPostApiV1AuthResetPasswordData, zPostApiV1AuthResetPasswordResponse, zPostApiV1AuthVerify2FaData, zPostApiV1AuthVerify2FaResponse, zPostApiV1PetsData, zPostApiV1PetsResponse, zPutApiV1NotificationsByIdReadData, zPutApiV1NotificationsByIdReadResponse, zPutApiV1NotificationsReadAllData, zPutApiV1NotificationsReadAllResponse, zPutApiV1PetsByIdData, zPutApiV1PetsByIdResponse, zPutApiV1ProfileData, zPutApiV1ProfilePasswordData, zPutApiV1ProfilePasswordResponse, zPutApiV1ProfilePhotoData, zPutApiV1ProfilePhotoResponse, zPutApiV1ProfileResponse } from './zod.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -19,32 +19,34 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
     meta?: Record<string, unknown>;
 };
 
-export class SmsRelay {
-    public static postApiSmsRelaySend<ThrowOnError extends boolean = false>(options: Options<PostApiSmsRelaySendData, ThrowOnError>) {
-        return (options.client ?? client).post<PostApiSmsRelaySendResponses, unknown, ThrowOnError>({
-            requestValidator: async (data) => await zPostApiSmsRelaySendData.parseAsync(data),
-            url: '/api/SmsRelay/send',
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-    }
-}
-
 export class Appointments {
+    /**
+     * List all appointments
+     *
+     * Returns all appointments across the clinic. The owner's own appointments include full details; other owners' appointments show limited info.
+     */
     public static getApiV1Appointments<ThrowOnError extends boolean = false>(options?: Options<GetApiV1AppointmentsData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetApiV1AppointmentsResponses, unknown, ThrowOnError>({
+        return (options?.client ?? client).get<GetApiV1AppointmentsResponses, GetApiV1AppointmentsErrors, ThrowOnError>({
             requestValidator: async (data) => await zGetApiV1AppointmentsData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zGetApiV1AppointmentsResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/appointments',
             ...options
         });
     }
     
+    /**
+     * Create an appointment
+     *
+     * Book a single appointment for a pet. The time slot must not already be taken.
+     */
     public static postApiV1Appointments<ThrowOnError extends boolean = false>(options: Options<PostApiV1AppointmentsData, ThrowOnError>) {
-        return (options.client ?? client).post<PostApiV1AppointmentsResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).post<PostApiV1AppointmentsResponses, PostApiV1AppointmentsErrors, ThrowOnError>({
             requestValidator: async (data) => await zPostApiV1AppointmentsData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zPostApiV1AppointmentsResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/appointments',
             ...options,
             headers: {
@@ -54,9 +56,17 @@ export class Appointments {
         });
     }
     
+    /**
+     * Create grouped appointments
+     *
+     * Book multiple services at the same time slot as a grouped appointment. All services share the same date/time from the first valid item.
+     */
     public static postApiV1AppointmentsBulk<ThrowOnError extends boolean = false>(options: Options<PostApiV1AppointmentsBulkData, ThrowOnError>) {
-        return (options.client ?? client).post<PostApiV1AppointmentsBulkResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).post<PostApiV1AppointmentsBulkResponses, PostApiV1AppointmentsBulkErrors, ThrowOnError>({
             requestValidator: async (data) => await zPostApiV1AppointmentsBulkData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zPostApiV1AppointmentsBulkResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/appointments/bulk',
             ...options,
             headers: {
@@ -66,35 +76,66 @@ export class Appointments {
         });
     }
     
+    /**
+     * Request cancellation
+     *
+     * Request cancellation for all appointments in a group. Only groups where every appointment is still pending/requested can be cancelled.
+     */
     public static postApiV1AppointmentsByIdCancel<ThrowOnError extends boolean = false>(options: Options<PostApiV1AppointmentsByIdCancelData, ThrowOnError>) {
-        return (options.client ?? client).post<PostApiV1AppointmentsByIdCancelResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).post<PostApiV1AppointmentsByIdCancelResponses, PostApiV1AppointmentsByIdCancelErrors, ThrowOnError>({
             requestValidator: async (data) => await zPostApiV1AppointmentsByIdCancelData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zPostApiV1AppointmentsByIdCancelResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/appointments/{id}/cancel',
             ...options
         });
     }
     
+    /**
+     * Get available time slots
+     *
+     * Returns all 5-minute time slots between 09:00 and 18:00 for a given date, indicating which are available or already booked.
+     */
     public static getApiV1AppointmentsTimeSlots<ThrowOnError extends boolean = false>(options?: Options<GetApiV1AppointmentsTimeSlotsData, ThrowOnError>) {
         return (options?.client ?? client).get<GetApiV1AppointmentsTimeSlotsResponses, unknown, ThrowOnError>({
             requestValidator: async (data) => await zGetApiV1AppointmentsTimeSlotsData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zGetApiV1AppointmentsTimeSlotsResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/appointments/time-slots',
             ...options
         });
     }
     
+    /**
+     * List service categories
+     *
+     * Returns all available service categories with their subtypes, used when creating appointments.
+     */
     public static getApiV1AppointmentsServices<ThrowOnError extends boolean = false>(options?: Options<GetApiV1AppointmentsServicesData, ThrowOnError>) {
         return (options?.client ?? client).get<GetApiV1AppointmentsServicesResponses, unknown, ThrowOnError>({
             requestValidator: async (data) => await zGetApiV1AppointmentsServicesData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zGetApiV1AppointmentsServicesResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/appointments/services',
             ...options
         });
     }
 }
 
-export class Auth {
+export class Authentication {
+    /**
+     * Log in
+     *
+     * Authenticate with email and password. Returns JWT tokens directly, or a 2FA challenge if verification is required.
+     */
     public static postApiV1AuthLogin<ThrowOnError extends boolean = false>(options: Options<PostApiV1AuthLoginData, ThrowOnError>) {
-        return (options.client ?? client).post<PostApiV1AuthLoginResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).post<PostApiV1AuthLoginResponses, PostApiV1AuthLoginErrors, ThrowOnError>({
             requestValidator: async (data) => await zPostApiV1AuthLoginData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zPostApiV1AuthLoginResponse.parseAsync(data),
             url: '/api/v1/auth/login',
             ...options,
             headers: {
@@ -104,9 +145,16 @@ export class Auth {
         });
     }
     
+    /**
+     * Verify 2FA code
+     *
+     * Submit the 6-digit code sent to the user's email to complete two-factor authentication and receive JWT tokens.
+     */
     public static postApiV1AuthVerify2Fa<ThrowOnError extends boolean = false>(options: Options<PostApiV1AuthVerify2FaData, ThrowOnError>) {
-        return (options.client ?? client).post<PostApiV1AuthVerify2FaResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).post<PostApiV1AuthVerify2FaResponses, PostApiV1AuthVerify2FaErrors, ThrowOnError>({
             requestValidator: async (data) => await zPostApiV1AuthVerify2FaData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zPostApiV1AuthVerify2FaResponse.parseAsync(data),
             url: '/api/v1/auth/verify-2fa',
             ...options,
             headers: {
@@ -116,9 +164,16 @@ export class Auth {
         });
     }
     
+    /**
+     * Register a new owner
+     *
+     * Create a new pet owner account. The account is immediately active and the user can log in after registration.
+     */
     public static postApiV1AuthRegister<ThrowOnError extends boolean = false>(options: Options<PostApiV1AuthRegisterData, ThrowOnError>) {
-        return (options.client ?? client).post<PostApiV1AuthRegisterResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).post<PostApiV1AuthRegisterResponses, PostApiV1AuthRegisterErrors, ThrowOnError>({
             requestValidator: async (data) => await zPostApiV1AuthRegisterData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zPostApiV1AuthRegisterResponse.parseAsync(data),
             url: '/api/v1/auth/register',
             ...options,
             headers: {
@@ -128,9 +183,16 @@ export class Auth {
         });
     }
     
+    /**
+     * Refresh access token
+     *
+     * Exchange a valid refresh token for a new access/refresh token pair. The old refresh token is revoked (rotation).
+     */
     public static postApiV1AuthRefresh<ThrowOnError extends boolean = false>(options: Options<PostApiV1AuthRefreshData, ThrowOnError>) {
-        return (options.client ?? client).post<PostApiV1AuthRefreshResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).post<PostApiV1AuthRefreshResponses, PostApiV1AuthRefreshErrors, ThrowOnError>({
             requestValidator: async (data) => await zPostApiV1AuthRefreshData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zPostApiV1AuthRefreshResponse.parseAsync(data),
             url: '/api/v1/auth/refresh',
             ...options,
             headers: {
@@ -140,9 +202,17 @@ export class Auth {
         });
     }
     
+    /**
+     * Log out
+     *
+     * Revoke the provided refresh token, ending the session on this device.
+     */
     public static postApiV1AuthLogout<ThrowOnError extends boolean = false>(options: Options<PostApiV1AuthLogoutData, ThrowOnError>) {
-        return (options.client ?? client).post<PostApiV1AuthLogoutResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).post<PostApiV1AuthLogoutResponses, PostApiV1AuthLogoutErrors, ThrowOnError>({
             requestValidator: async (data) => await zPostApiV1AuthLogoutData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zPostApiV1AuthLogoutResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/auth/logout',
             ...options,
             headers: {
@@ -152,9 +222,16 @@ export class Auth {
         });
     }
     
+    /**
+     * Request password reset
+     *
+     * Send a password reset link to the user's email address. The link expires in 1 hour.
+     */
     public static postApiV1AuthForgotPassword<ThrowOnError extends boolean = false>(options: Options<PostApiV1AuthForgotPasswordData, ThrowOnError>) {
-        return (options.client ?? client).post<PostApiV1AuthForgotPasswordResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).post<PostApiV1AuthForgotPasswordResponses, PostApiV1AuthForgotPasswordErrors, ThrowOnError>({
             requestValidator: async (data) => await zPostApiV1AuthForgotPasswordData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zPostApiV1AuthForgotPasswordResponse.parseAsync(data),
             url: '/api/v1/auth/forgot-password',
             ...options,
             headers: {
@@ -164,9 +241,16 @@ export class Auth {
         });
     }
     
+    /**
+     * Reset password
+     *
+     * Set a new password using the token from the password reset email. The new password cannot match the current one.
+     */
     public static postApiV1AuthResetPassword<ThrowOnError extends boolean = false>(options: Options<PostApiV1AuthResetPasswordData, ThrowOnError>) {
-        return (options.client ?? client).post<PostApiV1AuthResetPasswordResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).post<PostApiV1AuthResetPasswordResponses, PostApiV1AuthResetPasswordErrors, ThrowOnError>({
             requestValidator: async (data) => await zPostApiV1AuthResetPasswordData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zPostApiV1AuthResetPasswordResponse.parseAsync(data),
             url: '/api/v1/auth/reset-password',
             ...options,
             headers: {
@@ -178,9 +262,17 @@ export class Auth {
 }
 
 export class Dashboard {
+    /**
+     * Get owner dashboard
+     *
+     * Returns the owner's dashboard data including their pets, upcoming appointments, and vaccination/deworming items due within 5 days.
+     */
     public static getApiV1Dashboard<ThrowOnError extends boolean = false>(options?: Options<GetApiV1DashboardData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetApiV1DashboardResponses, unknown, ThrowOnError>({
+        return (options?.client ?? client).get<GetApiV1DashboardResponses, GetApiV1DashboardErrors, ThrowOnError>({
             requestValidator: async (data) => await zGetApiV1DashboardData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zGetApiV1DashboardResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/dashboard',
             ...options
         });
@@ -188,33 +280,65 @@ export class Dashboard {
 }
 
 export class Notifications {
+    /**
+     * List notifications
+     *
+     * Returns paginated notifications for the authenticated owner. Supports filtering by type (e.g. Appointment, Pet), read status, and text search.
+     */
     public static getApiV1Notifications<ThrowOnError extends boolean = false>(options?: Options<GetApiV1NotificationsData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetApiV1NotificationsResponses, unknown, ThrowOnError>({
+        return (options?.client ?? client).get<GetApiV1NotificationsResponses, GetApiV1NotificationsErrors, ThrowOnError>({
             requestValidator: async (data) => await zGetApiV1NotificationsData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zGetApiV1NotificationsResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/notifications',
             ...options
         });
     }
     
+    /**
+     * Get unread count
+     *
+     * Returns the total number of unread notifications for the authenticated owner.
+     */
     public static getApiV1NotificationsUnreadCount<ThrowOnError extends boolean = false>(options?: Options<GetApiV1NotificationsUnreadCountData, ThrowOnError>) {
         return (options?.client ?? client).get<GetApiV1NotificationsUnreadCountResponses, unknown, ThrowOnError>({
             requestValidator: async (data) => await zGetApiV1NotificationsUnreadCountData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zGetApiV1NotificationsUnreadCountResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/notifications/unread-count',
             ...options
         });
     }
     
+    /**
+     * Mark notification as read
+     *
+     * Mark a single notification as read by its ID.
+     */
     public static putApiV1NotificationsByIdRead<ThrowOnError extends boolean = false>(options: Options<PutApiV1NotificationsByIdReadData, ThrowOnError>) {
-        return (options.client ?? client).put<PutApiV1NotificationsByIdReadResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).put<PutApiV1NotificationsByIdReadResponses, PutApiV1NotificationsByIdReadErrors, ThrowOnError>({
             requestValidator: async (data) => await zPutApiV1NotificationsByIdReadData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zPutApiV1NotificationsByIdReadResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/notifications/{id}/read',
             ...options
         });
     }
     
+    /**
+     * Mark all as read
+     *
+     * Mark all unread notifications as read for the authenticated owner.
+     */
     public static putApiV1NotificationsReadAll<ThrowOnError extends boolean = false>(options?: Options<PutApiV1NotificationsReadAllData, ThrowOnError>) {
         return (options?.client ?? client).put<PutApiV1NotificationsReadAllResponses, unknown, ThrowOnError>({
             requestValidator: async (data) => await zPutApiV1NotificationsReadAllData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zPutApiV1NotificationsReadAllResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/notifications/read-all',
             ...options
         });
@@ -222,18 +346,34 @@ export class Notifications {
 }
 
 export class Pets {
+    /**
+     * List all pets
+     *
+     * Returns all pets belonging to the authenticated owner, ordered by most recently added.
+     */
     public static getApiV1Pets<ThrowOnError extends boolean = false>(options?: Options<GetApiV1PetsData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetApiV1PetsResponses, unknown, ThrowOnError>({
+        return (options?.client ?? client).get<GetApiV1PetsResponses, GetApiV1PetsErrors, ThrowOnError>({
             requestValidator: async (data) => await zGetApiV1PetsData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zGetApiV1PetsResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/pets',
             ...options
         });
     }
     
+    /**
+     * Add a new pet
+     *
+     * Create a new pet for the authenticated owner. Accepts an optional photo that will be cropped to 500x500 JPEG.
+     */
     public static postApiV1Pets<ThrowOnError extends boolean = false>(options: Options<PostApiV1PetsData, ThrowOnError>) {
-        return (options.client ?? client).post<PostApiV1PetsResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).post<PostApiV1PetsResponses, PostApiV1PetsErrors, ThrowOnError>({
             ...formDataBodySerializer,
             requestValidator: async (data) => await zPostApiV1PetsData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zPostApiV1PetsResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/pets',
             ...options,
             headers: {
@@ -243,18 +383,34 @@ export class Pets {
         });
     }
     
+    /**
+     * Get pet details
+     *
+     * Returns detailed information for a specific pet including paginated appointment history. Supports filtering by service category and text search on notes.
+     */
     public static getApiV1PetsById<ThrowOnError extends boolean = false>(options: Options<GetApiV1PetsByIdData, ThrowOnError>) {
-        return (options.client ?? client).get<GetApiV1PetsByIdResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).get<GetApiV1PetsByIdResponses, GetApiV1PetsByIdErrors, ThrowOnError>({
             requestValidator: async (data) => await zGetApiV1PetsByIdData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zGetApiV1PetsByIdResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/pets/{id}',
             ...options
         });
     }
     
+    /**
+     * Update a pet
+     *
+     * Update pet information. All fields are optional — only provided fields are updated. A new photo replaces the existing one.
+     */
     public static putApiV1PetsById<ThrowOnError extends boolean = false>(options: Options<PutApiV1PetsByIdData, ThrowOnError>) {
-        return (options.client ?? client).put<PutApiV1PetsByIdResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).put<PutApiV1PetsByIdResponses, PutApiV1PetsByIdErrors, ThrowOnError>({
             ...formDataBodySerializer,
             requestValidator: async (data) => await zPutApiV1PetsByIdData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zPutApiV1PetsByIdResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/pets/{id}',
             ...options,
             headers: {
@@ -264,25 +420,49 @@ export class Pets {
         });
     }
     
+    /**
+     * Get breed list
+     *
+     * Returns a sorted list of breed names for the given pet type (`dog` or `cat`), sourced from the clinic's breed dataset.
+     */
     public static getApiV1PetsBreeds<ThrowOnError extends boolean = false>(options?: Options<GetApiV1PetsBreedsData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetApiV1PetsBreedsResponses, unknown, ThrowOnError>({
+        return (options?.client ?? client).get<GetApiV1PetsBreedsResponses, GetApiV1PetsBreedsErrors, ThrowOnError>({
             requestValidator: async (data) => await zGetApiV1PetsBreedsData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zGetApiV1PetsBreedsResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/pets/breeds',
             ...options
         });
     }
     
+    /**
+     * Get pet health card
+     *
+     * Returns the pet's health card with paginated completed appointment records, owner contact info, and age in months.
+     */
     public static getApiV1PetsByIdCard<ThrowOnError extends boolean = false>(options: Options<GetApiV1PetsByIdCardData, ThrowOnError>) {
-        return (options.client ?? client).get<GetApiV1PetsByIdCardResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).get<GetApiV1PetsByIdCardResponses, GetApiV1PetsByIdCardErrors, ThrowOnError>({
             requestValidator: async (data) => await zGetApiV1PetsByIdCardData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zGetApiV1PetsByIdCardResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/pets/{id}/card',
             ...options
         });
     }
     
+    /**
+     * Download pet card PDF
+     *
+     * Generate and download an A5 PDF of the pet's vaccination and deworming health card.
+     */
     public static getApiV1PetsByIdCardPdf<ThrowOnError extends boolean = false>(options: Options<GetApiV1PetsByIdCardPdfData, ThrowOnError>) {
-        return (options.client ?? client).get<GetApiV1PetsByIdCardPdfResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).get<GetApiV1PetsByIdCardPdfResponses, GetApiV1PetsByIdCardPdfErrors, ThrowOnError>({
             requestValidator: async (data) => await zGetApiV1PetsByIdCardPdfData.parseAsync(data),
+            responseType: 'blob',
+            responseValidator: async (data) => await zGetApiV1PetsByIdCardPdfResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/pets/{id}/card/pdf',
             ...options
         });
@@ -290,17 +470,33 @@ export class Pets {
 }
 
 export class Profile {
+    /**
+     * Get owner profile
+     *
+     * Returns the authenticated owner's profile including name, email, phone, and profile image URL.
+     */
     public static getApiV1Profile<ThrowOnError extends boolean = false>(options?: Options<GetApiV1ProfileData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetApiV1ProfileResponses, unknown, ThrowOnError>({
+        return (options?.client ?? client).get<GetApiV1ProfileResponses, GetApiV1ProfileErrors, ThrowOnError>({
             requestValidator: async (data) => await zGetApiV1ProfileData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zGetApiV1ProfileResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/profile',
             ...options
         });
     }
     
+    /**
+     * Update owner profile
+     *
+     * Update the owner's first name, last name, and phone number. Names must contain only letters, spaces, and hyphens.
+     */
     public static putApiV1Profile<ThrowOnError extends boolean = false>(options: Options<PutApiV1ProfileData, ThrowOnError>) {
-        return (options.client ?? client).put<PutApiV1ProfileResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).put<PutApiV1ProfileResponses, PutApiV1ProfileErrors, ThrowOnError>({
             requestValidator: async (data) => await zPutApiV1ProfileData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zPutApiV1ProfileResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/profile',
             ...options,
             headers: {
@@ -310,9 +506,17 @@ export class Profile {
         });
     }
     
+    /**
+     * Change password
+     *
+     * Change the owner's password. Requires the current password for verification. The new password must be at least 8 characters.
+     */
     public static putApiV1ProfilePassword<ThrowOnError extends boolean = false>(options: Options<PutApiV1ProfilePasswordData, ThrowOnError>) {
-        return (options.client ?? client).put<PutApiV1ProfilePasswordResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).put<PutApiV1ProfilePasswordResponses, PutApiV1ProfilePasswordErrors, ThrowOnError>({
             requestValidator: async (data) => await zPutApiV1ProfilePasswordData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zPutApiV1ProfilePasswordResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/profile/password',
             ...options,
             headers: {
@@ -322,10 +526,18 @@ export class Profile {
         });
     }
     
+    /**
+     * Update profile photo
+     *
+     * Upload a new profile photo. The previous photo file is deleted from the server.
+     */
     public static putApiV1ProfilePhoto<ThrowOnError extends boolean = false>(options: Options<PutApiV1ProfilePhotoData, ThrowOnError>) {
-        return (options.client ?? client).put<PutApiV1ProfilePhotoResponses, unknown, ThrowOnError>({
+        return (options.client ?? client).put<PutApiV1ProfilePhotoResponses, PutApiV1ProfilePhotoErrors, ThrowOnError>({
             ...formDataBodySerializer,
             requestValidator: async (data) => await zPutApiV1ProfilePhotoData.parseAsync(data),
+            responseType: 'json',
+            responseValidator: async (data) => await zPutApiV1ProfilePhotoResponse.parseAsync(data),
+            security: [{ scheme: 'bearer', type: 'http' }],
             url: '/api/v1/profile/photo',
             ...options,
             headers: {

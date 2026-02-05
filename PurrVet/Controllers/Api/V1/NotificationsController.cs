@@ -10,6 +10,7 @@ namespace PurrVet.Controllers.Api.V1 {
     [ApiController]
     [Route("api/v1/notifications")]
     [Authorize(Policy = "OwnerOnly")]
+    [Tags("Notifications")]
     public class NotificationsController : ControllerBase {
         private readonly ApplicationDbContext _context;
 
@@ -18,6 +19,10 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpGet]
+        [EndpointSummary("List notifications")]
+        [EndpointDescription("Returns paginated notifications for the authenticated owner. Supports filtering by type (e.g. Appointment, Pet), read status, and text search.")]
+        [ProducesResponseType(typeof(NotificationListResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
         public IActionResult GetNotifications(
             [FromQuery] string typeFilter = "All",
             [FromQuery] string statusFilter = "All",
@@ -58,20 +63,20 @@ namespace PurrVet.Controllers.Api.V1 {
                     RedirectUrl = n.RedirectUrl
                 }).ToList();
 
-            return Ok(new {
-                success = true,
-                items = notifications,
-                currentPage = page,
-                totalPages,
-                totalCount,
-                pageSize,
-                unreadCount,
-                hasPrevious = page > 1,
-                hasNext = page < totalPages
+            return Ok(new NotificationListResponse {
+                Items = notifications,
+                CurrentPage = page,
+                TotalPages = totalPages,
+                TotalCount = totalCount,
+                PageSize = pageSize,
+                UnreadCount = unreadCount
             });
         }
 
         [HttpGet("unread-count")]
+        [EndpointSummary("Get unread count")]
+        [EndpointDescription("Returns the total number of unread notifications for the authenticated owner.")]
+        [ProducesResponseType(typeof(ApiResponse<UnreadCountResponse>), StatusCodes.Status200OK)]
         public IActionResult GetUnreadCount() {
             var userId = User.GetUserId();
 
@@ -85,6 +90,10 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpPut("{id}/read")]
+        [EndpointSummary("Mark notification as read")]
+        [EndpointDescription("Mark a single notification as read by its ID.")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
         public IActionResult MarkAsRead(int id) {
             var userId = User.GetUserId();
 
@@ -102,6 +111,9 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpPut("read-all")]
+        [EndpointSummary("Mark all as read")]
+        [EndpointDescription("Mark all unread notifications as read for the authenticated owner.")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         public IActionResult MarkAllAsRead() {
             var userId = User.GetUserId();
 

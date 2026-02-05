@@ -12,6 +12,7 @@ namespace PurrVet.Controllers.Api.V1 {
     [ApiController]
     [Route("api/v1/profile")]
     [Authorize(Policy = "OwnerOnly")]
+    [Tags("Profile")]
     public class ProfileController : ControllerBase {
         private readonly ApplicationDbContext _context;
         private readonly IPasswordHasher<User> _passwordHasher;
@@ -22,6 +23,10 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpGet]
+        [EndpointSummary("Get owner profile")]
+        [EndpointDescription("Returns the authenticated owner's profile including name, email, phone, and profile image URL.")]
+        [ProducesResponseType(typeof(ApiResponse<ProfileResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetProfile() {
             var userId = User.GetUserId();
             var baseUrl = $"{Request.Scheme}://{Request.Host}";
@@ -54,6 +59,11 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpPut]
+        [EndpointSummary("Update owner profile")]
+        [EndpointDescription("Update the owner's first name, last name, and phone number. Names must contain only letters, spaces, and hyphens.")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request) {
             var userId = User.GetUserId();
             var userName = User.GetUserName();
@@ -95,6 +105,11 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpPut("password")]
+        [EndpointSummary("Change password")]
+        [EndpointDescription("Change the owner's password. Requires the current password for verification. The new password must be at least 8 characters.")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request) {
             var userId = User.GetUserId();
 
@@ -115,6 +130,11 @@ namespace PurrVet.Controllers.Api.V1 {
 
         [HttpPut("photo")]
         [Consumes("multipart/form-data")]
+        [EndpointSummary("Update profile photo")]
+        [EndpointDescription("Upload a new profile photo. The previous photo file is deleted from the server.")]
+        [ProducesResponseType(typeof(ApiResponse<UpdatePhotoResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdatePhoto(IFormFile? photo) {
             var userId = User.GetUserId();
             var baseUrl = $"{Request.Scheme}://{Request.Host}";
@@ -150,10 +170,10 @@ namespace PurrVet.Controllers.Api.V1 {
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
 
-            return Ok(new ApiResponse<object> {
+            return Ok(new ApiResponse<UpdatePhotoResponse> {
                 Success = true,
                 Message = "Profile photo updated successfully!",
-                Data = new { profileImageUrl = baseUrl + newPath }
+                Data = new UpdatePhotoResponse { ProfileImageUrl = baseUrl + newPath }
             });
         }
     }

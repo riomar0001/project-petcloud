@@ -2,6 +2,72 @@
 
 import * as z from 'zod';
 
+export const zApiErrorResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.string()),
+    errors: z.optional(z.union([
+        z.record(z.string(), z.array(z.string())),
+        z.null()
+    ]))
+});
+
+export const zApiResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ]))
+});
+
+export const zApiResponseOfListOfstring = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(z.union([
+        z.array(z.string()),
+        z.null()
+    ]))
+});
+
+export const zAppointmentListItemDto = z.object({
+    appointmentId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    appointmentDate: z.optional(z.iso.datetime()),
+    status: z.optional(z.string()),
+    groupId: z.optional(z.union([
+        z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
+        z.null()
+    ])),
+    notes: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    petId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    petName: z.optional(z.string()),
+    serviceType: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    serviceSubtype: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    isOwnAppointment: z.optional(z.boolean())
+});
+
+export const zApiResponseOfListOfAppointmentListItemDto = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(z.union([
+        z.array(zAppointmentListItemDto),
+        z.null()
+    ]))
+});
+
 export const zBulkAppointmentItemRequest = z.object({
     petId: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
     categoryId: z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
@@ -15,6 +81,23 @@ export const zBulkAppointmentItemRequest = z.object({
         z.string(),
         z.null()
     ]))
+});
+
+export const zBulkAppointmentResponse = z.union([
+    z.object({
+        groupId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+        count: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }))
+    }),
+    z.null()
+]);
+
+export const zApiResponseOfBulkAppointmentResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(zBulkAppointmentResponse)
 });
 
 export const zChangePasswordRequest = z.object({
@@ -42,6 +125,77 @@ export const zCreateBulkAppointmentRequest = z.object({
     appointments: z.array(zBulkAppointmentItemRequest).min(1)
 });
 
+export const zDashboardAppointmentDto = z.object({
+    appointmentId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    appointmentDate: z.optional(z.iso.datetime()),
+    status: z.optional(z.string()),
+    petId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    petName: z.optional(z.string()),
+    serviceType: z.optional(z.union([
+        z.string(),
+        z.null()
+    ]))
+});
+
+export const zDashboardDewormDueDto = z.object({
+    appointmentId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    dueDate: z.optional(z.union([
+        z.iso.datetime(),
+        z.null()
+    ])),
+    petId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    petName: z.optional(z.string()),
+    serviceType: z.optional(z.union([
+        z.string(),
+        z.null()
+    ]))
+});
+
+export const zDashboardPetDto = z.object({
+    petId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    name: z.optional(z.string()),
+    breed: z.optional(z.string()),
+    photoUrl: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    birthdate: z.optional(z.iso.datetime())
+});
+
+export const zDashboardVaccineDueDto = z.object({
+    appointmentId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    dueDate: z.optional(z.union([
+        z.iso.datetime(),
+        z.null()
+    ])),
+    petId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    petName: z.optional(z.string()),
+    serviceType: z.optional(z.union([
+        z.string(),
+        z.null()
+    ]))
+});
+
+export const zDashboardResponse = z.union([
+    z.object({
+        userName: z.optional(z.string()),
+        pets: z.optional(z.array(zDashboardPetDto)),
+        upcomingAppointments: z.optional(z.array(zDashboardAppointmentDto)),
+        vaccineDue: z.optional(z.array(zDashboardVaccineDueDto)),
+        dewormDue: z.optional(z.array(zDashboardDewormDueDto))
+    }),
+    z.null()
+]);
+
+export const zApiResponseOfDashboardResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(zDashboardResponse)
+});
+
 export const zForgotPasswordRequest = z.object({
     email: z.string()
 });
@@ -55,6 +209,234 @@ export const zLoginRequest = z.object({
         z.string(),
         z.null()
     ]))
+});
+
+export const zNotificationDto = z.object({
+    notificationId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    message: z.optional(z.string()),
+    type: z.optional(z.string()),
+    createdAt: z.optional(z.iso.datetime()),
+    isRead: z.optional(z.boolean()),
+    redirectUrl: z.optional(z.union([
+        z.string(),
+        z.null()
+    ]))
+});
+
+export const zNotificationListResponse = z.object({
+    unreadCount: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    success: z.optional(z.boolean()),
+    items: z.optional(z.array(zNotificationDto)),
+    currentPage: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    totalPages: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    totalCount: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    pageSize: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    hasPrevious: z.optional(z.boolean()),
+    hasNext: z.optional(z.boolean())
+});
+
+export const zOwnerBasicDto = z.union([
+    z.object({
+        userId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+        ownerId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+        firstName: z.optional(z.string()),
+        lastName: z.optional(z.string()),
+        email: z.optional(z.string()),
+        profileImage: z.optional(z.union([
+            z.string(),
+            z.null()
+        ]))
+    }),
+    z.null()
+]);
+
+export const zLoginResponse = z.union([
+    z.object({
+        requires2FA: z.optional(z.boolean()),
+        twoFactorUserId: z.optional(z.union([
+            z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }),
+            z.null()
+        ])),
+        accessToken: z.optional(z.union([
+            z.string(),
+            z.null()
+        ])),
+        refreshToken: z.optional(z.union([
+            z.string(),
+            z.null()
+        ])),
+        expiresAt: z.optional(z.union([
+            z.iso.datetime(),
+            z.null()
+        ])),
+        owner: z.optional(zOwnerBasicDto)
+    }),
+    z.null()
+]);
+
+export const zApiResponseOfLoginResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(zLoginResponse)
+});
+
+export const zPetCardRecordDto = z.object({
+    appointmentId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    appointmentDate: z.optional(z.iso.datetime()),
+    notes: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    serviceType: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    serviceSubtype: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    administeredBy: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    dueDate: z.optional(z.union([
+        z.iso.datetime(),
+        z.null()
+    ]))
+});
+
+export const zPetDetailDto = z.union([
+    z.object({
+        petId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+        name: z.optional(z.string()),
+        type: z.optional(z.string()),
+        breed: z.optional(z.string()),
+        birthdate: z.optional(z.iso.datetime()),
+        photoUrl: z.optional(z.union([
+            z.string(),
+            z.null()
+        ])),
+        age: z.optional(z.string()),
+        ownerName: z.optional(z.string())
+    }),
+    z.null()
+]);
+
+export const zApiResponseOfPetDetailDto = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(zPetDetailDto)
+});
+
+export const zPetListItemDto = z.object({
+    petId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    name: z.optional(z.string()),
+    type: z.optional(z.string()),
+    breed: z.optional(z.string()),
+    birthdate: z.optional(z.iso.datetime()),
+    photoUrl: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    age: z.optional(z.string()),
+    createdAt: z.optional(z.iso.datetime())
+});
+
+export const zApiResponseOfListOfPetListItemDto = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(z.union([
+        z.array(zPetListItemDto),
+        z.null()
+    ]))
+});
+
+export const zPetCardResponse = z.union([
+    z.object({
+        pet: z.optional(zPetListItemDto),
+        ownerName: z.optional(z.string()),
+        ownerPhone: z.optional(z.string()),
+        ownerEmail: z.optional(z.string()),
+        ageInMonths: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+        records: z.optional(z.array(zPetCardRecordDto)),
+        currentPage: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+        totalPages: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+        totalRecords: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }))
+    }),
+    z.null()
+]);
+
+export const zApiResponseOfPetCardResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(zPetCardResponse)
+});
+
+export const zPetListItemDto2 = z.union([
+    z.object({
+        petId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+        name: z.optional(z.string()),
+        type: z.optional(z.string()),
+        breed: z.optional(z.string()),
+        birthdate: z.optional(z.iso.datetime()),
+        photoUrl: z.optional(z.union([
+            z.string(),
+            z.null()
+        ])),
+        age: z.optional(z.string()),
+        createdAt: z.optional(z.iso.datetime())
+    }),
+    z.null()
+]);
+
+export const zApiResponseOfPetListItemDto = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(zPetListItemDto2)
+});
+
+export const zProfileResponse = z.union([
+    z.object({
+        userId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+        ownerId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+        firstName: z.optional(z.string()),
+        lastName: z.optional(z.string()),
+        email: z.optional(z.string()),
+        phone: z.optional(z.union([
+            z.string(),
+            z.null()
+        ])),
+        profileImageUrl: z.optional(z.union([
+            z.string(),
+            z.null()
+        ])),
+        createdAt: z.optional(z.iso.datetime())
+    }),
+    z.null()
+]);
+
+export const zApiResponseOfProfileResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(zProfileResponse)
 });
 
 export const zRefreshTokenRequest = z.object({
@@ -76,6 +458,102 @@ export const zResetPasswordRequest = z.object({
     confirmPassword: z.string()
 });
 
+export const zServiceSubtypeDto = z.object({
+    subtypeId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    serviceSubType: z.optional(z.string())
+});
+
+export const zServiceCategoryDto = z.object({
+    categoryId: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })),
+    serviceType: z.optional(z.string()),
+    subtypes: z.optional(z.array(zServiceSubtypeDto))
+});
+
+export const zApiResponseOfListOfServiceCategoryDto = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(z.union([
+        z.array(zServiceCategoryDto),
+        z.null()
+    ]))
+});
+
+export const zTimeSlotDto = z.object({
+    time: z.optional(z.string()),
+    available: z.optional(z.boolean())
+});
+
+export const zTimeSlotsResponse = z.union([
+    z.object({
+        date: z.optional(z.string()),
+        slots: z.optional(z.array(zTimeSlotDto))
+    }),
+    z.null()
+]);
+
+export const zApiResponseOfTimeSlotsResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(zTimeSlotsResponse)
+});
+
+export const zTokenResponse = z.union([
+    z.object({
+        accessToken: z.optional(z.string()),
+        refreshToken: z.optional(z.string()),
+        expiresAt: z.optional(z.iso.datetime()),
+        owner: z.optional(zOwnerBasicDto)
+    }),
+    z.null()
+]);
+
+export const zApiResponseOfTokenResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(zTokenResponse)
+});
+
+export const zUnreadCountResponse = z.union([
+    z.object({
+        unreadCount: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' }))
+    }),
+    z.null()
+]);
+
+export const zApiResponseOfUnreadCountResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(zUnreadCountResponse)
+});
+
+export const zUpdatePhotoResponse = z.union([
+    z.object({
+        profileImageUrl: z.optional(z.string())
+    }),
+    z.null()
+]);
+
+export const zApiResponseOfUpdatePhotoResponse = z.object({
+    success: z.optional(z.boolean()),
+    message: z.optional(z.union([
+        z.string(),
+        z.null()
+    ])),
+    data: z.optional(zUpdatePhotoResponse)
+});
+
 export const zUpdateProfileRequest = z.object({
     firstName: z.string().min(0).max(50),
     lastName: z.string().min(0).max(50),
@@ -91,17 +569,16 @@ export const zVerify2FaRequest = z.object({
     ]))
 });
 
-export const zPostApiSmsRelaySendData = z.object({
-    body: z.unknown(),
-    path: z.optional(z.never()),
-    query: z.optional(z.never())
-});
-
 export const zGetApiV1AppointmentsData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
+
+/**
+ * OK
+ */
+export const zGetApiV1AppointmentsResponse = zApiResponseOfListOfAppointmentListItemDto;
 
 export const zPostApiV1AppointmentsData = z.object({
     body: zCreateAppointmentRequest,
@@ -109,11 +586,21 @@ export const zPostApiV1AppointmentsData = z.object({
     query: z.optional(z.never())
 });
 
+/**
+ * Created
+ */
+export const zPostApiV1AppointmentsResponse = zApiResponse;
+
 export const zPostApiV1AppointmentsBulkData = z.object({
     body: zCreateBulkAppointmentRequest,
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
+
+/**
+ * Created
+ */
+export const zPostApiV1AppointmentsBulkResponse = zApiResponseOfBulkAppointmentResponse;
 
 export const zPostApiV1AppointmentsByIdCancelData = z.object({
     body: z.optional(z.never()),
@@ -123,6 +610,11 @@ export const zPostApiV1AppointmentsByIdCancelData = z.object({
     query: z.optional(z.never())
 });
 
+/**
+ * OK
+ */
+export const zPostApiV1AppointmentsByIdCancelResponse = zApiResponse;
+
 export const zGetApiV1AppointmentsTimeSlotsData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
@@ -131,11 +623,21 @@ export const zGetApiV1AppointmentsTimeSlotsData = z.object({
     }))
 });
 
+/**
+ * OK
+ */
+export const zGetApiV1AppointmentsTimeSlotsResponse = zApiResponseOfTimeSlotsResponse;
+
 export const zGetApiV1AppointmentsServicesData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
+
+/**
+ * OK
+ */
+export const zGetApiV1AppointmentsServicesResponse = zApiResponseOfListOfServiceCategoryDto;
 
 export const zPostApiV1AuthLoginData = z.object({
     body: zLoginRequest,
@@ -143,11 +645,21 @@ export const zPostApiV1AuthLoginData = z.object({
     query: z.optional(z.never())
 });
 
+/**
+ * OK
+ */
+export const zPostApiV1AuthLoginResponse = zApiResponseOfLoginResponse;
+
 export const zPostApiV1AuthVerify2FaData = z.object({
     body: zVerify2FaRequest,
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
+
+/**
+ * OK
+ */
+export const zPostApiV1AuthVerify2FaResponse = zApiResponseOfTokenResponse;
 
 export const zPostApiV1AuthRegisterData = z.object({
     body: zRegisterRequest,
@@ -155,11 +667,21 @@ export const zPostApiV1AuthRegisterData = z.object({
     query: z.optional(z.never())
 });
 
+/**
+ * Created
+ */
+export const zPostApiV1AuthRegisterResponse = zApiResponse;
+
 export const zPostApiV1AuthRefreshData = z.object({
     body: zRefreshTokenRequest,
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
+
+/**
+ * OK
+ */
+export const zPostApiV1AuthRefreshResponse = zApiResponseOfTokenResponse;
 
 export const zPostApiV1AuthLogoutData = z.object({
     body: zRefreshTokenRequest,
@@ -167,11 +689,21 @@ export const zPostApiV1AuthLogoutData = z.object({
     query: z.optional(z.never())
 });
 
+/**
+ * OK
+ */
+export const zPostApiV1AuthLogoutResponse = zApiResponse;
+
 export const zPostApiV1AuthForgotPasswordData = z.object({
     body: zForgotPasswordRequest,
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
+
+/**
+ * OK
+ */
+export const zPostApiV1AuthForgotPasswordResponse = zApiResponse;
 
 export const zPostApiV1AuthResetPasswordData = z.object({
     body: zResetPasswordRequest,
@@ -179,11 +711,21 @@ export const zPostApiV1AuthResetPasswordData = z.object({
     query: z.optional(z.never())
 });
 
+/**
+ * OK
+ */
+export const zPostApiV1AuthResetPasswordResponse = zApiResponse;
+
 export const zGetApiV1DashboardData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
+
+/**
+ * OK
+ */
+export const zGetApiV1DashboardResponse = zApiResponseOfDashboardResponse;
 
 export const zGetApiV1NotificationsData = z.object({
     body: z.optional(z.never()),
@@ -197,11 +739,21 @@ export const zGetApiV1NotificationsData = z.object({
     }))
 });
 
+/**
+ * OK
+ */
+export const zGetApiV1NotificationsResponse = zNotificationListResponse;
+
 export const zGetApiV1NotificationsUnreadCountData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
+
+/**
+ * OK
+ */
+export const zGetApiV1NotificationsUnreadCountResponse = zApiResponseOfUnreadCountResponse;
 
 export const zPutApiV1NotificationsByIdReadData = z.object({
     body: z.optional(z.never()),
@@ -211,17 +763,32 @@ export const zPutApiV1NotificationsByIdReadData = z.object({
     query: z.optional(z.never())
 });
 
+/**
+ * OK
+ */
+export const zPutApiV1NotificationsByIdReadResponse = zApiResponse;
+
 export const zPutApiV1NotificationsReadAllData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
 
+/**
+ * OK
+ */
+export const zPutApiV1NotificationsReadAllResponse = zApiResponse;
+
 export const zGetApiV1PetsData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
+
+/**
+ * OK
+ */
+export const zGetApiV1PetsResponse = zApiResponseOfListOfPetListItemDto;
 
 export const zPostApiV1PetsData = z.object({
     body: z.object({
@@ -235,6 +802,11 @@ export const zPostApiV1PetsData = z.object({
     query: z.optional(z.never())
 });
 
+/**
+ * Created
+ */
+export const zPostApiV1PetsResponse = zApiResponseOfPetListItemDto;
+
 export const zGetApiV1PetsByIdData = z.object({
     body: z.optional(z.never()),
     path: z.object({
@@ -247,6 +819,11 @@ export const zGetApiV1PetsByIdData = z.object({
         categoryFilter: z.optional(z.int().min(-2147483648, { error: 'Invalid value: Expected int32 to be >= -2147483648' }).max(2147483647, { error: 'Invalid value: Expected int32 to be <= 2147483647' })).default(null)
     }))
 });
+
+/**
+ * OK
+ */
+export const zGetApiV1PetsByIdResponse = zApiResponseOfPetDetailDto;
 
 export const zPutApiV1PetsByIdData = z.object({
     body: z.object({
@@ -262,6 +839,11 @@ export const zPutApiV1PetsByIdData = z.object({
     query: z.optional(z.never())
 });
 
+/**
+ * OK
+ */
+export const zPutApiV1PetsByIdResponse = zApiResponseOfPetListItemDto;
+
 export const zGetApiV1PetsBreedsData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
@@ -269,6 +851,11 @@ export const zGetApiV1PetsBreedsData = z.object({
         type: z.optional(z.string())
     }))
 });
+
+/**
+ * OK
+ */
+export const zGetApiV1PetsBreedsResponse = zApiResponseOfListOfstring;
 
 export const zGetApiV1PetsByIdCardData = z.object({
     body: z.optional(z.never()),
@@ -281,6 +868,11 @@ export const zGetApiV1PetsByIdCardData = z.object({
     }))
 });
 
+/**
+ * OK
+ */
+export const zGetApiV1PetsByIdCardResponse = zApiResponseOfPetCardResponse;
+
 export const zGetApiV1PetsByIdCardPdfData = z.object({
     body: z.optional(z.never()),
     path: z.object({
@@ -289,11 +881,21 @@ export const zGetApiV1PetsByIdCardPdfData = z.object({
     query: z.optional(z.never())
 });
 
+/**
+ * OK
+ */
+export const zGetApiV1PetsByIdCardPdfResponse = z.string();
+
 export const zGetApiV1ProfileData = z.object({
     body: z.optional(z.never()),
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
+
+/**
+ * OK
+ */
+export const zGetApiV1ProfileResponse = zApiResponseOfProfileResponse;
 
 export const zPutApiV1ProfileData = z.object({
     body: zUpdateProfileRequest,
@@ -301,11 +903,21 @@ export const zPutApiV1ProfileData = z.object({
     query: z.optional(z.never())
 });
 
+/**
+ * OK
+ */
+export const zPutApiV1ProfileResponse = zApiResponse;
+
 export const zPutApiV1ProfilePasswordData = z.object({
     body: zChangePasswordRequest,
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
+
+/**
+ * OK
+ */
+export const zPutApiV1ProfilePasswordResponse = zApiResponse;
 
 export const zPutApiV1ProfilePhotoData = z.object({
     body: z.object({
@@ -314,3 +926,8 @@ export const zPutApiV1ProfilePhotoData = z.object({
     path: z.optional(z.never()),
     query: z.optional(z.never())
 });
+
+/**
+ * OK
+ */
+export const zPutApiV1ProfilePhotoResponse = zApiResponseOfUpdatePhotoResponse;

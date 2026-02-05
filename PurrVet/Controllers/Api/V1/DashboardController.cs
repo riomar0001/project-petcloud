@@ -10,6 +10,7 @@ namespace PurrVet.Controllers.Api.V1 {
     [ApiController]
     [Route("api/v1/dashboard")]
     [Authorize(Policy = "OwnerOnly")]
+    [Tags("Dashboard")]
     public class DashboardController : ControllerBase {
         private readonly ApplicationDbContext _context;
 
@@ -18,6 +19,10 @@ namespace PurrVet.Controllers.Api.V1 {
         }
 
         [HttpGet]
+        [EndpointSummary("Get owner dashboard")]
+        [EndpointDescription("Returns the owner's dashboard data including their pets, upcoming appointments, and vaccination/deworming items due within 5 days.")]
+        [ProducesResponseType(typeof(ApiResponse<DashboardResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
         public IActionResult GetDashboard() {
             var ownerId = User.GetOwnerId();
             var userName = User.GetUserName();
@@ -57,7 +62,7 @@ namespace PurrVet.Controllers.Api.V1 {
                             a.DueDate <= DateTime.Now.AddDays(5) &&
                             a.ServiceCategory.ServiceType.Contains("Vaccination"))
                 .OrderBy(a => a.DueDate)
-                .Select(a => new DashboardDueItemDto {
+                .Select(a => new DashboardVaccineDueDto {
                     AppointmentId = a.AppointmentID,
                     DueDate = a.DueDate,
                     PetId = a.Pet.PetID,
@@ -73,7 +78,7 @@ namespace PurrVet.Controllers.Api.V1 {
                             a.DueDate <= DateTime.Now.AddDays(5) &&
                             a.ServiceCategory.ServiceType.Contains("Deworming & Preventives"))
                 .OrderBy(a => a.DueDate)
-                .Select(a => new DashboardDueItemDto {
+                .Select(a => new DashboardDewormDueDto {
                     AppointmentId = a.AppointmentID,
                     DueDate = a.DueDate,
                     PetId = a.Pet.PetID,
