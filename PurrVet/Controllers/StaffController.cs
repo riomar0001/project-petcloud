@@ -3216,13 +3216,13 @@ namespace PurrVet.Controllers {
                 .ToList();
 
             var notifications = notificationsRaw.Select(n => new {
-                    notificationID = n.NotificationID,
-                    message = n.Message,
-                    type = n.Type,
-                    createdAt = n.CreatedAt.ToString("MMM dd, yyyy hh:mm tt"),
-                    isRead = n.IsRead,
-                    redirectUrl = n.RedirectUrl?.Replace("{role}", userRole).Replace("/Admin/", $"/{userRole}/").Replace("/Staff/", $"/{userRole}/")
-                }).ToList();
+                notificationID = n.NotificationID,
+                message = n.Message,
+                type = n.Type,
+                createdAt = n.CreatedAt.ToString("MMM dd, yyyy hh:mm tt"),
+                isRead = n.IsRead,
+                redirectUrl = n.RedirectUrl?.Replace("{role}", userRole).Replace("/Admin/", $"/{userRole}/").Replace("/Staff/", $"/{userRole}/")
+            }).ToList();
 
             var unreadCount = notifications.Count(n => !n.isRead);
 
@@ -3306,13 +3306,13 @@ namespace PurrVet.Controllers {
                 .ToList();
 
             var notifications = notificationsRaw.Select(n => new NotificationViewModel {
-                    NotificationID = n.NotificationID,
-                    Message = n.Message,
-                    Type = n.Type,
-                    CreatedAt = n.CreatedAt,
-                    IsRead = n.IsRead,
-                    RedirectUrl = n.RedirectUrl?.Replace("{role}", "Staff").Replace("/Admin/", "/Staff/")
-                }).ToList();
+                NotificationID = n.NotificationID,
+                Message = n.Message,
+                Type = n.Type,
+                CreatedAt = n.CreatedAt,
+                IsRead = n.IsRead,
+                RedirectUrl = n.RedirectUrl?.Replace("{role}", "Staff").Replace("/Admin/", "/Staff/")
+            }).ToList();
 
             var model = new NotificationListViewModel {
                 Notifications = notifications,
