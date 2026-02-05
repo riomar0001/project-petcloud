@@ -17,6 +17,7 @@ namespace PurrVet.Models {
         public DbSet<SystemLog> SystemLogs { get; set; }
         public DbSet<MicrosoftAccountConnection> MicrosoftAccountConnections { get; set; }
         public DbSet<AppointmentDraft> AppointmentDrafts { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);

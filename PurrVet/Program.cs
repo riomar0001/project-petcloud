@@ -1,15 +1,21 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Kiota.Http.HttpClientLibrary;
+using PurrVet.DTOs.Common;
+using PurrVet.Infrastructure;
 using PurrVet.Models;
 using PurrVet.Services;
 using System.Globalization;
+using System.Text;
 
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
@@ -29,10 +35,36 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
     .EnableTokenAcquisitionToCallDownstreamApi(new[] { "User.Read", "Calendars.ReadWrite" })
     .AddMicrosoftGraph(builder.Configuration.GetSection("Graph"))
     .AddInMemoryTokenCaches();
+
+// JWT Bearer auth for mobile API
+builder.Services.AddAuthentication()
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options => {
+        options.TokenValidationParameters = new TokenValidationParameters {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!)),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+builder.Services.AddAuthorization(options => {
+    options.AddPolicy("OwnerOnly", policy => {
+        policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+        policy.RequireRole("Owner");
+        policy.RequireClaim("ownerId");
+    });
+});
+
 builder.Services.AddHttpClient<SmsReminderService>();
 builder.Services.Configure<GmailSettings>(builder.Configuration.GetSection("Gmail"));
 builder.Services.AddTransient<EmailService>();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<JwtTokenService>();
 
 builder.Services.AddScoped<GraphServiceClient>(sp => {
     var tokenAcquisition = sp.GetRequiredService<ITokenAcquisition>();
@@ -43,7 +75,31 @@ builder.Services.AddScoped<GraphServiceClient>(sp => {
     return new GraphServiceClient(adapter);
 });
 
+builder.Services.AddCors(options => {
+    options.AddPolicy("MobileApp", policy => {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddControllersWithViews();
+builder.Services.Configure<ApiBehaviorOptions>(options => {
+    options.InvalidModelStateResponseFactory = context => {
+        var errors = context.ModelState
+            .Where(e => e.Value != null && e.Value.Errors.Count > 0)
+            .ToDictionary(
+                e => e.Key,
+                e => e.Value!.Errors.Select(x => x.ErrorMessage).ToArray()
+            );
+        return new BadRequestObjectResult(new ApiErrorResponse {
+            Success = false,
+            Message = "Validation failed.",
+            Errors = errors
+        });
+    };
+});
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
@@ -77,12 +133,21 @@ if (!app.Environment.IsDevelopment()) {
     app.UseStatusCodePagesWithReExecute("/Error/{0}");
 }
 
+app.UseMiddleware<ApiExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseCors("MobileApp");
 app.UseSession();
+
+// Session restoration middleware — skip for API routes
 app.Use(async (context, next) => {
+    if (context.Request.Path.StartsWithSegments("/api")) {
+        await next();
+        return;
+    }
+
     if (context.User.Identity?.IsAuthenticated == true &&
         !context.Session.Keys.Contains("UserID")) {
         var userId = context.User.FindFirst("UserID")?.Value;
@@ -100,7 +165,14 @@ app.Use(async (context, next) => {
 
     await next();
 });
+
+// Redirect middleware — skip for API routes
 app.Use(async (context, next) => {
+    if (context.Request.Path.StartsWithSegments("/api")) {
+        await next();
+        return;
+    }
+
     var path = context.Request.Path.Value?.ToLower();
 
     if (path == "/account/home" || path == "/account/login" || path == "/account/register") {
@@ -120,7 +192,13 @@ app.Use(async (context, next) => {
 
     await next();
 });
+
 app.Use(async (context, next) => {
+    if (context.Request.Path.StartsWithSegments("/api")) {
+        await next();
+        return;
+    }
+
     if (context.Request.Path == "/") {
         var userRole = context.Session.GetString("UserRole");
         if (!string.IsNullOrEmpty(userRole)) {
