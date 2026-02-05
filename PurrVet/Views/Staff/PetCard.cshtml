@@ -9,31 +9,41 @@
     int blockSize = 10;
     int startPage = Math.Max(1, Model.CurrentPage - 2);
     int endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+    var petTypeIcon = Model.Pet.Type == "Dog" ? "🐕" : Model.Pet.Type == "Cat" ? "🐈" : "🐾";
 }
 
 <!-- Dashboard Header -->
 <div class="dashboard-header">
-    <h2>Pet Health Card</h2>
-    <p>View and print pet health records</p>
+    <h2><i class="bi bi-card-checklist"></i>Pet Health Card</h2>
+    <p>View and print pet health records for @Model.Pet.Name</p>
+</div>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-modern mb-4 no-print">
+    <a href="@Url.Action("Pets", "Staff")"><i class="bi bi-grid me-1"></i>All Pets</a>
+    <span class="separator">/</span>
+    <a href="@Url.Action("ViewPet", "Staff", new { id = Model.Pet.PetID })">@Model.Pet.Name</a>
+    <span class="separator">/</span>
+    <span class="current">Health Card</span>
 </div>
 
 <!-- Navigation Pills -->
-<div class="filter-bar-modern">
+<div class="filter-bar-modern mb-4 no-print">
     <div class="d-flex align-items-center gap-2">
         <a href="@Url.Action("ViewPet", "Staff", new { id = Model.Pet.PetID })"
-           class="btn btn-secondary fw-semibold" style="border-radius: 8px;">
+           class="btn-modern-secondary">
             <i class="bi bi-info-circle me-1"></i> Pet Info
         </a>
-        <a class="btn-add-modern">
+        <a class="btn-modern-primary">
             <i class="bi bi-card-heading me-1"></i> Pet Card
         </a>
     </div>
     <div class="d-flex align-items-center gap-2">
-        <button onclick="printPetCard()" class="btn btn-secondary fw-semibold" style="border-radius: 8px;">
+        <button onclick="printPetCard()" class="btn-modern-secondary">
             <i class="bi bi-printer me-1"></i> Print
         </button>
         <a href="@Url.Action("DownloadPetCardPdf", "Staff", new { id = Model.Pet.PetID })"
-           class="btn btn-secondary fw-semibold" style="border-radius: 8px;">
+           class="btn-modern-danger">
             <i class="bi bi-file-earmark-pdf me-1"></i> PDF
         </a>
     </div>
@@ -41,14 +51,21 @@
 
 <!-- Pet Summary Card -->
 <div class="page-card-modern no-print">
-    <div class="card-body p-3">
+    <div class="card-header-modern">
+        <h6><i class="bi bi-heart-pulse me-2"></i>PET SUMMARY</h6>
+    </div>
+    <div class="card-body p-4">
         <div class="d-flex align-items-center">
-            <img src="@photoPath" class="rounded-circle me-3 shadow-sm" style="width:90px;height:90px;object-fit:cover;"
-                 onerror="this.onerror=null;this.src='@fallback';" />
-            <div>
-                <h5 class="fw-bold mb-1">@Model.Pet.Name</h5>
-                <div class="text-muted small">
-                    Breed: @Model.Pet.Breed | Type: @Model.Pet.Type | Age: @Model.AgeInMonths month/s
+            <div class="pet-profile-preview" style="width: auto;">
+                <img src="@photoPath" style="width: 100px; height: 100px;"
+                     onerror="this.onerror=null;this.src='@fallback';" />
+            </div>
+            <div class="ms-4">
+                <h4 class="fw-bold mb-2">@Model.Pet.Name</h4>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge-modern badge-type-pet">@petTypeIcon @Model.Pet.Type</span>
+                    <span class="badge-modern badge-type-appointment">@Model.Pet.Breed</span>
+                    <span class="badge-modern badge-pending">@Model.AgeInMonths month(s) old</span>
                 </div>
             </div>
         </div>

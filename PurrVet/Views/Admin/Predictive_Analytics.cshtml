@@ -110,19 +110,52 @@
         </div>
 
         <div class="col-lg-3">
-            <div class="forecast-card mb-3">
-                <div class="forecast-header">Monthly Forecast</div>
-                <div class="divider-line"></div>
-                <div class="px-3 forecast-list" id="forecastList"></div>
+            <!-- Monthly Forecast -->
+            <div class="card-accent mb-3">
+                <div class="p-3">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="stats-icon-box primary" style="width:32px;height:32px;">
+                            <i class="bi bi-graph-up-arrow" style="font-size:0.85rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-0" style="font-size:0.85rem;">Monthly Forecast</h6>
+                            <small class="text-muted" style="font-size:0.7rem;">Predicted appointment counts</small>
+                        </div>
+                    </div>
+                    <div class="forecast-list-modern" id="forecastList"></div>
+                </div>
             </div>
 
-            <div class="forecast-card">
-                <div class="forecast-header">Forecast for Upcoming Months</div>
-                <div class="px-3 forecast-list" id="forecastList2"></div>
+            <!-- Forecast for Upcoming Months -->
+            <div class="card-accent mb-3">
+                <div class="p-3">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="stats-icon-box info" style="width:32px;height:32px;">
+                            <i class="bi bi-calendar-range" style="font-size:0.85rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-0" style="font-size:0.85rem;">Upcoming Months</h6>
+                            <small class="text-muted" style="font-size:0.7rem;">Demand severity outlook</small>
+                        </div>
+                    </div>
+                    <div class="forecast-list-modern" id="forecastList2"></div>
+                </div>
             </div>
-            <div class="forecast-card mt-3">
-                <div class="forecast-header">Next Month � Service Demand Ranking</div>
-                <div class="px-3 forecast-list" id="nextMonthServiceRanking"></div>
+
+            <!-- Next Month — Service Demand Ranking -->
+            <div class="card-accent">
+                <div class="p-3">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="stats-icon-box warning" style="width:32px;height:32px;">
+                            <i class="bi bi-trophy" style="font-size:0.85rem;"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-0" style="font-size:0.85rem;">Service Demand Ranking</h6>
+                            <small class="text-muted" style="font-size:0.7rem;">Next month projection</small>
+                        </div>
+                    </div>
+                    <div class="forecast-list-modern" id="nextMonthServiceRanking"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -133,7 +166,7 @@
             let chart;
 
             function loadForecast(service, year) {
-                $.getJSON('/Admin/GetForecastData', { service: service, year: year }, function (data) {
+                $.getJSON('/Staff/GetForecastData', { service: service, year: year }, function (data) {
                     const ctx = document.getElementById('predictChart').getContext('2d');
                     if (chart) chart.destroy();
 
@@ -196,9 +229,9 @@
                     data.forecastMonths.forEach((month, i) => {
                         const val = data.globalFutureForecasts[i]?.toFixed(2) ?? "0.00";
                         $("#forecastList").append(
-                            `<div class="d-flex justify-content-between align-items-center py-2">
-                                <h6 class="mb-0 fw-semibold">${month}</h6>
-                                <h6 class="mb-0 fw-bold">${val}</h6>
+                            `<div class="forecast-row">
+                                <span class="forecast-row-label">${month}</span>
+                                <span class="forecast-row-value">${val}</span>
                             </div>`
                         );
                     });
@@ -207,22 +240,25 @@
                 if (data.forecastMonths && data.globalSeverities) {
                     data.forecastMonths.forEach((month, i) => {
                         const sev = data.globalSeverities[i] ?? "";
+                        const sevClass = sev.toLowerCase() === 'high' ? 'danger' : sev.toLowerCase() === 'medium' ? 'warning' : 'success';
                         $("#forecastList2").append(
-                            `<div class="d-flex justify-content-between align-items-center py-2">
-                                <h6 class="mb-0 fw-semibold">${month}</h6>
-                                <h6 class="mb-0 fw-bold">${sev}</h6>
+                            `<div class="forecast-row">
+                                <span class="forecast-row-label">${month}</span>
+                                <span class="badge-modern ${sevClass}" style="font-size:0.7rem;">${sev}</span>
                             </div>`
                         );
                     });
-                    }
+                }
                 $("#nextMonthServiceRanking").empty();
 
                 if (data.nextMonthServiceRanking) {
-                    data.nextMonthServiceRanking.forEach(item => {
+                    data.nextMonthServiceRanking.forEach((item, idx) => {
                         $("#nextMonthServiceRanking").append(`
-                            <div class="d-flex justify-content-between align-items-center py-2">
-                                <h6 class="mb-0 fw-semibold">${item.service}</h6>
-                                <h6 class="mb-0 fw-bold">${item.count.toFixed(2)}</h6>
+                            <div class="forecast-row">
+                                <span class="forecast-row-label">
+                                    <span class="forecast-rank">${idx + 1}</span>${item.service}
+                                </span>
+                                <span class="forecast-row-value">${item.count.toFixed(2)}</span>
                             </div>
                         `);
                     });
@@ -232,7 +268,7 @@
             }
 
             function loadTotals(year) {
-                $.getJSON('/Admin/GetTotalsData', { year: year }, function (data) {
+                $.getJSON('/Staff/GetTotalsData', { year: year }, function (data) {
                     $("#usersCount").text(data.users);
                     $("#petsCount").text(data.pets);
                     $("#appointmentsCount").text(data.appointments);

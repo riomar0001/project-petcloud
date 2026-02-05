@@ -12,93 +12,164 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js"></script>
 <link href="/css/appointment.css" rel="stylesheet" />
 
+<!-- Toast Notification -->
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 1080">
-    <div id="syncToast" class="toast align-items-center text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="syncToast" class="toast toast-modern align-items-center text-white border-0" role="alert">
         <div class="d-flex">
-            <div class="toast-body fw-semibold" id="syncToastMessage">Syncing appointments...</div>
+            <div class="toast-body d-flex align-items-center gap-2">
+                <i class="bi" id="syncToastIcon"></i>
+                <span id="syncToastMessage">Syncing appointments...</span>
+            </div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="confirmSyncModal" tabindex="-1" aria-labelledby="confirmSyncModalLabel" aria-hidden="true">
+<!-- Confirm Sync Modal -->
+<div class="modal fade modal-modern" id="confirmSyncModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header" style="background: var(--primary-green, #10B981); color: white;">
-                <h6 class="modal-title fw-bold" id="confirmSyncModalLabel">Confirm Sync</h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-header">
+                <h6 class="modal-title">
+                    <i class="bi bi-cloud-arrow-up"></i>
+                    Confirm Sync
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <p>Are you sure you want to sync <strong>ALL your appointments</strong> to Microsoft Outlook?</p>
+            <div class="modal-body text-center py-4">
+                <div class="mb-3">
+                    <i class="bi bi-calendar-check display-1 text-primary opacity-75"></i>
+                </div>
+                <p class="fw-semibold fs-5 mb-2">Sync All Appointments?</p>
+                <small class="text-muted">This will sync all your appointments to Microsoft Outlook</small>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn btn-success btn-sm" id="confirmSyncBtn">Yes, Sync Now</button>
+                <button class="btn-modern-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i> Cancel
+                </button>
+                <button class="btn-modern-success" id="confirmSyncBtn">
+                    <i class="bi bi-cloud-arrow-up me-1"></i> Yes, Sync Now
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="d-flex flex-column p-3" style="height: calc(100vh - 50px); background-color:#f4f4f4;">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="fw-bold mb-2">My Appointments</h5>
-        <div class="form-check form-switch d-flex align-items-center">
-            <input class="form-check-input me-2" type="checkbox" id="syncToggle" onchange="toggleSync(this)">
-            <label class="form-check-label fw-semibold" for="syncToggle">Auto Sync with Microsoft Calendar</label>
+<!-- Max Pending Modal -->
+<div class="modal fade modal-modern modal-danger" id="maxPendingModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Cannot Schedule Appointment
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-3">
+                    <i class="bi bi-calendar-x display-1 text-danger opacity-75"></i>
+                </div>
+                <p class="fw-semibold fs-5 mb-2">Maximum Pending Appointments Reached</p>
+                <p class="text-muted mb-0">You already have <strong>3 pending appointment requests.</strong></p>
+                <small class="text-muted">Please contact the clinic staff to manage your schedule before booking more.</small>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modern-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-check-circle me-1"></i> OK
+                </button>
+            </div>
         </div>
     </div>
+</div>
 
-    <div class="d-flex flex-grow-1">
-        <div class="p-3" style="width: 320px;">
-            <div id="mini-calendar" class="mb-3"></div>
-            <div class="container mt-4">
-                <div class="card shadow-sm" style="max-width: 600px; width: 100%;">
-                    <div class="card-header fw-bold">
-                        Appointment Details
-                    </div>
-                    <div class="card-body" id="details-content">
-                        <p class="text-muted">Select an appointment</p>
-                    </div>
+<!-- Cancel Request Modal -->
+<div class="modal fade modal-modern modal-danger" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">
+                    <i class="bi bi-calendar-x"></i>
+                    Request Appointment Cancellation
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body py-4">
+                <div class="form-group-modern">
+                    <label>
+                        <i class="bi bi-chat-text me-2"></i>
+                        Reason for Cancellation
+                    </label>
+                    <textarea id="cancelNotes" class="form-control form-control-modern" rows="3" 
+                              placeholder="Please provide a reason for your cancellation request..."></textarea>
+                    <input type="hidden" id="cancelAppointmentId" />
                 </div>
             </div>
-        </div>
-        <div class="modal fade" id="maxPendingModal" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title">Cannot Schedule Appointment</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>You already have <strong>3 pending appointment requests.</strong></p>
-                        <p class="mb-0">Please contact the clinic staff to manage your schedule before booking more.</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
-                    </div>
-                </div>
+            <div class="modal-footer">
+                <button class="btn-modern-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i> Close
+                </button>
+                <button class="btn-modern-danger" onclick="submitCancelRequest()">
+                    <i class="bi bi-send me-1"></i> Submit Request
+                </button>
             </div>
         </div>
-        <div class="modal fade" id="cancelModal" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title">Request Appointment Cancellation</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <label class="form-label">Please provide a reason:</label>
-                        <textarea id="cancelNotes" class="form-control" rows="3" placeholder="Enter reason..."></textarea>
-                        <input type="hidden" id="cancelAppointmentId" />
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button class="btn btn-danger" onclick="submitCancelRequest()">Submit Request</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    </div>
+</div>
 
+<div class="d-flex flex-column" style="height: calc(100vh - 100px);">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header mb-3">
+        <h2>My Appointments</h2>
+        <p>View and manage your scheduled appointments</p>
+    </div>
+
+    @* <!-- Sync Toggle Card -->
+    <div class="page-card-modern mb-3">
+        <div class="card-body p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="sync-icon-container">
+                        <i class="bi bi-microsoft text-primary fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0">Microsoft Calendar Sync</h6>
+                        <small class="text-muted">Auto-sync appointments to Outlook</small>
+                    </div>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="syncToggle" onchange="toggleSync(this)" 
+                           style="width: 3rem; height: 1.5rem; cursor: pointer;">
+                </div>
+            </div>
+        </div>
+    </div> *@
+
+    <!-- Main Content Area -->
+    <div class="d-flex flex-grow-1 gap-3" style="margin-inline: 24px;">
+        <!-- Sidebar -->
+        <div class="">
+            <div class="page-card-modern-apt-dtls">
+                <div class="card-header-modern">
+                    <h6><i class="bi bi-calendar3 me-2"></i>DATE PICKER</h6>
+                </div>
+                <div id="mini-calendar"></div>
+            </div>
+
+            <div class="page-card-modern-apt-dtls">
+                <div class="card-header-modern" style="padding: 12px 16px;">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-info-circle"></i>
+                        <span class="fw-bold">Appointment Details</span>
+                    </div>
+                </div>
+                <div class="card-body" id="details-content" style="padding: 16px;">
+                    <p class="text-muted mb-0">Select an appointment</p>
+                </div>
+            </div>
+
+        </div>
+        <!-- Calendar -->
         <div class="flex-grow-1 p-3 bg-white shadow-sm ms-3 rounded">
             <div id="calendar"></div>
         </div>
@@ -118,8 +189,28 @@
     function showToast(message, type = 'info') {
         const toastEl = document.getElementById('syncToast');
         const toastMessage = document.getElementById('syncToastMessage');
-        toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+        const toastIcon = document.getElementById('syncToastIcon');
+        
         toastMessage.textContent = message;
+        
+        // Set icon and class based on type
+        let iconClass = 'bi-info-circle-fill';
+        let toastClass = 'toast-modern';
+        
+        if (type === 'success') {
+            iconClass = 'bi-check-circle-fill';
+            toastClass = 'toast-modern toast-success';
+        } else if (type === 'danger') {
+            iconClass = 'bi-exclamation-circle-fill';
+            toastClass = 'toast-modern toast-danger';
+        } else if (type === 'primary') {
+            iconClass = 'bi-cloud-arrow-up-fill';
+            toastClass = 'toast-modern toast-success';
+        }
+        
+        toastIcon.className = 'bi ' + iconClass;
+        toastEl.className = 'toast ' + toastClass + ' align-items-center text-white border-0';
+        
         const toast = new bootstrap.Toast(toastEl);
         toast.show();
     }
@@ -220,47 +311,69 @@
                 let currentGroupIndex = currentGroupEvents.findIndex(ev => ev.id === e.id);
 
                 if (e.extendedProps.ownerID != @Context.Session.GetInt32("OwnerID")) {
-                    detailsDiv.innerHTML = `<p class="text-danger fw-bold">This slot is <strong>Not Available</strong>.</p>`;
+                    detailsDiv.innerHTML = `
+                        <div class="text-center py-4">
+                            <i class="bi bi-calendar-x display-4 text-danger opacity-75"></i>
+                            <p class="mt-2 fw-semibold text-danger">This slot is <strong>Not Available</strong>.</p>
+                        </div>`;
                     return;
                 }
 
                 function renderDetails(event) {
-                    let statusClass = "";
+                    let statusBadge = "";
                     switch (event.extendedProps.status?.toLowerCase()) {
-                        case "completed": statusClass = "bg-success"; break;
-                        case "missed":
-                        case "cancelled": statusClass = "bg-danger"; break;
-                        case "pending": statusClass = "bg-primary"; break;
-                        default: statusClass = "bg-secondary";
+                        case "completed": statusBadge = '<span class="badge-modern badge-active">Completed</span>'; break;
+                        case "missed": statusBadge = '<span class="badge-modern badge-inactive">Missed</span>'; break;
+                        case "cancelled": statusBadge = '<span class="badge-modern badge-inactive">Cancelled</span>'; break;
+                        case "pending": statusBadge = '<span class="badge-modern badge-pending">Pending</span>'; break;
+                        case "approved": statusBadge = '<span class="badge-modern badge-active">Approved</span>'; break;
+                        case "requested": statusBadge = '<span class="badge-modern badge-pending">Requested</span>'; break;
+                        default: statusBadge = '<span class="badge-modern">' + (event.extendedProps.status || 'Unknown') + '</span>';
                     }
 
                     let buttons = "";
                     if (event.extendedProps.status?.toLowerCase() === "requested") {
-                        buttons += `<a href="/Owner/EditAppointment/${event.id}" class="btn btn-outline-primary btn-sm">Edit</a>`;
+                        buttons += `<a href="/Owner/EditAppointment/${event.id}" class="btn-modern-primary btn-sm"><i class="bi bi-pencil me-1"></i>Edit</a>`;
                     }
                     if (["pending", "requested"].includes(event.extendedProps.status?.toLowerCase())) {
-                        buttons += `<button class="btn btn-outline-danger btn-sm" onclick="requestCancellation(${event.id})">Request Cancellation</button>`;
+                        buttons += `<button class="btn-modern-danger btn-sm" onclick="requestCancellation(${event.id})"><i class="bi bi-x-circle me-1"></i>Cancel</button>`;
                     }
 
                     detailsDiv.innerHTML = `
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <a id="prevGroupBtn" class="btn btn-sm d-flex align-items-center justify-content-center"
-                               style="border-radius:20px; width:36px; height:36px; font-size:8px;">
-                               <i class="bi bi-chevron-left text-black"></i>
-                            </a>
-                            <span class="fw-semibold">Appointment ${currentGroupIndex + 1} of ${currentGroupEvents.length}</span>
-                            <a id="nextGroupBtn" class="btn btn-sm d-flex align-items-center justify-content-center"
-                               style="border-radius:20px; width:36px; height:36px; font-size:8px;">
-                               <i class="bi bi-chevron-right text-black"></i>
-                            </a>
+                            <button id="prevGroupBtn" class="btn-modern-secondary btn-sm" style="padding: 6px 12px;">
+                               <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <span class="badge-modern badge-type-appointment">${currentGroupIndex + 1} of ${currentGroupEvents.length}</span>
+                            <button id="nextGroupBtn" class="btn-modern-secondary btn-sm" style="padding: 6px 12px;">
+                               <i class="bi bi-chevron-right"></i>
+                            </button>
                         </div>
-                        <p><strong>Pet:</strong> ${event.extendedProps.petName}</p>
-                        <p><strong>Category:</strong> ${event.extendedProps.category ?? '�'}</p>
-                        <p><strong>Subtype:</strong> ${event.extendedProps.subtype ?? '�'}</p>
-                        <p><strong>Date:</strong> ${event.start.toLocaleString()}</p>
-                        <p><strong>Status:</strong> <span class="badge ${statusClass}">${event.extendedProps.status}</span></p>
-                        <p><strong>Notes:</strong> ${event.extendedProps.notes ?? 'N/A'}</p>
-                        <div class="d-flex justify-content-between mt-3">${buttons}</div>
+                        <div class="info-item-modern mb-2">
+                            <div class="info-label"><i class="bi bi-heart-pulse me-2"></i>Pet</div>
+                            <div class="info-value">${event.extendedProps.petName || 'N/A'}</div>
+                        </div>
+                        <div class="info-item-modern mb-2">
+                            <div class="info-label"><i class="bi bi-tag me-2"></i>Category</div>
+                            <div class="info-value">${event.extendedProps.category || 'N/A'}</div>
+                        </div>
+                        <div class="info-item-modern mb-2">
+                            <div class="info-label"><i class="bi bi-bookmark me-2"></i>Subtype</div>
+                            <div class="info-value">${event.extendedProps.subtype || 'N/A'}</div>
+                        </div>
+                        <div class="info-item-modern mb-2">
+                            <div class="info-label"><i class="bi bi-calendar-event me-2"></i>Date</div>
+                            <div class="info-value">${event.start.toLocaleString()}</div>
+                        </div>
+                        <div class="info-item-modern mb-2">
+                            <div class="info-label"><i class="bi bi-flag me-2"></i>Status</div>
+                            <div class="info-value">${statusBadge}</div>
+                        </div>
+                        <div class="info-item-modern mb-3">
+                            <div class="info-label"><i class="bi bi-chat-text me-2"></i>Notes</div>
+                            <div class="info-value">${event.extendedProps.notes || 'No notes'}</div>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end">${buttons}</div>
                     `;
 
                     document.getElementById('prevGroupBtn').onclick = () => {
@@ -295,10 +408,13 @@
                 const formattedDate = date.toISOString().split('T')[0];
                 const formattedTime = date.toTimeString().slice(0, 5);
                 detailsDiv.innerHTML = `
-                    <p class="mb-2 text-muted">No appointment for <strong>${date.toLocaleString()}</strong>.</p>
-                    <button class="btn btn-success w-100" onclick="scheduleAppointment('${formattedDate}', '${formattedTime}')">
-                        + Schedule Appointment
-                    </button>
+                    <div class="text-center py-4">
+                        <i class="bi bi-calendar-plus display-4 text-success opacity-75"></i>
+                        <p class="mt-3 text-muted mb-3">No appointment for <strong>${date.toLocaleString()}</strong></p>
+                        <button class="btn-modern-success" onclick="scheduleAppointment('${formattedDate}', '${formattedTime}')">
+                            <i class="bi bi-plus-circle me-1"></i> Schedule Appointment
+                        </button>
+                    </div>
                 `;
             }
         });

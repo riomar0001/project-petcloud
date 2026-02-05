@@ -27,15 +27,15 @@ html, body {
     cursor: pointer;
 }
 
-    .carousel-arrow:hover {
-        background: #e8f0ff;
-        transform: scale(1.05);
-    }
+.carousel-arrow:hover {
+    background: #e8f0ff;
+    transform: scale(1.05);
+}
 
-    .carousel-arrow:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
+.carousel-arrow:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 
 .carousel-track {
     display: flex;

@@ -3,283 +3,287 @@
 @{
     Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
     ViewBag.Title = "Notifications";
-    int maxPagesToShow = 5;
     int blockSize = 10;
     int startPage = Math.Max(1, Model.CurrentPage - 2);
     int endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
 }
-<div class="d-md-none px-3 mb-2">
-    <form method="get" class="d-flex align-items-center gap-2 mb-2">
-        <input type="text" name="searchQuery" class="form-control" placeholder="Search..."
-               value="@Model.SearchQuery" />
-        <button type="submit" class="btn" style="background-color:var(--primary-green, #10B981); color:white;">
-            <i class="bi bi-search"></i>
-        </button>
-    </form>
 
-    <button class="btn text-black w-100 fw-semibold" id="toggleFilter" style="background-color:var(--primary-green, #10B981);">
-        <i class="bi bi-funnel"></i> Filters
-    </button>
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <h2><i class="bi bi-bell-fill"></i>Notifications</h2>
+    <p>View and manage all system notifications</p>
 </div>
-<div id="filterSection" class="filter-mobile d-flex flex-wrap align-items-center justify-content-start px-3 py-2 mb-3" style="background-color:var(--primary-green-light, #D1FAE5);">
-    <span class="fw-semibold me-2">Filter Type:</span>
-    <div class="dropdown me-3">
-        <button class="btn text-black dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                style="background-color:var(--primary-green, #10B981);">
-            @(string.IsNullOrEmpty(Model.TypeFilter) ? "All" : Model.TypeFilter)
-        </button>
-        <ul class="dropdown-menu">
-            <li><a class="dropdown-item text-black" href="?typeFilter=All">All</a></li>
-            <li><a class="dropdown-item text-black" href="?typeFilter=User">User</a></li>
-            <li><a class="dropdown-item text-black" href="?typeFilter=Pet">Pet</a></li>
-            <li><a class="dropdown-item text-black" href="?typeFilter=Appointment">Appointment</a></li>
-        </ul>
+
+<!-- Filter Bar Modern -->
+<div class="filter-bar-modern">
+    <div class="filter-group">
+        <span class="filter-label"><i class="bi bi-funnel me-2"></i>Type:</span>
+        <div class="dropdown">
+            <button class="btn-filter dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                @(string.IsNullOrEmpty(Model.TypeFilter) || Model.TypeFilter == "All" ? "All Types" : Model.TypeFilter)
+            </button>
+            <ul class="dropdown-menu dropdown-menu-modern">
+                <li><a class="dropdown-item" href="?typeFilter=All&statusFilter=@Model.StatusFilter&searchQuery=@Model.SearchQuery"><i class="bi bi-grid me-2"></i>All Types</a></li>
+                <li><a class="dropdown-item" href="?typeFilter=User&statusFilter=@Model.StatusFilter&searchQuery=@Model.SearchQuery"><i class="bi bi-person me-2"></i>User</a></li>
+                <li><a class="dropdown-item" href="?typeFilter=Pet&statusFilter=@Model.StatusFilter&searchQuery=@Model.SearchQuery"><i class="bi bi-heart me-2"></i>Pet</a></li>
+                <li><a class="dropdown-item" href="?typeFilter=Appointment&statusFilter=@Model.StatusFilter&searchQuery=@Model.SearchQuery"><i class="bi bi-calendar-check me-2"></i>Appointment</a></li>
+            </ul>
+        </div>
     </div>
 
-    <span class="fw-semibold me-2">Filter Status:</span>
-    <div class="dropdown me-3">
-        <button class="btn text-black dropdown-toggle" type="button" data-bs-toggle="dropdown"
-                style="background-color:var(--primary-green, #10B981);">
-            @(string.IsNullOrEmpty(Model.StatusFilter) ? "All" : Model.StatusFilter)
-        </button>
-        <ul class="dropdown-menu">
-            <li><a class="dropdown-item text-black" href="?statusFilter=All">All</a></li>
-            <li><a class="dropdown-item text-black" href="?statusFilter=Read">Read</a></li>
-            <li><a class="dropdown-item text-black" href="?statusFilter=Unread">Unread</a></li>
-        </ul>
+    <div class="filter-group">
+        <span class="filter-label"><i class="bi bi-eye me-2"></i>Status:</span>
+        <div class="dropdown">
+            <button class="btn-filter dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                @(string.IsNullOrEmpty(Model.StatusFilter) || Model.StatusFilter == "All" ? "All Status" : Model.StatusFilter)
+            </button>
+            <ul class="dropdown-menu dropdown-menu-modern">
+                <li><a class="dropdown-item" href="?typeFilter=@Model.TypeFilter&statusFilter=All&searchQuery=@Model.SearchQuery"><i class="bi bi-circle me-2"></i>All Status</a></li>
+                <li><a class="dropdown-item" href="?typeFilter=@Model.TypeFilter&statusFilter=Read&searchQuery=@Model.SearchQuery"><i class="bi bi-check-circle me-2"></i>Read</a></li>
+                <li><a class="dropdown-item" href="?typeFilter=@Model.TypeFilter&statusFilter=Unread&searchQuery=@Model.SearchQuery"><i class="bi bi-circle-fill me-2 text-primary"></i>Unread</a></li>
+            </ul>
+        </div>
     </div>
 
-    <form method="get" class="d-none d-flex justify-content-end flex-grow-1">
-        <div class="input-group" style="max-width:300px;">
-            <input type="text" name="searchQuery" class="form-control" placeholder="Search..."
-                   value="@Model.SearchQuery" />
-            <button type="submit" class="btn" style="background-color:var(--primary-green, #10B981); color:white;">
+    <div class="search-box">
+        <form method="get" class="d-flex">
+            <input type="hidden" name="typeFilter" value="@Model.TypeFilter" />
+            <input type="hidden" name="statusFilter" value="@Model.StatusFilter" />
+            <input type="text" name="searchQuery" placeholder="Search notifications..." value="@Model.SearchQuery" />
+            <button type="submit" class="btn-search">
                 <i class="bi bi-search"></i>
             </button>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
-    <div class="card shadow-sm border-0">
 
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="fw-bold mb-0">Notifications</h6>
-                <button id="markAllReadPage" class="btn text-white" style="background-color:var(--primary-green, #10B981);">
-                    <i class="bi bi-check2-all me-1"></i> Mark All as Read
-                </button>
-            </div>
+<!-- Notifications Card -->
+<div class="page-card-modern">
+    <div class="card-header-modern d-flex justify-content-between align-items-center">
+        <h6><i class="bi bi-inbox me-2"></i>ALL NOTIFICATIONS</h6>
+        <button id="markAllReadPage" class="btn-modern-primary btn-sm">
+            <i class="bi bi-check2-all"></i> Mark All as Read
+        </button>
+    </div>
 
-            <div class="table-responsive">
-                <table class="table align-middle border">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width: 30%">Message</th>
-                            <th style="width: 15%">Type</th>
-                            <th style="width: 20%">Date</th>
-                            <th style="width: 10%">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (Model.Notifications != null && Model.Notifications.Any())
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table-modern-list">
+                <thead>
+                    <tr>
+                        <th style="width: 40%">Message</th>
+                        <th style="width: 15%">Type</th>
+                        <th style="width: 20%">Date & Time</th>
+                        <th style="width: 10%">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Notifications != null && Model.Notifications.Any())
+                    {
+                        foreach (var n in Model.Notifications)
                         {
-                            foreach (var n in Model.Notifications)
-                            {
-                                <tr class="@(n.IsRead ? "" : "table-primary fw-semibold")" data-url="@n.RedirectUrl">
-                                    <td class="text-center text-wrap">
-                                        <div class="message-cell">
-                                            @n.Message
-                                        </div>
-                                    </td>
-                                    <td>@n.Type</td>
-                                    <td>@n.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</td>
-                                    <td>
-                                        @if (n.IsRead)
+                            <tr class="@(n.IsRead ? "" : "unread")" data-url="@n.RedirectUrl" style="cursor: pointer;">
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        @if (!n.IsRead)
                                         {
-                                            <span class="badge bg-success">Read</span>
+                                            <div class="notification-dot"></div>
                                         }
-                                        else
-                                        {
-                                            <span class="badge bg-primary k">Unread</span>
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="4" class="text-center text-muted py-3">
-                                    No notifications found.
+                                        <span class="@(n.IsRead ? "text-muted" : "fw-semibold")">@n.Message</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    @switch (n.Type?.ToLower())
+                                    {
+                                        case "user":
+                                            <span class="badge-type-user"><i class="bi bi-person me-1"></i>User</span>
+                                            break;
+                                        case "pet":
+                                            <span class="badge-type-pet"><i class="bi bi-heart me-1"></i>Pet</span>
+                                            break;
+                                        case "appointment":
+                                            <span class="badge-type-appointment"><i class="bi bi-calendar me-1"></i>Appointment</span>
+                                            break;
+                                        default:
+                                            <span class="badge-modern badge-pending">@n.Type</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-semibold">@n.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                        <small class="text-muted">@n.CreatedAt.ToString("hh:mm tt")</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (n.IsRead)
+                                    {
+                                        <span class="badge-modern badge-active"><i class="bi bi-check-circle"></i> Read</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-modern badge-pending"><i class="bi bi-circle-fill"></i> Unread</span>
+                                    }
                                 </td>
                             </tr>
                         }
-                    </tbody>
-                </table>
-            </div>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-5">
+                                <div class="d-flex flex-column align-items-center">
+                                    <i class="bi bi-bell-slash display-4 text-muted mb-3"></i>
+                                    <p class="text-muted mb-0">No notifications found</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 
-            <nav class="mt-3">
-                <ul class="pagination justify-content-center mb-0">
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="pagination-modern">
+                <ul class="pagination mb-0">
                     <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
-                        <a class="page-link border-0 text-dark"
-                           href="@(Model.CurrentPage == 1 ? "#" : Url.Action("AdminNotification", new {
-                            page = Model.CurrentPage - 1,
-                            typeFilter = Model.TypeFilter,
-                            statusFilter = Model.StatusFilter,
-                            searchQuery = Model.SearchQuery
-                        }))">
-                            ‹
+                        <a class="page-link" href="@(Model.CurrentPage == 1 ? "#" : $"?page={Model.CurrentPage - 1}&typeFilter={Model.TypeFilter}&statusFilter={Model.StatusFilter}&searchQuery={Model.SearchQuery}")">
+                            <i class="bi bi-chevron-left"></i>
                         </a>
                     </li>
 
                     @if (startPage > 1)
                     {
                         <li class="page-item">
-                            <a class="page-link rounded-circle border-0 text-dark"
-                               style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;"
-                               href="?page=1&typeFilter=@Model.TypeFilter&statusFilter=@Model.StatusFilter&searchQuery=@Model.SearchQuery">1</a>
+                            <a class="page-link" href="?page=1&typeFilter=@Model.TypeFilter&statusFilter=@Model.StatusFilter&searchQuery=@Model.SearchQuery">1</a>
                         </li>
-
                         <li class="page-item">
-                            <a class="page-link border-0 text-dark fw-bold"
-                               href="?page=@(Math.Max(1, Model.CurrentPage - blockSize))&typeFilter=@Model.TypeFilter&statusFilter=@Model.StatusFilter&searchQuery=@Model.SearchQuery">
-                                ...
-                            </a>
+                            <a class="page-link" href="?page=@(Math.Max(1, Model.CurrentPage - blockSize))&typeFilter=@Model.TypeFilter&statusFilter=@Model.StatusFilter&searchQuery=@Model.SearchQuery">...</a>
                         </li>
                     }
 
                     @for (int i = startPage; i <= endPage; i++)
                     {
-                        if (i == Model.CurrentPage)
-                        {
-                            <li class="page-item active">
-                                <a class="page-link rounded-circle border-0 text-black"
-                                   style="background-color:var(--primary-green, #10B981);width:32px;height:32px;display:flex;align-items:center;justify-content:center;"
-                                   href="#">@i</a>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="page-item">
-                                <a class="page-link rounded-circle border-0 text-dark"
-                                   style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;"
-                                   href="?page=@i&typeFilter=@Model.TypeFilter&statusFilter=@Model.StatusFilter&searchQuery=@Model.SearchQuery">@i</a>
-                            </li>
-                        }
+                        <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="?page=@i&typeFilter=@Model.TypeFilter&statusFilter=@Model.StatusFilter&searchQuery=@Model.SearchQuery">@i</a>
+                        </li>
                     }
 
                     @if (endPage < Model.TotalPages)
                     {
                         <li class="page-item">
-                            <a class="page-link border-0 text-dark fw-bold"
-                               href="?page=@(Math.Min(Model.TotalPages, Model.CurrentPage + blockSize))&typeFilter=@Model.TypeFilter&statusFilter=@Model.StatusFilter&searchQuery=@Model.SearchQuery">
-                                ...
-                            </a>
+                            <a class="page-link" href="?page=@(Math.Min(Model.TotalPages, Model.CurrentPage + blockSize))&typeFilter=@Model.TypeFilter&statusFilter=@Model.StatusFilter&searchQuery=@Model.SearchQuery">...</a>
                         </li>
-
                         <li class="page-item">
-                            <a class="page-link rounded-circle border-0 text-dark"
-                               style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;"
-                               href="?page=@Model.TotalPages&typeFilter=@Model.TypeFilter&statusFilter=@Model.StatusFilter&searchQuery=@Model.SearchQuery">@Model.TotalPages</a>
+                            <a class="page-link" href="?page=@Model.TotalPages&typeFilter=@Model.TypeFilter&statusFilter=@Model.StatusFilter&searchQuery=@Model.SearchQuery">@Model.TotalPages</a>
                         </li>
                     }
 
                     <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
-                        <a class="page-link border-0 text-dark"
-                           href="@(Model.CurrentPage == Model.TotalPages ? "#" : Url.Action("AdminNotification", new {
-                            page = Model.CurrentPage + 1,
-                            typeFilter = Model.TypeFilter,
-                            statusFilter = Model.StatusFilter,
-                            searchQuery = Model.SearchQuery
-                        }))">
-                            ›
+                        <a class="page-link" href="@(Model.CurrentPage == Model.TotalPages ? "#" : $"?page={Model.CurrentPage + 1}&typeFilter={Model.TypeFilter}&statusFilter={Model.StatusFilter}&searchQuery={Model.SearchQuery}")">
+                            <i class="bi bi-chevron-right"></i>
                         </a>
                     </li>
                 </ul>
             </nav>
-        </div>
+        }
     </div>
+</div>
 
+<!-- Toast Notification -->
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
-    <div id="messageToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="messageToast" class="toast toast-modern align-items-center text-white border-0" role="alert">
         <div class="d-flex">
-            <div class="toast-body"></div>
+            <div class="toast-body d-flex align-items-center gap-2">
+                <i class="bi bi-check-circle-fill"></i>
+                <span id="toastMessage"></span>
+            </div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="confirmSaveModal" tabindex="-1" aria-labelledby="confirmSaveModalLabel" aria-hidden="true">
+<!-- Confirm Modal -->
+<div class="modal fade modal-modern" id="confirmSaveModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header bg-warning text-white">
-                <h6 class="modal-title fw-bold" id="confirmSaveModalLabel">
-                    Notifications
+            <div class="modal-header">
+                <h6 class="modal-title">
+                    <i class="bi bi-check2-all"></i>
+                    Confirm Action
                 </h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body text-center">
-                <p class="mb-0 fw-semibold">Are you sure you want to mark all as "read?"</p>
+            <div class="modal-body text-center py-4">
+                <div class="mb-3">
+                    <i class="bi bi-question-circle display-1 text-warning opacity-75"></i>
+                </div>
+                <p class="fw-semibold fs-5 mb-2">Mark all notifications as read?</p>
+                <small class="text-muted">This action will mark all unread notifications as read</small>
             </div>
-            <div class="modal-footer d-flex justify-content-end">
-                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" id="confirmSaveBtn" class="btn btn-success px-4">Confirm</button>
+            <div class="modal-footer">
+                <button type="button" class="btn-modern-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i> Cancel
+                </button>
+                <button type="button" id="confirmSaveBtn" class="btn-modern-success">
+                    <i class="bi bi-check2-all me-1"></i> Yes, Mark All Read
+                </button>
             </div>
         </div>
     </div>
 </div>
+
 @section Scripts {
     <script>
         $(document).ready(function () {
-            $('table tbody tr[data-url]').css('cursor', 'pointer').on('click', function () {
+            // Click to navigate
+            $('table tbody tr[data-url]').on('click', function () {
                 var url = $(this).data('url');
-                if (url && url !== "null") {
+                if (url && url !== "null" && url !== "") {
                     window.location.href = url;
                 }
             });
+
             var toastEl = $('#messageToast');
-            var toastBody = toastEl.find('.toast-body');
+            var toastMessage = $('#toastMessage');
             const confirmModal = new bootstrap.Modal(document.getElementById('confirmSaveModal'));
 
-            $('#markAllReadPage').off('click').on('click', function (e) {
+            function showToast(message, type) {
+                toastMessage.text(message);
+                toastEl.removeClass('toast-success toast-danger toast-warning toast-info')
+                       .addClass('toast-' + type);
+                new bootstrap.Toast(toastEl[0], { delay: 3000 }).show();
+            }
+
+            $('#markAllReadPage').on('click', function (e) {
                 e.preventDefault();
                 confirmModal.show();
             });
 
-            $('#confirmSaveBtn').off('click').on('click', function () {
+            $('#confirmSaveBtn').on('click', function () {
+                var btn = $(this);
+                btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Processing...');
+                
                 confirmModal.hide();
 
                 $.ajax({
                     url: '@Url.Action("MarkAllNotificationsRead", "Admin")',
                     type: 'POST',
                     success: function (res) {
-                        toastBody.text(res.message);
-                        toastEl.removeClass('bg-success bg-danger')
-                                .addClass(res.success ? 'bg-success' : 'bg-danger');
-
-                        new bootstrap.Toast(toastEl[0], { delay: 3000 }).show();
-
+                        showToast(res.message, res.success ? 'success' : 'danger');
                         if (res.success) {
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1500);
+                            setTimeout(() => location.reload(), 1500);
                         }
+                        btn.prop('disabled', false).html('<i class="bi bi-check2-all me-1"></i> Yes, Mark All Read');
                     },
                     error: function () {
-                        toastBody.text("An error occurred while marking notifications as read.");
-                        toastEl.removeClass('bg-success').addClass('bg-danger');
-                        new bootstrap.Toast(toastEl[0], { delay: 3000 }).show();
+                        showToast("An error occurred. Please try again.", 'danger');
+                        btn.prop('disabled', false).html('<i class="bi bi-check2-all me-1"></i> Yes, Mark All Read');
                     }
                 });
             });
-        });
-        document.addEventListener("DOMContentLoaded", function () {
-            const toggleBtn = document.getElementById("toggleFilter");
-            const filterSection = document.getElementById("filterSection");
-            if (toggleBtn && filterSection) {
-                toggleBtn.addEventListener("click", function () {
-                    filterSection.classList.toggle("active");
-                });
-            }
         });
     </script>
 }

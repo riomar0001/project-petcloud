@@ -34,12 +34,12 @@
     justify-content: space-between;
 }
 .fc-daygrid-dot-event .fc-event-title  {
-    font-weight: 300;
+    font-weight: 400;
     font-size:11px;
 }
 .fc-daygrid-event-dot {
     display: none !important;
-    font-weight: 300;
+    font-weight: 400;
     font-size: 11px;
 }
 .fc-toolbar-chunk {
@@ -133,7 +133,7 @@
     background-color: var(--fc-event-bg-color, #2196f3) !important;
     color: white !important;
     line-height: 0.8 !important;
-    font-weight:lighter;
+    font-weight: 400;
 }
 
 .fc-timegrid-event .fc-event-time,
@@ -219,7 +219,7 @@
 .fc .fc-button-active {
     background: #10B981 !important;
     color: white !important;
-    font-weight: bold !important;
+    font-weight: 700 !important;
 }
 .fc-event.not\ available {
     background-color: #6c757d !important;

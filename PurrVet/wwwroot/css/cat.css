@@ -1,14 +1,9 @@
 ﻿p {
-    font-family: 'Inter', sans-serif;
     font-size: 1.3rem;
     color: #6B7280;
 }
 h1 {
-    font-family: 'Inter', sans-serif;
     color: #1F2937;
-}
-button {
-    font-family: 'Inter', sans-serif;
 }
 
 @keyframes breathe {

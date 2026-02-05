@@ -9,9 +9,128 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewBag.Title - PurrVet</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="/css/auth-modern.css" rel="stylesheet" />
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+
+        /* 2FA Code Input Boxes */
+        .code-inputs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        .code-inputs .code-box {
+            width: 52px;
+            height: 60px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--auth-text);
+            border: 2px solid var(--auth-border);
+            border-radius: 12px;
+            background: var(--auth-input-bg);
+            transition: all 0.2s ease;
+            padding: 0;
+        }
+
+        .code-inputs .code-box:focus {
+            outline: none;
+            border-color: var(--auth-primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        }
+
+        .code-inputs .code-box.filled {
+            border-color: var(--auth-primary);
+            background: var(--auth-primary-light);
+        }
+
+        /* Timer badge */
+        .timer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: var(--auth-primary-light);
+            color: var(--auth-primary-dark);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .timer-badge.expired {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        /* Shield icon header */
+        .verify-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--auth-primary-light);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .verify-icon i {
+            font-size: 28px;
+            color: var(--auth-primary);
+        }
+
+        /* Back link */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--auth-text-secondary);
+            text-decoration: none;
+            margin-bottom: 24px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--auth-primary);
+        }
+
+        /* Resend section */
+        .resend-section {
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        .resend-section p {
+            font-size: 0.875rem;
+            color: var(--auth-text-secondary);
+            margin: 0;
+        }
+
+        .resend-section a {
+            color: var(--auth-primary);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .resend-section a:hover {
+            text-decoration: underline;
+        }
+
+        .resend-section a.disabled {
+            color: #9CA3AF;
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
     <div class="auth-page">
@@ -19,86 +138,101 @@
         <div class="auth-branding">
             <div class="auth-branding-content">
                 <div class="auth-logo">
-                    <i class="bi bi-heart-pulse-fill"></i>
-                    <span>PurrVet</span>
+                    <div class="logo-icon">
+                        <img src="~/images/PurrVet.png" alt="PurrVet" />
+                    </div>
+                    <h1>PurrVet</h1>
                 </div>
-                <h1>Verify Your Identity</h1>
-                <p>We've sent a verification code to your email. Enter it below to complete your login.</p>
-                
+
+                <h2 class="auth-headline">
+                    Verify Your <span>Identity</span>
+                </h2>
+                <p class="auth-subtext">
+                    We've sent a verification code to your registered email address. Enter it to securely access your account.
+                </p>
+
                 <div class="auth-features">
-                    <div class="auth-feature-item">
-                        <div class="auth-feature-icon">
+                    <div class="auth-feature">
+                        <div class="feature-icon">
                             <i class="bi bi-shield-check"></i>
                         </div>
-                        <div>
-                            <strong>Extra Security</strong>
-                            <span>Two-factor authentication protects your account</span>
-                        </div>
+                        <span>Extra security for your account</span>
                     </div>
-                    <div class="auth-feature-item">
-                        <div class="auth-feature-icon">
+                    <div class="auth-feature">
+                        <div class="feature-icon">
                             <i class="bi bi-envelope-paper"></i>
                         </div>
-                        <div>
-                            <strong>Check Your Email</strong>
-                            <span>The code was sent to your registered email</span>
-                        </div>
+                        <span>Code sent to your email</span>
                     </div>
-                    <div class="auth-feature-item">
-                        <div class="auth-feature-icon">
+                    <div class="auth-feature">
+                        <div class="feature-icon">
                             <i class="bi bi-stopwatch"></i>
                         </div>
-                        <div>
-                            <strong>Code Expires</strong>
-                            <span>Enter your code before it expires</span>
-                        </div>
+                        <span>Code expires in 10 minutes</span>
                     </div>
+                </div>
+
+                <div class="auth-illustration">
+                    <img src="~/images/golden.png" alt="Happy Pet" />
                 </div>
             </div>
         </div>
 
         <!-- Right Side - Form -->
-        <div class="auth-form-side">
+        <div class="auth-form-container">
             <div class="auth-card">
-                <a href="/Account/Login" class="btn-back">
+                <a href="/Account/Login" class="back-link">
                     <i class="bi bi-arrow-left"></i>
                     Back to Login
                 </a>
+
+                <div class="verify-icon">
+                    <i class="bi bi-shield-lock"></i>
+                </div>
 
                 <div class="auth-card-header">
                     <h2>Enter Verification Code</h2>
                     <p>Please enter the 6-digit code we sent to your email.</p>
                 </div>
 
-                <form id="verify2FAForm">
+                <div class="text-center">
+                    <div class="timer-badge" id="timerBadge">
+                        <i class="bi bi-clock"></i>
+                        <span id="timerText">10:00 remaining</span>
+                    </div>
+                </div>
+
+                <form id="verify2FAForm" class="auth-form">
                     <input type="hidden" id="userId" value="@ViewBag.UserId" />
 
-                    <div class="form-group">
-                        <label for="twoFACode" class="form-label">Verification Code</label>
-                        <div class="input-icon-wrapper">
-                            <i class="bi bi-key input-icon"></i>
-                            <input type="text" id="twoFACode" name="twoFACode" class="form-control" 
-                                   placeholder="Enter 6-digit code" maxlength="6" required 
-                                   style="letter-spacing: 8px; font-weight: 600; text-align: center;" />
-                        </div>
+                    <div class="code-inputs" id="codeInputs">
+                        <input type="text" class="code-box" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code" />
+                        <input type="text" class="code-box" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+                        <input type="text" class="code-box" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+                        <input type="text" class="code-box" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+                        <input type="text" class="code-box" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+                        <input type="text" class="code-box" maxlength="1" inputmode="numeric" pattern="[0-9]" />
                     </div>
+                    <input type="hidden" id="twoFACode" name="twoFACode" />
 
-                    <button type="submit" class="btn btn-auth-primary w-100">
-                        <i class="bi bi-check-circle me-2"></i>
-                        Verify Code
+                    <button type="submit" class="btn-auth-primary" id="verifyBtn">
+                        <i class="bi bi-check-circle"></i>
+                        <span>Verify Code</span>
                     </button>
                 </form>
 
                 <div class="auth-footer">
-                    <p>Didn't receive the code? <a href="#" id="resendCode">Resend</a></p>
+                    <div class="resend-section">
+                        <p>Didn't receive the code? <a href="#" id="resendCode">Resend</a></p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Toast Message -->
-    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
-        <div id="toastMessage" class="toast align-items-center text-white bg-success border-0" role="alert">
+    <!-- Toast Container -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999">
+        <div id="toastMessage" class="toast align-items-center text-white border-0" role="alert">
             <div class="d-flex">
                 <div class="toast-body"></div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
@@ -106,49 +240,180 @@
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script>
-        $("#verify2FAForm").on("submit", function (e) {
-            e.preventDefault();
+        $(document).ready(function () {
+            const boxes = $(".code-box");
+            const hiddenInput = $("#twoFACode");
 
-            const userId = $("#userId").val();
-            const code = $("#twoFACode").val();
-            const rememberMe = $("#rememberMe").is(":checked");
-            const btn = $(this).find('button[type="submit"]');
-            const originalText = btn.html();
-            
-            btn.html('<span class="spinner-border spinner-border-sm me-2"></span>Verifying...').prop('disabled', true);
+            // Focus first box on load
+            boxes.first().focus();
 
-            $.ajax({
-                url: "/Account/Verify2FA",
-                type: "POST",
-                data: { userId: userId, code: code, rememberMe: rememberMe },
-                success: function (response) {
-                    const toast = new bootstrap.Toast($('#toastMessage'));
-                    const toastBody = $('#toastMessage .toast-body');
+            // Sync all boxes into hidden input
+            function syncCode() {
+                let code = "";
+                boxes.each(function () { code += $(this).val(); });
+                hiddenInput.val(code);
+            }
 
-                    if (response.success) {
-                        $('#toastMessage').removeClass('bg-danger').addClass('bg-success');
-                        toastBody.text("Two-Factor Verification successful! Redirecting...");
-                        toast.show();
-                        setTimeout(() => window.location.href = response.redirectUrl, 1500);
-                    } else {
-                        $('#toastMessage').removeClass('bg-success').addClass('bg-danger');
-                        toastBody.text("Invalid or expired code. Please try again.");
-                        toast.show();
-                        btn.html(originalText).prop('disabled', false);
-                    }
-                },
-                error: function () {
-                    $('#toastMessage').removeClass('bg-success').addClass('bg-danger');
-                    $('#toastMessage .toast-body').text("Something went wrong. Please try again.");
-                    new bootstrap.Toast($('#toastMessage')).show();
-                    btn.html(originalText).prop('disabled', false);
+            // Handle typing in code boxes
+            boxes.on("input", function () {
+                const val = $(this).val().replace(/[^0-9]/g, "");
+                $(this).val(val);
+
+                if (val) {
+                    $(this).addClass("filled");
+                    $(this).next(".code-box").focus();
+                } else {
+                    $(this).removeClass("filled");
                 }
+                syncCode();
+
+                // Auto-submit when all 6 digits entered
+                if (hiddenInput.val().length === 6) {
+                    $("#verify2FAForm").submit();
+                }
+            });
+
+            // Handle backspace navigation
+            boxes.on("keydown", function (e) {
+                if (e.key === "Backspace" && !$(this).val()) {
+                    $(this).prev(".code-box").focus().val("").removeClass("filled");
+                    syncCode();
+                }
+            });
+
+            // Handle paste
+            boxes.first().on("paste", function (e) {
+                e.preventDefault();
+                const pasted = (e.originalEvent.clipboardData || window.clipboardData).getData("text").replace(/[^0-9]/g, "").slice(0, 6);
+                pasted.split("").forEach(function (char, i) {
+                    if (boxes[i]) {
+                        $(boxes[i]).val(char).addClass("filled");
+                    }
+                });
+                syncCode();
+                const focusIdx = Math.min(pasted.length, 5);
+                $(boxes[focusIdx]).focus();
+                if (pasted.length === 6) {
+                    $("#verify2FAForm").submit();
+                }
+            });
+
+            // Countdown timer (10 minutes)
+            let timeLeft = 600;
+            const timerBadge = $("#timerBadge");
+            const timerText = $("#timerText");
+
+            const countdown = setInterval(function () {
+                timeLeft--;
+                const mins = Math.floor(timeLeft / 60);
+                const secs = timeLeft % 60;
+                timerText.text(mins + ":" + (secs < 10 ? "0" : "") + secs + " remaining");
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    timerBadge.addClass("expired");
+                    timerText.text("Code expired");
+                }
+            }, 1000);
+
+            // Form submission
+            $("#verify2FAForm").on("submit", function (e) {
+                e.preventDefault();
+
+                const userId = $("#userId").val();
+                const code = hiddenInput.val();
+
+                if (code.length < 6) return;
+
+                const btn = $("#verifyBtn");
+                const originalText = btn.html();
+                btn.html('<span class="spinner-border spinner-border-sm me-2"></span>Verifying...').prop("disabled", true);
+
+                $.ajax({
+                    url: "/Account/Verify2FA",
+                    type: "POST",
+                    data: { userId: userId, code: code },
+                    success: function (response) {
+                        const toast = new bootstrap.Toast($("#toastMessage")[0]);
+                        const toastBody = $("#toastMessage .toast-body");
+
+                        if (response.success) {
+                            $("#toastMessage").removeClass("bg-danger").addClass("bg-success");
+                            toastBody.text("Verification successful! Redirecting...");
+                            toast.show();
+                            setTimeout(function () { window.location.href = response.redirectUrl; }, 1500);
+                        } else {
+                            $("#toastMessage").removeClass("bg-success").addClass("bg-danger");
+                            toastBody.text("Invalid or expired code. Please try again.");
+                            toast.show();
+                            btn.html(originalText).prop("disabled", false);
+                            // Clear inputs
+                            boxes.val("").removeClass("filled");
+                            boxes.first().focus();
+                            syncCode();
+                        }
+                    },
+                    error: function () {
+                        $("#toastMessage").removeClass("bg-success").addClass("bg-danger");
+                        $("#toastMessage .toast-body").text("Something went wrong. Please try again.");
+                        new bootstrap.Toast($("#toastMessage")[0]).show();
+                        btn.html(originalText).prop("disabled", false);
+                    }
+                });
+            });
+
+            // Resend code
+            $("#resendCode").on("click", function (e) {
+                e.preventDefault();
+                const link = $(this);
+                if (link.hasClass("disabled")) return;
+
+                link.addClass("disabled").text("Sending...");
+
+                $.ajax({
+                    url: "/Account/Resend2FA",
+                    type: "POST",
+                    data: { userId: $("#userId").val() },
+                    success: function (res) {
+                        const toast = new bootstrap.Toast($("#toastMessage")[0]);
+                        const toastBody = $("#toastMessage .toast-body");
+
+                        if (res.success) {
+                            $("#toastMessage").removeClass("bg-danger").addClass("bg-success");
+                            toastBody.text("A new code has been sent to your email.");
+                            // Reset timer
+                            timeLeft = 600;
+                            timerBadge.removeClass("expired");
+                        } else {
+                            $("#toastMessage").removeClass("bg-success").addClass("bg-danger");
+                            toastBody.text(res.message || "Unable to resend code.");
+                        }
+                        toast.show();
+
+                        // Cooldown
+                        let cooldown = 30;
+                        link.text("Resend in " + cooldown + "s");
+                        const cd = setInterval(function () {
+                            cooldown--;
+                            link.text("Resend in " + cooldown + "s");
+                            if (cooldown <= 0) {
+                                clearInterval(cd);
+                                link.removeClass("disabled").text("Resend");
+                            }
+                        }, 1000);
+                    },
+                    error: function () {
+                        $("#toastMessage").removeClass("bg-success").addClass("bg-danger");
+                        $("#toastMessage .toast-body").text("Failed to resend code.");
+                        new bootstrap.Toast($("#toastMessage")[0]).show();
+                        link.removeClass("disabled").text("Resend");
+                    }
+                });
             });
         });
     </script>
 </body>
 </html>
-

@@ -6,73 +6,100 @@
 }
 
 <div class="p-4">
-    <h5 class="mb-4 fw-bold">Services / Edit Subtype</h5>
-    <div class="card shadow-sm p-4">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-modern mb-3">
+        <a href="@Url.Action("ServiceType", "Staff")">Services</a>
+        <span class="separator">/</span>
+        <span class="current">Edit Subtype</span>
+    </div>
 
-        <!-- Toast Notification -->
-        <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
-            <div id="messageToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
-                    <div class="toast-body"></div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
+    <!-- Toast -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
+        <div id="messageToast" class="toast align-items-center text-white border-0 toast-modern" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fw-semibold"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
             </div>
         </div>
+    </div>
 
-        <h4 class="mb-3 fw-bold">Edit Service Subtype</h4>
-        <hr class="mb-4">
-
-        <form id="editSubtypeForm" method="post" action="@Url.Action("EditServiceSubtype","Admin")">
-            @Html.AntiForgeryToken()
-            <input type="hidden" name="SubtypeID" value="@Model.SubtypeID" />
-
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Service Category</label>
-                    <select name="CategoryID" class="form-select">
-                        <option value="">-- Select Category --</option>
-                        @foreach (var category in ViewBag.ServiceCategories)
-                        {
-                            <option value="@category.CategoryID" selected=@(category.CategoryID == Model.CategoryID ? "selected" : null)>
-                                @category.ServiceType
-                            </option>
-                        }
-                    </select>
+    <div class="card-accent">
+        <div class="p-4">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div class="stats-icon-box info">
+                    <i class="bi bi-pencil-square"></i>
                 </div>
-
-                <div class="col-md-6">
-                    <label class="form-label fw-semibold">Subtype Name</label>
-                    <input type="text" name="ServiceSubType" class="form-control" placeholder="Enter subtype name" value="@Model.ServiceSubType" />
-                </div>
-
-                <div class="col-12">
-                    <label class="form-label fw-semibold">Description</label>
-                    <textarea name="Description" class="form-control" placeholder="Enter description">@Model.Description</textarea>
+                <div>
+                    <h5 class="fw-bold mb-0">Edit Service Subtype</h5>
+                    <small class="text-muted">Update the details of this service subtype</small>
                 </div>
             </div>
 
-            <div class="mt-4 d-flex justify-content-end gap-2">
-                <button type="submit" class="btn btn-primary px-4">Update</button>
-                <a href="@Url.Action("ServiceType", "Admin")" class="btn btn-secondary px-4">Cancel</a>
-            </div>
-        </form>
+            <form id="editSubtypeForm" method="post" action="@Url.Action("EditServiceSubtype", "Staff")">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="SubtypeID" value="@Model.SubtypeID" />
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group-modern">
+                            <label><i class="bi bi-tags me-2"></i> Service Category</label>
+                            <select name="CategoryID" class="form-select form-select-modern">
+                                <option value="">-- Select Category --</option>
+                                @foreach (var category in ViewBag.ServiceCategories)
+                                {
+                                    <option value="@category.CategoryID" selected=@(category.CategoryID == Model.CategoryID ? "selected" : null)>
+                                        @category.ServiceType
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group-modern">
+                            <label><i class="bi bi-tag me-2"></i> Subtype Name</label>
+                            <input type="text" name="ServiceSubType" class="form-control form-control-modern" placeholder="Enter subtype name" value="@Model.ServiceSubType" required />
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-group-modern">
+                            <label><i class="bi bi-card-text me-2"></i> Description</label>
+                            <textarea name="Description" class="form-control form-control-modern" rows="4" placeholder="Describe this service subtype...">@Model.Description</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-3 mt-4">
+                    <a href="@Url.Action("ServiceType", "Staff")" class="btn-modern-secondary">
+                        <i class="bi bi-x-lg"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn-modern-primary">
+                        <i class="bi bi-check-lg"></i> Update Subtype
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
 <!-- Confirmation Modal -->
-<div class="modal fade" id="confirmSaveModal" tabindex="-1" aria-labelledby="confirmSaveModalLabel" aria-hidden="true">
+<div class="modal fade modal-modern" id="confirmSaveModal" tabindex="-1" aria-labelledby="confirmSaveModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header bg-warning text-white">
-                <h6 class="modal-title fw-bold" id="confirmSaveModalLabel">Confirm Update</h6>
+            <div class="modal-header">
+                <h6 class="modal-title" id="confirmSaveModalLabel"><i class="bi bi-question-circle"></i> Confirm Action</h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body text-center">
-                <p class="mb-0 fw-semibold">Are you sure you want to update this service subtype?</p>
+            <div class="modal-body text-center py-4">
+                <div class="stats-icon-box warning mx-auto mb-3" style="width:56px;height:56px;">
+                    <i class="bi bi-exclamation-triangle" style="font-size:1.5rem;"></i>
+                </div>
+                <p class="fw-semibold mb-0">Are you sure you want to update this service subtype?</p>
             </div>
-            <div class="modal-footer d-flex justify-content-end">
-                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" id="confirmSaveBtn" class="btn btn-success px-4">Confirm</button>
+            <div class="modal-footer">
+                <button type="button" class="btn-modern-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirmSaveBtn" class="btn-modern-primary">Confirm</button>
             </div>
         </div>
     </div>
@@ -96,17 +123,17 @@
 
                 $('#confirmSaveBtn').off('click').on('click', function () {
                     modal.hide();
-                    $.post('@Url.Action("EditServiceSubtype", "Admin")', $(form).serialize())
+                    $.post('@Url.Action("EditServiceSubtype", "Staff")', $(form).serialize())
                         .done(res => {
                             const toastEl = $('#messageToast');
                             const toastBody = toastEl.find('.toast-body');
                             toastBody.text(res.message);
-                            toastEl.removeClass('bg-success bg-danger')
-                                .addClass(res.success ? 'bg-success' : 'bg-danger');
+                            toastEl.removeClass('bg-success bg-danger toast-success toast-danger')
+                                .addClass(res.success ? 'bg-success toast-success' : 'bg-danger toast-danger');
                             new bootstrap.Toast(toastEl[0]).show();
 
                             if (res.success) setTimeout(() =>
-                                window.location.href = '@Url.Action("ServiceType", "Admin")', 1200);
+                                window.location.href = '@Url.Action("ServiceType", "Staff")', 1200);
                         });
                 });
             });

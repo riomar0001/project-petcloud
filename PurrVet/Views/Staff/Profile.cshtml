@@ -7,55 +7,69 @@
     var connectedEmail = TempData["ConnectedEmail"] as string ?? Context.Session.GetString("MicrosoftEmail");
     var showDisconnectToast = TempData["MicrosoftDisconnected"] as bool? ?? false;
 }
-<!--  Admin ni -->
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<div class="container py-4">
+<div class="p-4">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-modern mb-3">
+        <a href="@Url.Action("Dashboard", "Staff")">Dashboard</a>
+        <span class="separator">/</span>
+        <span class="current">My Profile</span>
+    </div>
 
     <!-- Toast -->
     <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
-        <div id="messageToast" class="toast align-items-center text-white border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+        <div id="messageToast" class="toast align-items-center text-white border-0 toast-modern" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
-                <div class="toast-body"></div>
+                <div class="toast-body fw-semibold"></div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
             </div>
         </div>
     </div>
 
-    <div class="row g-4 justify-content-center">
-        <div class="col-md-5 text-center">
-            <div class="card shadow-sm border-0 p-4 rounded-4">
-                <h5 class="fw-bold mb-4 text-success"><i class="bi bi-person-circle"></i> My Profile</h5>
-
-                <div class="d-flex justify-content-center mb-3">
-                    <img id="profilePreview"
-                         src="@Url.Content(Model.ProfileImage ?? "~/uploads/profiles/pet.png")"
-                         class="rounded-circle border border-4 border-success shadow"
-                         style="width:170px; height:170px; object-fit:cover;"
-                         onerror="this.onerror=null;this.src='@Url.Content("~/uploads/profiles/pet.png")';" />
-                </div>
-
-                <form id="photoForm" asp-action="EditUserPhoto" asp-controller="Staff" method="post" enctype="multipart/form-data">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="id" value="@Model.UserID" />
-                    <div class="input-group mb-3">
-                        <input type="file" name="ProfileImage" class="form-control form-control-sm rounded-pill" accept="image/*" onchange="previewImage(event)" />
+    <div class="row g-4">
+        <!-- Left Column - Photo & Calendar -->
+        <div class="col-lg-4">
+            <!-- Profile Photo Card -->
+            <div class="card-accent mb-4">
+                <div class="p-4 text-center">
+                    <div class="pet-profile-preview mb-0" style="border:none; background:transparent;">
+                        <img id="profilePreview"
+                             src="@Url.Content(Model.ProfileImage ?? "~/uploads/profiles/pet.png")"
+                             onerror="this.onerror=null;this.src='@Url.Content("~/uploads/profiles/pet.png")';" />
+                        <div class="pet-name">@Model.FirstName @Model.LastName</div>
+                        <div class="pet-breed">@Model.Email</div>
                     </div>
 
-                    <button type="button" class="btn btn-success w-100 rounded-pill fw-semibold" onclick="confirmPhotoUpdate()">
-                        <i class="bi bi-upload"></i> Update Photo
-                    </button>
-                </form>
+                    <form id="photoForm" asp-action="EditUserPhoto" asp-controller="Staff" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.UserID" />
+                        <div class="mt-3">
+                            <label class="btn-modern-secondary btn-sm w-100" style="cursor:pointer;">
+                                <i class="bi bi-camera"></i> Choose New Photo
+                                <input type="file" name="ProfileImage" class="d-none" accept="image/*" onchange="previewImage(event)" />
+                            </label>
+                        </div>
+                        <button type="button" class="btn-modern-primary btn-sm w-100 mt-2" onclick="confirmPhotoUpdate()">
+                            <i class="bi bi-upload"></i> Update Photo
+                        </button>
+                    </form>
+                </div>
+            </div>
 
-                <hr class="my-4" />
-
-                <div class="calendar-section">
-                    <h6 class="fw-bold text-secondary mb-3">
-                        <i class="bi bi-calendar2-week text-success"></i> Microsoft Calendar
-                    </h6>
+            <!-- Microsoft Calendar Card -->
+            <div class="card-accent">
+                <div class="p-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="stats-icon-box info" style="width:36px;height:36px;">
+                            <i class="bi bi-calendar2-week" style="font-size:1rem;"></i>
+                        </div>
+                        <h6 class="fw-bold mb-0">Microsoft Calendar</h6>
+                    </div>
 
                     <button id="connectCalendarBtn"
-                            class="btn @((!string.IsNullOrEmpty(connectedEmail)) ? "btn-success text-white fw-semibold" : "btn-outline-success fw-semibold") w-100 rounded-pill mb-2"
+                            class="@((!string.IsNullOrEmpty(connectedEmail)) ? "btn-modern-success" : "btn-modern-secondary") w-100 mb-2"
                             onclick="connectCalendar()">
                         <i class="bi bi-microsoft"></i>
                         @((!string.IsNullOrEmpty(connectedEmail)) ? "Connected" : "Connect to Microsoft")
@@ -64,140 +78,154 @@
                     <div id="connectedEmailContainer" class="mt-2">
                         @if (!string.IsNullOrEmpty(connectedEmail))
                         {
-                            <div class="p-2 rounded-3 bg-light border text-center shadow-sm">
-                                <small class="text-success fw-semibold">
-                                    <i class="bi bi-check-circle-fill"></i> Connected as:<br />
-                                    <span id="connectedEmail">@connectedEmail</span>
-                                </small>
+                            <div class="info-item-modern text-center">
+                                <div class="info-label justify-content-center"><i class="bi bi-check-circle-fill me-1"></i> Connected as</div>
+                                <div class="info-value" style="font-size:0.875rem;">@connectedEmail</div>
                             </div>
                         }
                         else
                         {
-                            <small id="connectedEmail" class="text-muted d-block">No account connected</small>
+                            <small id="connectedEmail" class="text-muted d-block text-center">No account connected</small>
                         }
                     </div>
 
-                    <button id="disconnectCalendarBtn" class="btn btn-outline-danger w-100 rounded-pill mt-3 fw-semibold" onclick="disconnectCalendar()">
+                    <button id="disconnectCalendarBtn" class="btn-modern-danger btn-sm w-100 mt-3" onclick="disconnectCalendar()">
                         <i class="bi bi-box-arrow-right"></i> Disconnect
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-7">
-            <div class="card shadow-sm border-0 p-4 rounded-4">
-                <h5 class="fw-bold mb-3 text-success"><i class="bi bi-pencil-square"></i> Basic Information</h5>
-
-                <form id="profileForm" asp-action="EditUserDetails" asp-controller="Staff" method="post" onsubmit="return confirmProfileUpdate()">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="id" value="@Model.UserID" />
-
-                    <div class="mb-3 row align-items-center">
-                        <label class="col-sm-3 col-form-label fw-semibold">User ID</label>
-                        <div class="col-sm-9">
-                            <input type="text" class="form-control text-muted" value="@Model.UserID" disabled />
+        <!-- Right Column - Basic Info & Password -->
+        <div class="col-lg-8">
+            <div class="card-accent">
+                <div class="p-4">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="stats-icon-box primary">
+                            <i class="bi bi-pencil-square"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Basic Information</h5>
+                            <small class="text-muted">Update your personal details</small>
                         </div>
                     </div>
 
-                    <div class="mb-3 row align-items-center">
-                        <label class="col-sm-3 col-form-label fw-semibold">Email</label>
-                        <div class="col-sm-9">
-                            <input type="email" class="form-control text-muted" value="@Model.Email" disabled />
+                    <form id="profileForm" asp-action="EditUserDetails" asp-controller="Staff" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.UserID" />
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label><i class="bi bi-hash me-2"></i> User ID</label>
+                                    <input type="text" class="form-control form-control-modern" value="@Model.UserID" disabled />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label><i class="bi bi-envelope me-2"></i> Email</label>
+                                    <input type="email" class="form-control form-control-modern" value="@Model.Email" disabled />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label><i class="bi bi-person me-2"></i> First Name</label>
+                                    <input type="text" name="FirstName" id="FirstName" class="form-control form-control-modern" value="@Model.FirstName" required />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label><i class="bi bi-person me-2"></i> Last Name</label>
+                                    <input type="text" name="LastName" id="LastName" class="form-control form-control-modern" value="@Model.LastName" required />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label><i class="bi bi-phone me-2"></i> Phone</label>
+                                    <input type="tel" name="Phone" id="Phone" class="form-control form-control-modern"
+                                           value="@Model.Phone" placeholder="e.g. 09123456789"
+                                           inputmode="numeric" pattern="[0-9]{11}" minlength="11" maxlength="11" required />
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="mb-3 row align-items-center">
-                        <label class="col-sm-3 col-form-label fw-semibold">First Name</label>
-                        <div class="col-sm-9">
-                            <input type="text" name="FirstName" id="FirstName" class="form-control" value="@Model.FirstName" required />
+                        <hr class="my-4" />
+
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <div class="stats-icon-box warning" style="width:36px;height:36px;">
+                                <i class="bi bi-shield-lock" style="font-size:1rem;"></i>
+                            </div>
+                            <h6 class="fw-bold mb-0">Change Password</h6>
                         </div>
-                    </div>
 
-                    <div class="mb-3 row align-items-center">
-                        <label class="col-sm-3 col-form-label fw-semibold">Last Name</label>
-                        <div class="col-sm-9">
-                            <input type="text" name="LastName" id="LastName" class="form-control" minlength="11" maxlength="11" inputmode="numeric" value="@Model.LastName" required />
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="form-group-modern">
+                                    <label>Current Password</label>
+                                    <div class="position-relative">
+                                        <input type="password" name="CurrentPassword" id="CurrentPassword" class="form-control form-control-modern" placeholder="Current password" />
+                                        <span class="position-absolute top-50 end-0 translate-middle-y me-3 toggle-eye" style="cursor:pointer; color:#9ca3af;">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group-modern">
+                                    <label>New Password</label>
+                                    <div class="position-relative">
+                                        <input type="password" name="Password" id="Password" class="form-control form-control-modern" placeholder="New password" />
+                                        <span class="position-absolute top-50 end-0 translate-middle-y me-3 toggle-eye" style="cursor:pointer; color:#9ca3af;">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group-modern">
+                                    <label>Confirm Password</label>
+                                    <div class="position-relative">
+                                        <input type="password" name="ConfirmPassword" id="ConfirmPassword" class="form-control form-control-modern" placeholder="Confirm password" />
+                                        <span class="position-absolute top-50 end-0 translate-middle-y me-3 toggle-eye" style="cursor:pointer; color:#9ca3af;">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="mb-3 row align-items-center">
-                        <label class="col-sm-3 col-form-label fw-semibold">Phone</label>
-                        <div class="col-sm-9">
-                            <input type="tel"
-                                   name="Phone"
-                                   id="Phone"
-                                   class="form-control"
-                                   value="@Model.Phone"
-                                   placeholder="e.g. 09123456789"
-                                   inputmode="numeric"
-                                   pattern="[0-9]{11}"
-                                   minlength="11"
-                                   maxlength="11"
-                                   required />
+                        <div id="formErrors" class="text-danger mb-3"></div>
+
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="button" class="btn-modern-primary" onclick="confirmProfileUpdate()">
+                                <i class="bi bi-check-circle"></i> Update Profile
+                            </button>
                         </div>
-                    </div>
-
-
-                    <hr />
-
-                    <div class="mb-3 row align-items-center">
-                        <label class="col-sm-3 col-form-label fw-semibold">Current Password</label>
-                        <div class="col-sm-9 position-relative">
-                            <input type="password" name="CurrentPassword" id="CurrentPassword" class="form-control" placeholder="Enter current password" />
-                            <span class="position-absolute top-50 end-0 translate-middle-y me-3 toggle-eye" style="cursor:pointer; font-size:14px; color:#666;">
-                                <i class="fa-solid fa-eye"></i>
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="mb-3 row align-items-center">
-                        <label class="col-sm-3 col-form-label fw-semibold">New Password</label>
-                        <div class="col-sm-9 position-relative">
-                            <input type="password" name="Password" id="Password" class="form-control" placeholder="New password" />
-                            <span class="position-absolute top-50 end-0 translate-middle-y me-3 toggle-eye" style="cursor:pointer; font-size:14px; color:#666;">
-                                <i class="fa-solid fa-eye"></i>
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="mb-3 row align-items-center">
-                        <label class="col-sm-3 col-form-label fw-semibold">Confirm Password</label>
-                        <div class="col-sm-9 position-relative">
-                            <input type="password" name="ConfirmPassword" id="ConfirmPassword" class="form-control" placeholder="Confirm password" />
-                            <span class="position-absolute top-50 end-0 translate-middle-y me-3 toggle-eye" style="cursor:pointer; font-size:14px; color:#666;">
-                                <i class="fa-solid fa-eye"></i>
-                            </span>
-                        </div>
-                    </div>
-                    <div id="formErrors" class="text-danger mb-3"></div>
-
-                    <button type="button" class="btn btn-success rounded-pill fw-semibold px-4" onclick="confirmProfileUpdate()">
-                        <i class="bi bi-check-circle"></i> Update Profile
-                    </button>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+<!-- Confirmation Modal -->
+<div class="modal fade modal-modern" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 border-0 shadow">
-            <div class="modal-header bg-success text-white rounded-top-4">
-                <h6 class="modal-title fw-bold" id="confirmModalLabel">Confirmation</h6>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="confirmModalLabel"><i class="bi bi-question-circle"></i> Confirmation</h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body text-center">
-                <p class="mb-0 fw-semibold" id="confirmModalMessage"></p>
+            <div class="modal-body text-center py-4">
+                <p class="fw-semibold mb-0" id="confirmModalMessage"></p>
             </div>
-            <div class="modal-footer justify-content-end border-0">
-                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" id="confirmModalBtn" class="btn btn-success rounded-pill px-4">Confirm</button>
+            <div class="modal-footer">
+                <button type="button" class="btn-modern-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirmModalBtn" class="btn-modern-primary">Confirm</button>
             </div>
         </div>
     </div>
 </div>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <script>
     $(document).ready(function () {
@@ -205,18 +233,16 @@
             const input = $(this).siblings("input");
             const icon = $(this).find("i");
             const isHidden = input.attr("type") === "password";
-
             input.attr("type", isHidden ? "text" : "password");
             icon.toggleClass("fa-eye fa-eye-slash");
         });
     });
+
     document.getElementById("Phone").addEventListener("input", function () {
         this.value = this.value.replace(/\D/g, '');
-
-        if (this.value.length > 11) {
-            this.value = this.value.slice(0, 11);
-        }
+        if (this.value.length > 11) this.value = this.value.slice(0, 11);
     });
+
     function getAntiForgeryToken(form) {
         const tokenEl = (form ? $(form) : $(document)).find('input[name="__RequestVerificationToken"]');
         return tokenEl.length ? tokenEl.val() : null;
@@ -238,7 +264,8 @@
         const toastEl = $('#messageToast');
         const toastBody = toastEl.find('.toast-body');
         toastBody.text(message);
-        toastEl.removeClass('bg-success bg-danger').addClass(isSuccess ? 'bg-success' : 'bg-danger');
+        toastEl.removeClass('bg-success bg-danger toast-success toast-danger')
+            .addClass(isSuccess ? 'bg-success toast-success' : 'bg-danger toast-danger');
         new bootstrap.Toast(toastEl[0], { delay: 3000 }).show();
     }
 
@@ -254,26 +281,22 @@
 
     async function postWithAntiforgery(url, form, formData) {
         const token = appendAntiForgeryToken(formData, form);
-
         const response = await fetch(url, {
             method: 'POST',
             body: formData,
             credentials: 'same-origin',
             headers: token ? { 'RequestVerificationToken': token } : {}
         });
-
         if (!response.ok) {
             const text = await response.text();
             throw new Error(`Bad Request (${response.status}): ${text}`);
         }
-
         return await response.json();
     }
 
     function confirmProfileUpdate() {
         const formEl = $('#profileForm')[0];
         const formData = new FormData(formEl);
-
         confirmAction("Are you sure you want to update your profile?", async function () {
             try {
                 const data = await postWithAntiforgery('/Staff/EditUserDetails', formEl, formData);
@@ -287,14 +310,12 @@
                 showToast("Something went wrong while saving.", false);
             }
         });
-
         return false;
     }
 
     function confirmPhotoUpdate() {
         const formEl = $('#photoForm')[0];
         const formData = new FormData(formEl);
-
         confirmAction("Are you sure you want to update your profile photo?", async function () {
             try {
                 const data = await postWithAntiforgery('/Staff/EditUserPhoto', formEl, formData);
@@ -343,8 +364,8 @@
         if (connectedEmail) {
             $("#connectCalendarBtn")
                 .text("Connected")
-                .removeClass("btn-outline-success")
-                .addClass("btn-success text-white fw-semibold")
+                .removeClass("btn-modern-secondary")
+                .addClass("btn-modern-success")
                 .prepend('<i class="bi bi-check-circle me-1"></i> ');
         }
 
@@ -353,9 +374,9 @@
             showToast("Microsoft Calendar disconnected successfully.", false);
             $("#connectCalendarBtn")
                 .text("Connect to Microsoft")
-                .removeClass("btn-success text-white fw-semibold")
-                .addClass("btn-outline-success");
-            $("#connectedEmailContainer").html(`<small class="text-muted d-block">No account connected</small>`);
+                .removeClass("btn-modern-success")
+                .addClass("btn-modern-secondary");
+            $("#connectedEmailContainer").html(`<small class="text-muted d-block text-center">No account connected</small>`);
         }
         if (showNotConnectedToast) showToast("No connected account to disconnect.", false);
     });

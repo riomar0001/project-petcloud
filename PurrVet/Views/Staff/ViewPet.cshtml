@@ -15,23 +15,32 @@
     int blockSize = 10;
     int startPage = Math.Max(1, Model.CurrentPage - 2);
     int endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+    
+    var petTypeIcon = Model.Pet.Type == "Dog" ? "🐕" : Model.Pet.Type == "Cat" ? "🐈" : "🐾";
 }
 
 <!-- Dashboard Header -->
 <div class="dashboard-header">
-    <h2>Pet Details</h2>
+    <h2><i class="bi bi-heart-pulse-fill"></i>@Model.Pet.Name</h2>
     <p>View pet information and appointment history</p>
 </div>
 
+<!-- Breadcrumb -->
+<div class="breadcrumb-modern mb-4">
+    <a href="@Url.Action("Pets", "Staff")"><i class="bi bi-grid me-1"></i>All Pets</a>
+    <span class="separator">/</span>
+    <span class="current">@Model.Pet.Name</span>
+</div>
+
 <!-- Navigation Pills -->
-<div class="filter-bar-modern">
+<div class="filter-bar-modern mb-4">
     <div class="d-flex align-items-center gap-2">
         <a href="@Url.Action("ViewPet", "Staff", new { id = Model.Pet.PetID })"
-           class="btn-add-modern">
+           class="btn-modern-primary">
             <i class="bi bi-info-circle me-1"></i> Pet Info
         </a>
         <a href="@Url.Action("PetCard", "Staff", new { id = Model.Pet.PetID })"
-           class="btn btn-secondary fw-semibold" style="border-radius: 8px;">
+           class="btn-modern-secondary">
             <i class="bi bi-card-heading me-1"></i> Pet Card
         </a>
     </div>
@@ -40,41 +49,57 @@
 <!-- Basic Information Card -->
 <div class="page-card-modern">
     <div class="card-header-modern">
-        <h6>BASIC INFORMATION</h6>
+        <h6><i class="bi bi-clipboard-data me-2"></i>BASIC INFORMATION</h6>
     </div>
     <div class="card-body p-4">
         <div class="row g-4 align-items-center">
             <div class="col-md-3 text-center">
-                <img src="@photoPath"
-                     alt="@Model.Pet.Name"
-                     class="rounded-circle border border-4 border-success shadow"
-                     style="width:170px; height:170px; object-fit:cover;"
-                     onerror="this.onerror=null;this.src='@Url.Content("~/uploads/profiles/pet.png")';" />
+                <div class="pet-profile-preview">
+                    <img src="@photoPath"
+                         alt="@Model.Pet.Name"
+                         onerror="this.onerror=null;this.src='@Url.Content("~/uploads/profiles/pet.png")';" />
+                    <div class="pet-name">@Model.Pet.Name</div>
+                    <div class="pet-breed">@petTypeIcon @Model.Pet.Type • @Model.Pet.Breed</div>
+                </div>
             </div>
             <div class="col-12 col-md-9 mt-3 mt-md-0">
-                <div class="table-responsive">
-                    <table class="table table-borderless align-middle mb-0">
-                        <tbody>
-                            <tr>
-                                <th style="width: 20%">Pet ID</th>
-                                <td>@Model.Pet.PetID</td>
-                                <th style="width: 20%">Owner ID</th>
-                                <td>@Model.Pet.OwnerID</td>
-                            </tr>
-                            <tr>
-                                <th>Pet Name</th>
-                                <td>@Model.Pet.Name</td>
-                                <th>Type</th>
-                                <td>@Model.Pet.Type</td>
-                            </tr>
-                            <tr>
-                                <th>Breed</th>
-                                <td>@Model.Pet.Breed</td>
-                                <th>Age</th>
-                                <td>@Model.AgeInMonths</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="info-item-modern">
+                            <div class="info-label"><i class="bi bi-hash me-2"></i>Pet ID</div>
+                            <div class="info-value">@Model.Pet.PetID</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="info-item-modern">
+                            <div class="info-label"><i class="bi bi-person me-2"></i>Owner ID</div>
+                            <div class="info-value">@Model.Pet.OwnerID</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="info-item-modern">
+                            <div class="info-label"><i class="bi bi-tag me-2"></i>Pet Name</div>
+                            <div class="info-value">@Model.Pet.Name</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="info-item-modern">
+                            <div class="info-label"><i class="bi bi-gender-ambiguous me-2"></i>Type</div>
+                            <div class="info-value">@petTypeIcon @Model.Pet.Type</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="info-item-modern">
+                            <div class="info-label"><i class="bi bi-bookmark me-2"></i>Breed</div>
+                            <div class="info-value">@Model.Pet.Breed</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="info-item-modern">
+                            <div class="info-label"><i class="bi bi-calendar-heart me-2"></i>Age</div>
+                            <div class="info-value">@Model.AgeInMonths</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,5 +1,5 @@
 ﻿body {
-    font-family: 'Baloo 2', sans-serif;
+    font-family: 'Inter', sans-serif;
 }
 
 h4.fw-bold {
@@ -155,17 +155,17 @@ h4.fw-bold {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-    .forecast-box .icon {
-        width: 50px;
-        height: 50px;
-        background: #10B981;
-        color: #fff;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 22px;
-    }
+.forecast-box .icon {
+    width: 50px;
+    height: 50px;
+    background: #10B981;
+    color: #fff;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+}
 
 .forecast-card {
     background: #fff;
@@ -177,18 +177,83 @@ h4.fw-bold {
 }
 
 .forecast-header {
-    background: #10B981;
-    color: #fff;
-    font-weight: 600;
-    text-align: center;
     padding: 8px 0;
-    font-size: 0.95rem;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.forecast-items {
+    font-size: 11px;
 }
 
 .forecast-body {
     background: #fff;
     color: #212529;
-    font-size: 1rem;
+}
+
+/* Modern forecast list styles */
+.forecast-list-modern {
+    max-height: 180px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.forecast-list-modern::-webkit-scrollbar {
+    width: 4px;
+}
+
+.forecast-list-modern::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+}
+
+.forecast-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: background 0.15s ease;
+}
+
+.forecast-row:last-child {
+    border-bottom: none;
+}
+
+.forecast-row:hover {
+    background: rgba(16, 185, 129, 0.04);
+}
+
+.forecast-row-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.forecast-row-value {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--primary-green, #10B981);
+    background: rgba(16, 185, 129, 0.08);
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.forecast-rank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary-green, #10B981);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    flex-shrink: 0;
 }
 
 .divider-line {
