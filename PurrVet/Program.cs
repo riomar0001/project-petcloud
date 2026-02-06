@@ -10,11 +10,11 @@ using Microsoft.Graph;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Kiota.Http.HttpClientLibrary;
+using Microsoft.OpenApi.Models;
 using PurrVet.DTOs.Common;
 using PurrVet.Infrastructure;
 using PurrVet.Models;
 using PurrVet.Services;
-using Microsoft.OpenApi.Models;
 using Scalar.AspNetCore;
 using System.Globalization;
 using System.Text;
@@ -146,7 +146,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options => {
             );
         return new BadRequestObjectResult(new ApiErrorResponse {
             Success = false,
-            Message = "Validation failed.",
+            Message = "Validation Failed!",
             Errors = errors
         });
     };
