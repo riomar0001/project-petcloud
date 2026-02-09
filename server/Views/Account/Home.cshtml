@@ -1,0 +1,104 @@
+@{
+    ViewBag.Title = "Home";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="hero-section home-hero d-flex flex-column justify-content-center">
+    <div class="hero-wave"></div>
+
+    <div class="container home-container py-4">
+        <div class="row align-items-center text-center text-md-start mb-5">
+            <div class="col-md-6">
+                <div class="d-flex flex-column align-items-center align-items-md-start mb-3">
+                    <h1 class="fw-bold display-4 home-title">
+                        Healthy Pets,<br />Happy Homes.
+                    </h1>
+                    <p class="lead text-muted home-subtext mt-3">
+                        Taking care of your furry family members with love and expertise.
+                    </p>
+                    <div class="d-flex gap-3 mt-4 justify-content-center justify-content-md-start">
+                        <a href="/Account/Register" class="btn px-4 py-2 fw-semibold"
+                           style="background-color: #10B981; color: white; border-radius: 12px; transition: all 0.2s;">
+                            Get Started <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                        <a href="/Account/Login" class="btn px-4 py-2 fw-semibold"
+                           style="border: 1px solid #E5E7EB; color: #1F2937; border-radius: 12px; transition: all 0.2s;">
+                            Sign In
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 text-center">
+                <img src="~/images/black_dog.png" alt="Happy Dog" class="img-fluid rounded shadow home-dog">
+            </div>
+        </div>
+
+        <div class="home-services mt-5">
+            <h4 class="fw-bold mb-2 text-center" style="color: #1F2937;">Our Services</h4>
+            <p class="text-center mb-4" style="color: #6B7280;">Comprehensive care for your beloved pets</p>
+            <div class="row text-center justify-content-center">
+                <div class="col-md-2 col-6 mb-4">
+                    <div class="card p-3 shadow-sm border-0 home-card">
+                        <img src="~/images/professional.png" alt="Professional" class="img-fluid mb-2">
+                        <p class="fw-semibold mb-0">Professional Fee / Consultation</p>
+                    </div>
+                </div>
+
+                <div class="col-md-2 col-6 mb-4">
+                    <div class="card p-3 shadow-sm border-0 home-card">
+                        <img src="~/images/vaccination.png" alt="Vaccination" class="img-fluid mb-2">
+                        <p class="fw-semibold mb-0">Vaccination</p>
+                    </div>
+                </div>
+
+                <div class="col-md-2 col-6 mb-4">
+                    <div class="card p-3 shadow-sm border-0 home-card">
+                        <img src="~/images/deworming.png" alt="Deworming" class="img-fluid mb-2">
+                        <p class="fw-semibold mb-0">Deworming & Preventives</p>
+                    </div>
+                </div>
+
+                <div class="col-md-2 col-6 mb-4">
+                    <div class="card p-3 shadow-sm border-0 home-card">
+                        <img src="~/images/diagnostics.png" alt="Diagnostics" class="img-fluid mb-2">
+                        <p class="fw-semibold mb-0">Diagnostics & Laboratory Tests</p>
+                    </div>
+                </div>
+
+                <div class="col-md-2 col-6 mb-4">
+                    <div class="card p-3 shadow-sm border-0 home-card">
+                        <img src="~/images/medication.png" alt="Medication" class="img-fluid mb-2">
+                        <p class="fw-semibold mb-0">Medication & Treatment</p>
+                    </div>
+                </div>
+
+                <div class="col-md-2 col-6 mb-4">
+                    <div class="card p-3 shadow-sm border-0 home-card">
+                        <img src="~/images/surgery.png" alt="Surgery" class="img-fluid mb-2">
+                        <p class="fw-semibold mb-0">Surgery</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5 mb-5">
+            <img src="~/images/happy_paws2.png" alt="Happy Paws Banner" class="img-fluid rounded shadow home-banner">
+        </div>
+
+        <div class="home-about mt-5 text-center text-md-start">
+            <h4 class="fw-bold mb-3" style="color: #1F2937;">About PetCloud</h4>
+            <p style="color: #6B7280;">
+                At PetCloud, we understand the special bond you share with your pets.
+                Our dedicated team of veterinarians and staff is committed to providing the highest quality care
+                for your furry companions. With a focus on comprehensive wellness, advanced treatments,
+                and personalized attention, we ensure that your pets receive the best care possible.
+            </p>
+        </div>
+
+        <footer class="text-center py-4 mt-5" style="border-top: 1px solid #E5E7EB;">
+            <p style="color: #6B7280; font-size: 0.875rem;">
+                &copy; @DateTime.Now.Year PetCloud. All rights reserved.
+            </p>
+        </footer>
+    </div>
+</div>

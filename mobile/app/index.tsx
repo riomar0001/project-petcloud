@@ -80,8 +80,8 @@ export default function LoginScreen() {
               <View className="mb-4 h-20 w-20 items-center justify-center rounded-3xl bg-mountain-meadow-600">
                 <Ionicons name="paw" size={40} color="#FFFFFF" />
               </View>
-              <Text className="text-2xl font-bold tracking-tight text-gray-900">PurrVet</Text>
-              <Text className="mt-1 text-sm text-gray-400">Pet care, simplified</Text>
+              <Text className="text-2xl font-bold tracking-tight text-gray-900">PetCloud</Text>
+              <Text className="mt-1 text-sm text-gray-400">Your clinic, in the cloud</Text>
             </View>
 
             {/* Welcome Section */}

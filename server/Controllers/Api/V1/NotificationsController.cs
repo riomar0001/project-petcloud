@@ -1,0 +1,135 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using PetCloud.DTOs.Common;
+using PetCloud.DTOs.Notifications;
+using PetCloud.Infrastructure;
+using PetCloud.Models;
+
+namespace PetCloud.Controllers.Api.V1 {
+    [ApiController]
+    [Route("api/v1/notifications")]
+    [Authorize(Policy = "OwnerOnly")]
+    [Tags("Notifications")]
+    public class NotificationsController : ControllerBase {
+        private readonly ApplicationDbContext _context;
+
+        public NotificationsController(ApplicationDbContext context) {
+            _context = context;
+        }
+
+        [HttpGet]
+        [EndpointSummary("List notifications")]
+        [EndpointDescription("Returns paginated notifications for the authenticated owner. Supports filtering by type (e.g. Appointment, Pet), read status, and text search.")]
+        [ProducesResponseType(typeof(NotificationListResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
+        public IActionResult GetNotifications(
+            [FromQuery] string typeFilter = "All",
+            [FromQuery] string statusFilter = "All",
+            [FromQuery] string? search = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10) {
+            var userId = User.GetUserId();
+
+            var query = _context.Notifications
+                .Where(n => n.TargetUserId == userId || n.TargetRole == "Owner");
+
+            if (!string.IsNullOrEmpty(typeFilter) && typeFilter != "All")
+                query = query.Where(n => n.Type == typeFilter);
+
+            if (!string.IsNullOrEmpty(statusFilter) && statusFilter != "All") {
+                if (statusFilter == "Read") query = query.Where(n => n.IsRead);
+                else if (statusFilter == "Unread") query = query.Where(n => !n.IsRead);
+            }
+
+            if (!string.IsNullOrEmpty(search))
+                query = query.Where(n => n.Message.Contains(search));
+
+            var totalCount = query.Count();
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+            var unreadCount = _context.Notifications
+                .Count(n => (n.TargetUserId == userId || n.TargetRole == "Owner") && !n.IsRead);
+
+            var notifications = query
+                .OrderByDescending(n => n.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(n => new NotificationDto {
+                    NotificationId = n.NotificationID,
+                    Message = n.Message,
+                    Type = n.Type,
+                    CreatedAt = n.CreatedAt,
+                    IsRead = n.IsRead,
+                    RedirectUrl = n.RedirectUrl
+                }).ToList();
+
+            return Ok(new NotificationListResponse {
+                Items = notifications,
+                CurrentPage = page,
+                TotalPages = totalPages,
+                TotalCount = totalCount,
+                PageSize = pageSize,
+                UnreadCount = unreadCount
+            });
+        }
+
+        [HttpGet("unread-count")]
+        [EndpointSummary("Get unread count")]
+        [EndpointDescription("Returns the total number of unread notifications for the authenticated owner.")]
+        [ProducesResponseType(typeof(ApiResponse<UnreadCountResponse>), StatusCodes.Status200OK)]
+        public IActionResult GetUnreadCount() {
+            var userId = User.GetUserId();
+
+            var count = _context.Notifications
+                .Count(n => (n.TargetUserId == userId || n.TargetRole == "Owner") && !n.IsRead);
+
+            return Ok(new ApiResponse<UnreadCountResponse> {
+                Success = true,
+                Data = new UnreadCountResponse { UnreadCount = count }
+            });
+        }
+
+        [HttpPut("{id}/read")]
+        [EndpointSummary("Mark notification as read")]
+        [EndpointDescription("Mark a single notification as read by its ID.")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+        public IActionResult MarkAsRead(int id) {
+            var userId = User.GetUserId();
+
+            var notif = _context.Notifications
+                .FirstOrDefault(n => n.NotificationID == id &&
+                    (n.TargetUserId == userId || n.TargetRole == "Owner"));
+
+            if (notif == null)
+                return NotFound(new ApiErrorResponse { Message = "Notification not found." });
+
+            notif.IsRead = true;
+            _context.SaveChanges();
+
+            return Ok(new ApiResponse { Success = true, Message = "Notification marked as read." });
+        }
+
+        [HttpPut("read-all")]
+        [EndpointSummary("Mark all as read")]
+        [EndpointDescription("Mark all unread notifications as read for the authenticated owner.")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public IActionResult MarkAllAsRead() {
+            var userId = User.GetUserId();
+
+            var unread = _context.Notifications
+                .Where(n => (n.TargetUserId == userId || n.TargetRole == "Owner") && !n.IsRead)
+                .ToList();
+
+            if (!unread.Any())
+                return Ok(new ApiResponse { Success = true, Message = "No unread notifications." });
+
+            foreach (var n in unread)
+                n.IsRead = true;
+
+            _context.SaveChanges();
+
+            return Ok(new ApiResponse { Success = true, Message = $"Marked {unread.Count} notification(s) as read." });
+        }
+    }
+}

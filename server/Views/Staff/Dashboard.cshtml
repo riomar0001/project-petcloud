@@ -1,0 +1,291 @@
+@model PetCloud.Models.DashboardViewModel
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
+    ViewBag.Title = "Dashboard";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <h2>Dashboard</h2>
+    <p>Overview of all your pets and clinic activities</p>
+</div>
+
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-people-fill"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value" id="usersCount">@Model.TotalUsers</div>
+            <a href="/Staff/Users" class="see-details">See details <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-calendar-check-fill"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Total Appointments</div>
+            <div class="stat-value" id="appointmentsCount">@Model.TotalAppointments</div>
+            <a href="/Staff/Appointments" class="see-details">See details <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-heart-fill"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Total Pets</div>
+            <div class="stat-value" id="petsCount">@Model.TotalPets</div>
+            <a href="/Staff/Pets" class="see-details">See details <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="bi bi-clipboard2-pulse-fill"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Total Services</div>
+            <div class="stat-value" id="servicesCount">@Model.TotalCategory</div>
+            <a href="/Staff/ServiceCategory" class="see-details">See details <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="dashboard-content">
+    <div class="content-grid">
+        <!-- Chart Section -->
+        <div class="chart-card-modern">
+            <div class="chart-header">
+                <h5>Overview</h5>
+                <div class="chart-actions">
+                    <select id="dataType" class="select-modern">
+                        <option value="Users">Users</option>
+                        <option value="Appointments">Appointments</option>
+                        <option value="Pets">Pets</option>
+                    </select>
+                    <select id="yearSelect" class="select-modern">
+                        @foreach (var year in Model.Years)
+                        {
+                            <option value="@year" selected="@(year == DateTime.Now.Year ? "selected" : null)">@year</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="chart-legend">
+                <div class="legend-item">
+                    <span class="dot green"></span>
+                    <span>Current Period</span>
+                </div>
+                <div class="legend-item">
+                    <span class="dot light-green"></span>
+                    <span>Previous Period</span>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Appointment List -->
+        <div class="appointment-list-card">
+            <div class="appointment-list-header">
+                <h5>Recent Activity</h5>
+                <button class="btn btn-link p-0 text-secondary">
+                    <i class="bi bi-three-dots"></i>
+                </button>
+            </div>
+            <div class="appointment-list" id="appointmentList">
+                <!-- Will be populated by JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notifications Table -->
+<div class="table-card-modern">
+    <div class="table-header">
+        <h5>Recent Notifications</h5>
+        <div class="d-flex align-items-center gap-3">
+            <div class="table-search">
+                <i class="bi bi-search"></i>
+                <input type="text" placeholder="Search..." id="searchNotif" />
+            </div>
+            <div class="table-filters">
+                <button class="btn-filter">
+                    <i class="bi bi-funnel"></i>
+                    Filter
+                </button>
+                <select class="status-dropdown" id="statusFilter">
+                    <option value="">All types</option>
+                    <option value="User">User</option>
+                    <option value="Pet">Pet</option>
+                    <option value="Appointment">Appointment</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table-modern">
+            <thead>
+                <tr>
+                    <th style="width: 40px;"><input type="checkbox" /></th>
+                    <th>Message</th>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="notificationList">
+                <!-- Will be populated by JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        let chart;
+        function loadMonthlyData(type, year) {
+            $.getJSON('/Staff/GetMonthlyTotals', { type: type, year: year }, function (data) {
+                const labels = data.map(d => d.month);
+                const counts = data.map(d => d.count);
+                const ctx = document.getElementById('monthlyChart').getContext('2d');
+                if (chart) chart.destroy();
+
+                chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: type,
+                            data: counts,
+                            backgroundColor: '#10B981',
+                            borderRadius: 6,
+                            borderSkipped: false,
+                            maxBarThickness: 40
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#fff',
+                                titleColor: '#1F2937',
+                                bodyColor: '#6B7280',
+                                borderColor: '#E5E7EB',
+                                borderWidth: 1,
+                                padding: 12,
+                                cornerRadius: 8,
+                                displayColors: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: '#F3F4F6', drawBorder: false },
+                                ticks: { color: '#9CA3AF', font: { size: 12 } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#9CA3AF', font: { size: 12 } }
+                            }
+                        }
+                    }
+                });
+            });
+        }
+
+        function loadRecentActivity() {
+            $.getJSON('/Staff/GetNotifications', function (data) {
+                const notifications = data.notifications || [];
+                const listContainer = $('#appointmentList');
+                listContainer.empty();
+
+                if (notifications.length === 0) {
+                    listContainer.html('<div class="text-center text-muted p-4">No recent activity</div>');
+                    return;
+                }
+
+                notifications.slice(0, 6).forEach(n => {
+                    let iconClass = n.type === 'User' ? 'bi-person-fill' : n.type === 'Pet' ? 'bi-heart-fill' : 'bi-calendar-check-fill';
+                    listContainer.append(`
+                        <div class="appointment-item">
+                            <div class="pet-icon"><i class="bi ${iconClass}"></i></div>
+                            <div class="appointment-info">
+                                <div class="pet-name">${n.type} Activity</div>
+                                <div class="appointment-type">${n.message.substring(0, 40)}${n.message.length > 40 ? '...' : ''}</div>
+                            </div>
+                            <div class="appointment-time"><div class="appointment-date">${n.createdAt}</div></div>
+                        </div>
+                    `);
+                });
+            });
+        }
+
+        function loadNotifications() {
+            $.getJSON('/Staff/GetNotifications', function (data) {
+                const notifications = data.notifications || [];
+                const tableBody = $("#notificationList");
+                tableBody.empty();
+
+                if (notifications.length === 0) {
+                    tableBody.append(`<tr><td colspan="5" class="text-center text-muted py-4">No notifications</td></tr>`);
+                    return;
+                }
+
+                notifications.forEach(n => {
+                    const statusClass = n.isRead ? 'completed' : 'pending';
+                    const statusText = n.isRead ? 'Read' : 'Unread';
+                    let iconClass = n.type === 'User' ? 'bi-person-fill' : n.type === 'Pet' ? 'bi-heart-fill' : 'bi-calendar-check-fill';
+
+                    tableBody.append(`
+                        <tr data-type="${n.type}">
+                            <td><input type="checkbox" /></td>
+                            <td><div class="pet-cell"><div class="pet-icon"><i class="bi ${iconClass}"></i></div><span>${n.message}</span></div></td>
+                            <td>${n.type}</td>
+                            <td>${n.createdAt}</td>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        </tr>
+                    `);
+                });
+            });
+        }
+
+        $("#dataType, #yearSelect").change(function () {
+            loadMonthlyData($("#dataType").val(), $("#yearSelect").val());
+        });
+
+        $('#searchNotif').on('input', function () {
+            const searchText = $(this).val().toLowerCase();
+            $('#notificationList tr').each(function () {
+                $(this).toggle($(this).text().toLowerCase().includes(searchText));
+            });
+        });
+
+        $('#statusFilter').change(function () {
+            const filterType = $(this).val();
+            $('#notificationList tr').each(function () {
+                if (!filterType) $(this).show();
+                else $(this).toggle($(this).data('type') === filterType);
+            });
+        });
+
+        loadMonthlyData("Users", new Date().getFullYear());
+        loadRecentActivity();
+        loadNotifications();
+    });
+</script>
+

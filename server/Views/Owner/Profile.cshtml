@@ -1,0 +1,356 @@
+
+@model PetCloud.Models.User
+@{
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
+    ViewBag.Title = "My Profile";
+
+    var connectedEmail = TempData["ConnectedEmail"] as string ?? Context.Session.GetString("MicrosoftEmail");
+    var showDisconnectToast = TempData["MicrosoftDisconnected"] as bool? ?? false;
+}
+
+<div class="p-4">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-modern mb-3">
+        <a href="@Url.Action("Dashboard", "Owner")">Dashboard</a>
+        <span class="separator">/</span>
+        <span class="current">My Profile</span>
+    </div>
+
+    <!-- Toast -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
+        <div id="messageToast" class="toast align-items-center text-white border-0 toast-modern" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fw-semibold"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column - Photo & Calendar -->
+        <div class="col-lg-4">
+            <!-- Profile Photo Card -->
+            <div class="card-accent mb-4">
+                <div class="p-4 text-center">
+                    <div class="pet-profile-preview mb-0" style="border:none; background:transparent;">
+                        <img id="profilePreview"
+                             src="@Url.Content(Model.ProfileImage ?? "~/uploads/profiles/pet.png")"
+                             onerror="this.onerror=null;this.src='@Url.Content("~/uploads/profiles/pet.png")';" />
+                        <div class="pet-name">@Model.FirstName @Model.LastName</div>
+                        <div class="pet-breed">@Model.Email</div>
+                    </div>
+
+                    <form id="photoForm" asp-action="EditOwnerPhoto" asp-controller="Owner" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.UserID" />
+                        <div class="mt-3">
+                            <label class="btn-modern-secondary btn-sm w-100" style="cursor:pointer;">
+                                <i class="bi bi-camera"></i> Choose New Photo
+                                <input type="file" name="ProfileImage" class="d-none" accept="image/*" onchange="previewImage(event)" />
+                            </label>
+                        </div>
+                        <button type="button" class="btn-modern-primary btn-sm w-100 mt-2" onclick="confirmPhotoUpdate()">
+                            <i class="bi bi-upload"></i> Update Photo
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Microsoft Calendar Card -->
+            <div class="card-accent">
+                <div class="p-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="stats-icon-box info" style="width:36px;height:36px;">
+                            <i class="bi bi-calendar2-week" style="font-size:1rem;"></i>
+                        </div>
+                        <h6 class="fw-bold mb-0">Microsoft Calendar</h6>
+                    </div>
+
+                    <button id="connectCalendarBtn"
+                            class="@((!string.IsNullOrEmpty(connectedEmail)) ? "btn-modern-success" : "btn-modern-secondary") w-100 mb-2"
+                            onclick="connectCalendar()">
+                        <i class="bi bi-microsoft"></i>
+                        @((!string.IsNullOrEmpty(connectedEmail)) ? "Connected" : "Connect to Microsoft")
+                    </button>
+
+                    <div id="connectedEmailContainer" class="mt-2">
+                        @if (!string.IsNullOrEmpty(connectedEmail))
+                        {
+                            <div class="info-item-modern text-center">
+                                <div class="info-label justify-content-center"><i class="bi bi-check-circle-fill me-1"></i> Connected as</div>
+                                <div class="info-value" style="font-size:0.875rem;">@connectedEmail</div>
+                            </div>
+                        }
+                        else
+                        {
+                            <small id="connectedEmail" class="text-muted d-block text-center">No account connected</small>
+                        }
+                    </div>
+
+                    <button id="disconnectCalendarBtn" class="btn-modern-danger btn-sm w-100 mt-3" onclick="disconnectCalendar()">
+                        <i class="bi bi-box-arrow-right"></i> Disconnect
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Basic Info & Password -->
+        <div class="col-lg-8">
+            <div class="card-accent">
+                <div class="p-4">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="stats-icon-box primary">
+                            <i class="bi bi-pencil-square"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Basic Information</h5>
+                            <small class="text-muted">Update your personal details</small>
+                        </div>
+                    </div>
+
+                    <form id="profileForm" asp-action="EditOwnerDetails" asp-controller="Owner" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.UserID" />
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label><i class="bi bi-hash me-2"></i> User ID</label>
+                                    <input type="text" class="form-control form-control-modern" value="@Model.UserID" disabled />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label><i class="bi bi-envelope me-2"></i> Email</label>
+                                    <input type="email" class="form-control form-control-modern" value="@Model.Email" disabled />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label><i class="bi bi-person me-2"></i> First Name</label>
+                                    <input type="text" name="FirstName" id="FirstName" class="form-control form-control-modern" value="@Model.FirstName" required />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label><i class="bi bi-person me-2"></i> Last Name</label>
+                                    <input type="text" name="LastName" id="LastName" class="form-control form-control-modern" value="@Model.LastName" required />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group-modern">
+                                    <label><i class="bi bi-phone me-2"></i> Phone</label>
+                                    <input type="tel" name="Phone" id="Phone" class="form-control form-control-modern"
+                                           value="@Model.Phone" placeholder="e.g. 09123456789"
+                                           inputmode="numeric" pattern="[0-9]{11}" minlength="11" maxlength="11" required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <div class="stats-icon-box warning" style="width:36px;height:36px;">
+                                <i class="bi bi-shield-lock" style="font-size:1rem;"></i>
+                            </div>
+                            <h6 class="fw-bold mb-0">Change Password</h6>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="form-group-modern">
+                                    <label>Current Password</label>
+                                    <input type="password" name="CurrentPassword" id="CurrentPassword" class="form-control form-control-modern" placeholder="Current password" />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group-modern">
+                                    <label>New Password</label>
+                                    <input type="password" name="Password" id="Password" class="form-control form-control-modern" placeholder="New password" />
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group-modern">
+                                    <label>Confirm Password</label>
+                                    <input type="password" name="ConfirmPassword" id="ConfirmPassword" class="form-control form-control-modern" placeholder="Confirm password" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="formErrors" class="text-danger mb-3"></div>
+
+                        <div class="d-flex justify-content-end mt-4">
+                            <button type="button" class="btn-modern-primary" onclick="confirmProfileUpdate()">
+                                <i class="bi bi-check-circle"></i> Update Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade modal-modern" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="confirmModalLabel"><i class="bi bi-question-circle"></i> Confirmation</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <p class="fw-semibold mb-0" id="confirmModalMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modern-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirmModalBtn" class="btn-modern-primary">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById("Phone").addEventListener("input", function () {
+        this.value = this.value.replace(/\D/g, '');
+        if (this.value.length > 11) this.value = this.value.slice(0, 11);
+    });
+
+    function getAntiForgeryToken(form) {
+        const tokenEl = (form ? $(form) : $(document)).find('input[name="__RequestVerificationToken"]');
+        return tokenEl.length ? tokenEl.val() : null;
+    }
+
+    function appendAntiForgeryToken(formData, form) {
+        const token = getAntiForgeryToken(form);
+        if (token) formData.append('__RequestVerificationToken', token);
+        return token;
+    }
+
+    function previewImage(event) {
+        const reader = new FileReader();
+        reader.onload = () => document.getElementById('profilePreview').src = reader.result;
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function showToast(message, isSuccess = true) {
+        const toastEl = $('#messageToast');
+        const toastBody = toastEl.find('.toast-body');
+        toastBody.text(message);
+        toastEl.removeClass('bg-success bg-danger toast-success toast-danger')
+            .addClass(isSuccess ? 'bg-success toast-success' : 'bg-danger toast-danger');
+        new bootstrap.Toast(toastEl[0], { delay: 3000 }).show();
+    }
+
+    function confirmAction(message, callback) {
+        const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+        $('#confirmModalMessage').text(message);
+        $('#confirmModalBtn').off('click').on('click', function () {
+            modal.hide();
+            callback();
+        });
+        modal.show();
+    }
+
+    async function postWithAntiforgery(url, form, formData) {
+        const token = appendAntiForgeryToken(formData, form);
+        const response = await fetch(url, {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin',
+            headers: token ? { 'RequestVerificationToken': token } : {}
+        });
+        if (!response.ok) {
+            const text = await response.text();
+            throw new Error(`Bad Request (${response.status}): ${text}`);
+        }
+        return await response.json();
+    }
+
+    function confirmProfileUpdate() {
+        const formEl = $('#profileForm')[0];
+        const formData = new FormData(formEl);
+        confirmAction("Are you sure you want to update your profile?", async function () {
+            try {
+                const data = await postWithAntiforgery('/Owner/EditOwnerDetails', formEl, formData);
+                showToast(data.message, data.success);
+                if (data.success) {
+                    $("#Password, #ConfirmPassword, #CurrentPassword").val('');
+                    setTimeout(() => location.reload(), 2000);
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("Something went wrong while saving.", false);
+            }
+        });
+        return false;
+    }
+
+    function confirmPhotoUpdate() {
+        const formEl = $('#photoForm')[0];
+        const formData = new FormData(formEl);
+        confirmAction("Are you sure you want to update your profile photo?", async function () {
+            try {
+                const data = await postWithAntiforgery('/Owner/EditOwnerPhoto', formEl, formData);
+                showToast(data.message, data.success);
+                if (data.success && data.profileImageUrl) {
+                    $("#profilePreview").attr('src', data.profileImageUrl);
+                    refreshSidebarProfileImage();
+                    setTimeout(() => location.reload(), 2000);
+                }
+            } catch (err) {
+                console.error(err);
+                showToast("Something went wrong while uploading photo.", false);
+            }
+        });
+    }
+
+    function refreshSidebarProfileImage() {
+        fetch('/Account/RefreshProfileImage', { method: 'POST', credentials: 'same-origin' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.image) {
+                    const sidebarImg = document.querySelector("#sidebarProfileImg");
+                    if (sidebarImg) sidebarImg.src = `/uploads/profiles/${data.image}`;
+                }
+            });
+    }
+
+    function connectCalendar() {
+        confirmAction("Are you sure you want to connect your Microsoft Calendar?", function () {
+            window.location.href = "/Account/ConnectMicrosoft?returnUrl=/Owner/Profile";
+        });
+    }
+
+    function disconnectCalendar() {
+        confirmAction("Are you sure you want to disconnect your Microsoft Calendar?", function () {
+            window.location.href = "/Account/LogoutMicrosoft";
+        });
+    }
+
+    $(document).ready(function () {
+        const connectedEmail = '@connectedEmail';
+        const showDisconnectToast = '@(showDisconnectToast ? "true" : "false")' === 'true';
+        const showConnectedToast = '@(ViewBag.MicrosoftConnected ? "true" : "false")' === 'true';
+        const showNotConnectedToast = '@(TempData["MicrosoftNotConnected"] != null ? "true" : "false")' === 'true';
+
+        if (connectedEmail) {
+            $("#connectCalendarBtn")
+                .text("Connected")
+                .removeClass("btn-modern-secondary")
+                .addClass("btn-modern-success")
+                .prepend('<i class="bi bi-check-circle me-1"></i> ');
+        }
+
+        if (showConnectedToast) showToast("Microsoft Calendar connected successfully!");
+        if (showDisconnectToast) {
+            showToast("Microsoft Calendar disconnected successfully.", false);
+            $("#connectCalendarBtn")
+                .text("Connect to Microsoft")
+                .removeClass("btn-modern-success")
+                .addClass("btn-modern-secondary");
+            $("#connectedEmailContainer").html(`<small class="text-muted d-block text-center">No account connected</small>`);
+        }
+        if (showNotConnectedToast) showToast("No connected account to disconnect.", false);
+    });
+</script>

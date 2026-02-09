@@ -1,0 +1,95 @@
+@model PetCloud.Models.AppointmentGroupViewModel
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
+    ViewBag.Title = "Appointment Details";
+}
+<div class="p-2">
+    <a href="@Url.Action("ManageAppointments", "Staff")"
+       class="btn btn-sm btn-view d-flex align-items-center justify-content-center"
+       style="background-color:#FFAE34; border-radius:10px; width:36px; height:36px; font-size:20px;">
+        <i class="bi bi-chevron-left text-black" style="position: relative; top: 2px;"></i>
+    </a>
+</div>
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <p><strong> Time:</strong> @Model.GroupTime.ToString("yyyy-MM-dd HH:mm")</p>
+                <p><strong> Pets:</strong> @Model.PetNames</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong> Owner:</strong> @Model.Owners</p>
+                <p><strong> Notes:</strong> @Model.Notes</p>
+            </div>
+        </div>
+
+        <hr />
+
+        <div class="table-responsive">
+            <table class="table align-middle text-center border">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Pet</th>
+                        <th>Subtype</th>
+                        <th>Category</th>
+                        <th>Administered By</th>
+                        <th>Date</th>
+                        <th>Next Due</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Appointments != null && Model.Appointments.Any())
+                    {
+                        foreach (var appt in Model.Appointments)
+                        {
+                            <tr>
+                                <td>@appt.AppointmentID</td>
+                                <td>@appt.Pet?.Name</td>
+                                <td>@appt.ServiceSubtype?.ServiceSubType</td>
+                                <td>@appt.ServiceCategory?.ServiceType</td>
+                                <td>@appt.AdministeredBy</td>
+                                <td>@appt.AppointmentDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>
+                                    @if (appt.ServiceCategory.ServiceType == "Vaccination" ||
+                                                                appt.ServiceCategory.ServiceType == "Deworming & Preventives")
+                                    {
+                                        @(appt.DueDate.HasValue? appt.DueDate.Value.ToString("yyyy-MM-dd") : "-")
+                                    }
+                                    else
+                                    {
+                                        @("N/A")
+                                    }
+                                </td>
+
+                                <td>
+                                    @{
+                                        var statusClass = appt.Status switch
+                                        {
+                                            "Pending" => "bg-primary",
+                                            "Completed" => "bg-success",
+                                            "Cancelled" => "bg-danger",
+                                            "Missed" => "bg-danger",
+                                            _ => "bg-info"
+                                        };
+                                    }
+                                    <span class="badge @statusClass text-white">
+                                        @appt.Status
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-muted">No appointments found in this group.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

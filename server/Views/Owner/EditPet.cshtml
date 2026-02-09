@@ -1,0 +1,341 @@
+@model PetCloud.Models.Pet
+@{
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
+    ViewBag.Title = "Edit Pet";
+    string fallback = Url.Content("~/uploads/profiles/pet.png");
+    var photo = string.IsNullOrEmpty(Model.PhotoPath) ? fallback : Url.Content(Model.PhotoPath);
+    var petTypeIcon = Model.Type == "Dog" ? "🐕" : Model.Type == "Cat" ? "🐈" : "🐾";
+}
+
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <h2><i class="bi bi-pencil-square"></i>Edit Pet</h2>
+    <p>Update information for @Model.Name</p>
+</div>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb-modern mb-4">
+    <a href="@Url.Action("Pets", "Owner")"><i class="bi bi-grid me-1"></i>My Pets</a>
+    <span class="separator">/</span>
+    <a href="@Url.Action("ViewPet", "Owner", new { id = Model.PetID })">@Model.Name</a>
+    <span class="separator">/</span>
+    <span class="current">Edit</span>
+</div>
+
+<!-- Toast Notification -->
+<div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
+    <div id="messageToast" class="toast toast-modern align-items-center text-white border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body d-flex align-items-center gap-2">
+                <i class="bi" id="toastIcon"></i>
+                <span id="toastMessage"></span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Pet Preview Card -->
+    <div class="col-lg-4">
+        <div class="page-card-modern">
+            <div class="card-header-modern">
+                <h6><i class="bi bi-image me-2"></i>PET PREVIEW</h6>
+            </div>
+            <div class="card-body p-4">
+                <div class="pet-profile-preview">
+                    <img id="profilePreview" src="@photo" alt="@Model.Name"
+                         onerror="this.onerror=null;this.src='@fallback';" />
+                    <div class="pet-name" id="previewName">@Model.Name</div>
+                    <div class="pet-breed" id="previewBreed">@petTypeIcon @Model.Type • @Model.Breed</div>
+                </div>
+                
+                <div class="photo-upload-container mt-4" id="uploadContainer">
+                    <i class="bi bi-cloud-arrow-up photo-upload-icon"></i>
+                    <p class="photo-upload-text mb-2">
+                        <strong>Click to upload</strong> or drag and drop
+                    </p>
+                    <small class="text-muted">PNG, JPG up to 5MB (min 300x300px)</small>
+                    <input type="file" name="Photo" accept="image/*" id="photoInput" form="editPetForm" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pet Information Form -->
+    <div class="col-lg-8">
+        <div class="page-card-modern">
+            <div class="card-header-modern">
+                <h6><i class="bi bi-clipboard-data me-2"></i>PET INFORMATION</h6>
+            </div>
+            <div class="card-body p-4">
+                <form id="editPetForm" method="post" enctype="multipart/form-data" action="@Url.Action("EditPet", "Owner")">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.PetID" />
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-group-modern">
+                                <label class="required">
+                                    <i class="bi bi-tag-fill me-2"></i>
+                                    Pet Name
+                                </label>
+                                <input type="text" name="Name" id="nameInput" value="@Model.Name" 
+                                       class="form-control form-control-modern" placeholder="Enter pet's name" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group-modern">
+                                <label class="required">
+                                    <i class="bi bi-gender-ambiguous me-2"></i>
+                                    Pet Type
+                                </label>
+                                <select name="Type" id="typeSelect" class="form-select form-select-modern">
+                                    <option value="">-- Select Type --</option>
+                                    <option value="Dog" selected="@(Model.Type == "Dog" ? "selected" : null)">🐕 Dog</option>
+                                    <option value="Cat" selected="@(Model.Type == "Cat" ? "selected" : null)">🐈 Cat</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group-modern">
+                                <label class="required">
+                                    <i class="bi bi-bookmark-fill me-2"></i>
+                                    Breed
+                                </label>
+                                <select name="Breed" id="breedSelect" class="form-select form-select-modern">
+                                    <option value="@Model.Breed">@Model.Breed</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group-modern">
+                                <label class="required">
+                                    <i class="bi bi-calendar-heart me-2"></i>
+                                    Birthdate
+                                </label>
+                                <input type="date" name="Birthdate" id="birthdateInput"
+                                       value="@Model.Birthdate.ToString("yyyy-MM-dd")"
+                                       class="form-control form-control-modern"
+                                       max="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="formErrors" class="alert-modern alert-danger mt-3" style="display: none;"></div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="@Url.Action("Pets", "Owner")" class="btn-modern-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Pets
+                        </a>
+                        <button type="submit" class="btn-modern-warning">
+                            <i class="bi bi-check-circle me-1"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal fade modal-modern modal-warning" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">
+                    <i class="bi bi-pencil-square"></i>
+                    Confirm Changes
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-3">
+                    <i class="bi bi-question-circle display-1 text-warning opacity-75"></i>
+                </div>
+                <p class="fw-semibold fs-5 mb-2">Save changes to this pet?</p>
+                <small class="text-muted">All modifications will be updated</small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modern-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i> Cancel
+                </button>
+                <button type="button" id="confirmSaveBtn" class="btn-modern-warning">
+                    <i class="bi bi-check2-circle me-1"></i> Yes, Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Store model values before Select2 initialization
+            const modelType = '@Model.Type';
+            const modelBreed = '@Model.Breed';
+
+            // Initialize Select2
+            $('#typeSelect, #breedSelect').select2({
+                placeholder: "-- Select --",
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Set type value and load breeds
+            if (modelType) {
+                $('#typeSelect').val(modelType).trigger('change.select2');
+                loadBreeds(modelType, modelBreed);
+            }
+
+            // Update preview name in real-time
+            $('#nameInput').on('input', function() {
+                const name = $(this).val().trim() || 'Pet Name';
+                $('#previewName').text(name);
+            });
+
+            // Load breeds when type changes
+            $('#typeSelect').on('change', function () {
+                const type = $(this).val();
+                loadBreeds(type, null);
+                updatePreviewBreed();
+            });
+
+            // Update preview when breed changes
+            $('#breedSelect').on('change', function() {
+                updatePreviewBreed();
+            });
+
+            function loadBreeds(type, selectedBreed) {
+                const breedSelect = $('#breedSelect');
+                breedSelect.empty().append('<option value="">-- Select Breed --</option>');
+
+                if (!type) return;
+
+                $.ajax({
+                    url: '@Url.Action("GetBreeds", "Owner")',
+                    type: 'GET',
+                    data: { type: type },
+                    success: function (breeds) {
+                        $.each(breeds, function (i, breed) {
+                            breedSelect.append('<option value="' + breed + '">' + breed + '</option>');
+                        });
+                        if (selectedBreed) {
+                            breedSelect.val(selectedBreed).trigger('change.select2');
+                        }
+                    }
+                });
+            }
+
+            function updatePreviewBreed() {
+                const type = $('#typeSelect').val();
+                const breed = $('#breedSelect').val();
+                const icon = type === 'Dog' ? '🐕' : type === 'Cat' ? '🐈' : '🐾';
+                if (type && breed) {
+                    $('#previewBreed').text(icon + ' ' + type + ' • ' + breed);
+                } else if (type) {
+                    $('#previewBreed').text(icon + ' ' + type + ' • Select breed');
+                } else {
+                    $('#previewBreed').text('Select type and breed');
+                }
+            }
+
+            // Toast function
+            function showToast(message, isSuccess) {
+                const toastEl = $('#messageToast');
+                const toastMessage = $('#toastMessage');
+                const toastIcon = $('#toastIcon');
+                
+                toastMessage.text(message);
+                toastIcon.removeClass().addClass('bi ' + (isSuccess ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'));
+                toastEl.removeClass('toast-success toast-danger').addClass(isSuccess ? 'toast-success' : 'toast-danger');
+                
+                new bootstrap.Toast(toastEl[0], { delay: 3000 }).show();
+            }
+
+            // Photo upload handling
+            const uploadContainer = $('#uploadContainer');
+            const photoInput = $('#photoInput');
+            const profilePreview = $('#profilePreview');
+            
+            uploadContainer.on('dragover', function(e) {
+                e.preventDefault();
+                $(this).addClass('drag-over');
+            });
+            
+            uploadContainer.on('dragleave drop', function(e) {
+                e.preventDefault();
+                $(this).removeClass('drag-over');
+            });
+            
+            uploadContainer.on('drop', function(e) {
+                const files = e.originalEvent.dataTransfer.files;
+                if (files.length) {
+                    photoInput[0].files = files;
+                    photoInput.trigger('change');
+                }
+            });
+
+            photoInput.on("change", function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        profilePreview.attr("src", event.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Form submission
+            $('#editPetForm').submit(function (e) {
+                e.preventDefault();
+                
+                const name = $('#nameInput').val().trim();
+                const type = $('#typeSelect').val();
+                if (!name || !type) {
+                    $('#formErrors').text('Name and Type are required.').show();
+                    return;
+                }
+                $('#formErrors').hide();
+
+                const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+                modal.show();
+
+                $('#confirmSaveBtn').off('click').on('click', function () {
+                    const btn = $(this);
+                    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Saving...');
+                    
+                    modal.hide();
+                    const formData = new FormData(document.getElementById('editPetForm'));
+
+                    $.ajax({
+                        url: '@Url.Action("EditPet", "Owner")',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (res) {
+                            showToast(res.message, res.success);
+                            if (res.success) {
+                                setTimeout(() => {
+                                    window.location.href = '@Url.Action("Pets", "Owner")';
+                                }, 1200);
+                            }
+                            btn.prop('disabled', false).html('<i class="bi bi-check2-circle me-1"></i> Yes, Save Changes');
+                        },
+                        error: function () {
+                            showToast("Something went wrong while saving.", false);
+                            btn.prop('disabled', false).html('<i class="bi bi-check2-circle me-1"></i> Yes, Save Changes');
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+}

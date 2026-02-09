@@ -1,0 +1,198 @@
+@{
+    ViewBag.Title = "Login";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PetCloud | Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="/css/auth-modern.css" rel="stylesheet" />
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body>
+    <div class="auth-page">
+        <!-- Left Side - Branding -->
+        <div class="auth-branding">
+            <div class="auth-branding-content">
+                <div class="auth-logo">
+                    <div class="logo-icon">
+                        <img src="~/images/PetCloud.png" alt="PetCloud" />
+                    </div>
+                    <h1>PetCloud</h1>
+                </div>
+                
+                <h2 class="auth-headline">
+                    Welcome to <span>PetCloud</span><br/>
+                    Pet Care Clinic
+                </h2>
+                <p class="auth-subtext">
+                    Your trusted partner in pet healthcare. Manage appointments, track vaccinations, and keep your furry friends healthy.
+                </p>
+                
+                <div class="auth-features">
+                    <div class="auth-feature">
+                        <div class="feature-icon">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <span>Easy appointment scheduling</span>
+                    </div>
+                    <div class="auth-feature">
+                        <div class="feature-icon">
+                            <i class="bi bi-heart-pulse"></i>
+                        </div>
+                        <span>Complete health records</span>
+                    </div>
+                    <div class="auth-feature">
+                        <div class="feature-icon">
+                            <i class="bi bi-bell"></i>
+                        </div>
+                        <span>Vaccination reminders</span>
+                    </div>
+                </div>
+                
+                <div class="auth-illustration">
+                    <img src="~/images/golden.png" alt="Happy Pet" />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Side - Login Form -->
+        <div class="auth-form-container">
+            <div class="auth-card">
+                <div class="auth-card-header">
+                    <h2>Sign In</h2>
+                    <p>Welcome back! Please enter your details.</p>
+                </div>
+                
+                <form id="loginForm" class="auth-form">
+                    @Html.AntiForgeryToken()
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <div class="input-icon-wrapper">
+                            <i class="bi bi-envelope input-icon"></i>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" style="padding-left: 48px;" />
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" />
+                            <button type="button" class="password-toggle" id="togglePassword">
+                                <i class="bi bi-eye" id="eyeIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <a href="/Account/ForgotPassword" class="forgot-link">Forgot password?</a>
+                    
+                    <div class="recaptcha-container">
+                        <div class="g-recaptcha" data-sitekey="6LeHpBosAAAAAOT3RVMuW-M-5BwRoyKKAII748QC"></div>
+                    </div>
+                    
+                    <button type="submit" class="btn-auth-primary">
+                        <span>Sign In</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+                </form>
+                
+                <div class="auth-footer">
+                    <p>Don't have an account? <a href="/Account/Register">Sign up</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Container -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999">
+        <div id="messageToast" class="toast align-items-center text-white border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+        $(document).ready(function () {
+            const toastEl = $('#messageToast');
+            const toastBody = toastEl.find('.toast-body');
+
+            // Password toggle
+            $("#togglePassword").click(function () {
+                const passwordField = $("#password");
+                const icon = $("#eyeIcon");
+                const isHidden = passwordField.attr("type") === "password";
+                passwordField.attr("type", isHidden ? "text" : "password");
+                icon.toggleClass("bi-eye bi-eye-slash");
+            });
+
+            // Form submission
+            $('#loginForm').submit(function (e) {
+                e.preventDefault();
+
+                const email = $('#email').val().trim();
+                const password = $('#password').val().trim();
+
+                if (email === "" || password === "") {
+                    toastBody.text("Email and password required.");
+                    toastEl.removeClass('bg-success').addClass('bg-danger');
+                    new bootstrap.Toast(toastEl[0], { delay: 3000 }).show();
+                    return;
+                }
+
+                const formData = $(this).serialize();
+                const submitBtn = $(this).find('button[type="submit"]');
+                submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Signing in...');
+
+                $.ajax({
+                    url: '@Url.Action("Login", "Account")',
+                    type: 'POST',
+                    data: formData,
+                    success: function (res) {
+                        if (res.success && res.requires2FA) {
+                            toastBody.html("Login successful! <br>Verification code sent to your email.");
+                            toastEl.removeClass('bg-danger').addClass('bg-success');
+                            new bootstrap.Toast(toastEl[0], { delay: 4000 }).show();
+                            setTimeout(() => {
+                                window.location.href = "/Account/Verify2FA?userId=" + res.userId;
+                            }, 3500);
+                        }
+                        else if (res.success) {
+                            toastBody.text("Login successful! Redirecting...");
+                            toastEl.removeClass('bg-danger').addClass('bg-success');
+                            new bootstrap.Toast(toastEl[0], { delay: 1500 }).show();
+                            setTimeout(() => {
+                                window.location.href = res.redirectUrl;
+                            }, 1200);
+                        }
+                        else {
+                            toastBody.text(res.message);
+                            toastEl.removeClass('bg-success').addClass('bg-danger');
+                            new bootstrap.Toast(toastEl[0], { delay: 3000 }).show();
+                            submitBtn.prop('disabled', false).html('<span>Sign In</span><i class="bi bi-arrow-right"></i>');
+                        }
+                    },
+                    error: function () {
+                        toastBody.text("An unexpected error occurred!");
+                        toastEl.removeClass('bg-success').addClass('bg-danger');
+                        new bootstrap.Toast(toastEl[0], { delay: 3000 }).show();
+                        submitBtn.prop('disabled', false).html('<span>Sign In</span><i class="bi bi-arrow-right"></i>');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
