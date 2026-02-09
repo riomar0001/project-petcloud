@@ -4,7 +4,7 @@ Clean, simple API layer with no Hey API dependency.
 
 ## Structure
 
-```
+```plaintext
 services/api/
 ├── client.ts           # Axios client with interceptors
 ├── types.ts            # Shared types and utilities
