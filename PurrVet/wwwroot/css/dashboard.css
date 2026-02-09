@@ -1,4 +1,4 @@
-﻿html {
+html {
     font-size: 14px;
 }
 
@@ -19,9 +19,9 @@ body {
 }
 
 :root {
-    --purrvet-orange: #f9a825;
-    --purrvet-dark: #333;
-    --purrvet-light: #fff;
+    --petcloud-orange: #f9a825;
+    --petcloud-dark: #333;
+    --petcloud-light: #fff;
 }
 
 .main-content {
@@ -158,13 +158,13 @@ body {
 }
 
 .dropdown-menu .dropdown-item:hover {
-    background-color: var(--purrvet-orange);
+    background-color: var(--petcloud-orange);
     color: #000000;
 }
 
 .btn-hamburger {
-    background-color: var(--purrvet-orange);
-    color: var(--purrvet-light);
+    background-color: var(--petcloud-orange);
+    color: var(--petcloud-light);
     border-radius: 8px;
     font-size: 1.4rem;
     line-height: 1;
@@ -175,7 +175,7 @@ body {
 .btn-hamburger:hover,
 .btn-hamburger:focus {
     background-color: #e59400;
-    color: var(--purrvet-light);
+    color: var(--petcloud-light);
 }
 
 .btn-edit {

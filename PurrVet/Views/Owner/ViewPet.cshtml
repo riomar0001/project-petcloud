@@ -1,10 +1,10 @@
-@model PurrVet.Models.PetDetailsViewModel
+@model PetCloud.Models.PetDetailsViewModel
 
 @{
     Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
     ViewBag.Title = "Pets";
 
-    var categories = ViewBag.Categories as List<PurrVet.Models.ServiceCategory>;
+    var categories = ViewBag.Categories as List<PetCloud.Models.ServiceCategory>;
     var selectedCategory = Model.CategoryFilter.HasValue
         ? categories?.FirstOrDefault(c => c.CategoryID == Model.CategoryFilter)?.ServiceType ?? "All"
         : "All";

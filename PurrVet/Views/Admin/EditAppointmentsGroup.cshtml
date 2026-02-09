@@ -1,10 +1,10 @@
-@model PurrVet.Models.AppointmentGroup
+@model PetCloud.Models.AppointmentGroup
 @using System.Text.Json
 @{
     Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
     ViewBag.Title = "Edit Group Appointments";
 
-    var simpleSubtypes = ((IEnumerable<PurrVet.Models.ServiceSubtype>)ViewBag.ServiceSubtypes)
+    var simpleSubtypes = ((IEnumerable<PetCloud.Models.ServiceSubtype>)ViewBag.ServiceSubtypes)
         .Select(s => new { s.SubtypeID, s.ServiceSubType, s.CategoryID })
         .ToList();
 

@@ -1,4 +1,4 @@
-﻿html {
+html {
   font-size: 14px;
 }
 
@@ -78,16 +78,16 @@ body {
 }
 
 :root {
-  --purrvet-primary: #10B981;
-  --purrvet-primary-dark: #059669;
-  --purrvet-primary-light: #D1FAE5;
-  --purrvet-dark: #1F2937;
-  --purrvet-light: #fff;
-  --purrvet-text-secondary: #6B7280;
-  --purrvet-border: #E5E7EB;
-  --purrvet-body-bg: #F8FAFC;
-  --purrvet-radius-sm: 8px;
-  --purrvet-radius-md: 12px;
+  --petcloud-primary: #10B981;
+  --petcloud-primary-dark: #059669;
+  --petcloud-primary-light: #D1FAE5;
+  --petcloud-dark: #1F2937;
+  --petcloud-light: #fff;
+  --petcloud-text-secondary: #6B7280;
+  --petcloud-border: #E5E7EB;
+  --petcloud-body-bg: #F8FAFC;
+  --petcloud-radius-sm: 8px;
+  --petcloud-radius-md: 12px;
 }
 
 .navbar-brand img {
@@ -110,8 +110,8 @@ body {
 }
 
 .btn-hamburger {
-  background-color: var(--purrvet-primary);
-  color: var(--purrvet-light);
+  background-color: var(--petcloud-primary);
+  color: var(--petcloud-light);
   border-radius: 8px;
   font-size: 1.4rem;
   line-height: 1;
@@ -122,8 +122,8 @@ body {
 
 .btn-hamburger:hover,
 .btn-hamburger:focus {
-  background-color: var(--purrvet-primary-dark);
-  color: var(--purrvet-light);
+  background-color: var(--petcloud-primary-dark);
+  color: var(--petcloud-light);
 }
 
 .dropdown-menu {
@@ -135,8 +135,8 @@ body {
     cursor: pointer !important;
 }
 .dropdown-menu .dropdown-item:hover {
-  background-color: var(--purrvet-primary-light);
-  color: var(--purrvet-primary);
+  background-color: var(--petcloud-primary-light);
+  color: var(--petcloud-primary);
 }
 .btn-edit {
     background-color: white;
@@ -214,7 +214,7 @@ body {
 
 .navbar-logo {
     font-weight: 700;
-    color: var(--purrvet-dark);
+    color: var(--petcloud-dark);
     margin: 0;
     font-size: 1.7rem;
 }
@@ -273,7 +273,7 @@ body {
 .home-hero {
     position: relative;
     overflow: hidden;
-    background-color: var(--purrvet-body-bg);
+    background-color: var(--petcloud-body-bg);
     padding-top: 8rem;
     padding-bottom: 4rem;
 }
@@ -286,13 +286,13 @@ body {
 .home-title {
     font-size: 3.2rem;
     line-height: 1.2;
-    color: var(--purrvet-dark);
+    color: var(--petcloud-dark);
 }
 
 .home-subtext {
     font-size: 1.25rem;
     max-width: 500px;
-    color: var(--purrvet-text-secondary);
+    color: var(--petcloud-text-secondary);
 }
 
 .home-dog {
@@ -306,13 +306,13 @@ body {
 
 .home-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-radius: var(--purrvet-radius-md);
+    border-radius: var(--petcloud-radius-md);
 }
 
     .home-card:hover {
         transform: translateY(-6px);
         box-shadow: 0 6px 18px rgba(16, 185, 129, 0.15);
-        border-bottom: 2px solid var(--purrvet-primary);
+        border-bottom: 2px solid var(--petcloud-primary);
     }
 
 .home-banner {

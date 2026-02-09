@@ -2,7 +2,7 @@
     var role = Context.Session.GetString("UserRole");
     var name = Context.Session.GetString("UserName");
     var profileImage = Context.Session.GetString("ProfileImage");
-    var userEmail = Context.Session.GetString("UserEmail") ?? "user@purrvet.com";
+    var userEmail = Context.Session.GetString("UserEmail") ?? "user@PetCloud.com";
 }
 
 <!DOCTYPE html>
@@ -32,9 +32,9 @@
     <aside class="sidebar-modern" id="sidebar">
         <div class="sidebar-logo-modern">
             <div class="logo-icon">
-                <img src="~/images/PurrVet.png" alt="PurrVet" />
+                <img src="~/images/PetCloud.png" alt="PetCloud" />
             </div>
-            <h4>PurrVet</h4>
+            <h4>PetCloud</h4>
             <button class="toggle-btn d-lg-none" id="closeSidebar">
                 <i class="bi bi-x-lg"></i>
             </button>

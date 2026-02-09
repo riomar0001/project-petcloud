@@ -1,4 +1,4 @@
-@model PurrVet.Models.Pet
+@model PetCloud.Models.Pet
 
 @{
     ViewBag.Title = "Pets";
@@ -84,7 +84,7 @@
                                 </label>
                                 <select name="OwnerID" class="form-select form-select-modern" id="ownerSelect">
                                     <option value="">-- Select Owner --</option>
-                                    @foreach (var owner in ViewBag.Owners as List<PurrVet.Models.Owner>)
+                                    @foreach (var owner in ViewBag.Owners as List<PetCloud.Models.Owner>)
                                     {
                                         <option value="@owner.OwnerID" selected="@(owner.OwnerID == Model.OwnerID ? "selected" : null)">
                                             @owner.Name (@owner.Email)

@@ -1,4 +1,4 @@
-﻿@model PurrVet.Models.PetsListViewModel
+@model PetCloud.Models.PetsListViewModel
 
 @{
     Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
@@ -58,11 +58,11 @@
 
     <div class="dropdown">
         <button class="btn dropdown-toggle" type="button" id="sortOrderBtn" data-bs-toggle="dropdown">
-            @(ViewBag.SortOrder == "desc" ? "Descending ↓" : "Ascending ↑")
+            @(ViewBag.SortOrder == "desc" ? "Descending ?" : "Ascending ?")
         </button>
         <ul class="dropdown-menu">
-            <li><a class="dropdown-item sort-order" data-order="asc" href="#">Ascending ↑</a></li>
-            <li><a class="dropdown-item sort-order" data-order="desc" href="#">Descending ↓</a></li>
+            <li><a class="dropdown-item sort-order" data-order="asc" href="#">Ascending ?</a></li>
+            <li><a class="dropdown-item sort-order" data-order="desc" href="#">Descending ?</a></li>
         </ul>
     </div>
 
