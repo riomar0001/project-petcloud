@@ -34,12 +34,12 @@ export const useAuthStore = create<AuthStore>((set) => ({
         // 2FA required - store userId and return flag
         set({
           requires2FA: true,
-          userID: result.twoFactorUserId ?? null,
+          userID: result.twoFactorUserId ?? null
         });
 
         return {
           requires2FA: true,
-          userId: result.twoFactorUserId ?? null,
+          userId: result.twoFactorUserId ?? null
         };
       } else {
         // Direct login - store tokens
@@ -54,18 +54,20 @@ export const useAuthStore = create<AuthStore>((set) => ({
           isAuthenticated: true,
           accessToken,
           refreshToken,
-          requires2FA: false,
+          requires2FA: false
         });
 
         return {
-          requires2FA: false,
+          requires2FA: false
         };
       }
     } catch (error: any) {
       if (error instanceof ApiError) {
-        console.error('❌ Login failed:', error.message);
-        console.error('Status:', error.status);
-        console.error('Errors:', error.errors);
+        console.log({
+          message: error.message,
+          status: error.status,
+          errors: error.errors
+        });
       }
       throw error;
     }
@@ -83,7 +85,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
         accessToken: null,
         refreshToken: null,
         requires2FA: false,
-        userID: null,
+        userID: null
       });
     }
   },
@@ -93,7 +95,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set({
       isAuthenticated: true,
       accessToken,
-      refreshToken,
+      refreshToken
     });
   },
 
@@ -104,7 +106,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       accessToken: null,
       refreshToken: null,
       requires2FA: false,
-      userID: null,
+      userID: null
     });
-  },
+  }
 }));
