@@ -1,32 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput } from 'react-native';
-import { AppInputProps } from '../types';
+import { Text, TextInput, View } from 'react-native';
+import { AppInputProps } from '../../types';
 
-export const AppInput: React.FC<AppInputProps> = ({
-  label,
-  error,
-  icon,
-  rightIcon,
-  containerStyle,
-  ...textInputProps
-}) => {
+export const AppInput: React.FC<AppInputProps> = ({ label, error, icon, rightIcon, containerStyle, ...textInputProps }) => {
   const [isFocused, setIsFocused] = useState(false);
 
-  const borderColor = error
-    ? 'border-red-400'
-    : isFocused
-      ? 'border-mountain-meadow-500'
-      : 'border-gray-100';
+  const borderColor = error ? 'border-red-400' : isFocused ? 'border-mountain-meadow-500' : 'border-gray-100';
 
   const bgColor = isFocused ? 'bg-white' : 'bg-gray-50';
 
   return (
     <View style={containerStyle} className="mb-4">
-      {label && (
-        <Text className="mb-1.5 text-sm font-semibold tracking-wide text-gray-700">
-          {label}
-        </Text>
-      )}
+      {label && <Text className="mb-1.5 text-sm font-semibold tracking-wide text-gray-700">{label}</Text>}
 
       <View
         className={`

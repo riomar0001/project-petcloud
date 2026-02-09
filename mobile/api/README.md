@@ -2,7 +2,7 @@
 
 Clean, simple API layer with no Hey API dependency.
 
-## 📁 Structure
+## Structure
 
 ```
 services/api/
@@ -14,7 +14,7 @@ services/api/
 └── index.ts            # Public exports
 ```
 
-## 🚀 Usage
+## Usage
 
 ### Login
 
@@ -96,9 +96,10 @@ await AuthService.logout();
 apiClient.setToken(null);
 ```
 
-## ✨ Features
+## Features
 
 ### 1. **Automatic Token Injection**
+
 ```typescript
 // Set token once
 apiClient.setToken('your-jwt-token');
@@ -108,11 +109,12 @@ apiClient.setToken('your-jwt-token');
 ```
 
 ### 2. **Zod Validation**
+
 ```typescript
 // Input validation
 AuthService.login({
-  email: 'invalid-email',  // ❌ Throws validation error
-  password: '123'          // ❌ Throws validation error
+  email: 'invalid-email',  // Throws validation error
+  password: '123'          // Throws validation error
 });
 
 // Response validation
@@ -120,6 +122,7 @@ AuthService.login({
 ```
 
 ### 3. **Clean Error Handling**
+
 ```typescript
 try {
   await AuthService.login(data);
@@ -139,15 +142,16 @@ try {
 ```
 
 ### 4. **Response Unwrapping**
+
 ```typescript
 // Your API returns: { success: true, message: "OK", data: {...} }
 // Service returns: {...} (just the data!)
 
 const result = await AuthService.login(data);
-console.log(result.accessToken);  // ✅ Direct access!
+console.log(result.accessToken);  // Direct access!
 ```
 
-## 🎨 Adding New Services
+## Adding New Services
 
 ### 1. Create Schemas
 
@@ -214,7 +218,7 @@ export { PetsService } from './pets/service';
 export type { Pet, CreatePetRequest } from './pets/schemas';
 ```
 
-## 🔧 Configuration
+## Configuration
 
 Update API base URL in `client.ts`:
 
@@ -223,7 +227,7 @@ const API_BASE_URL = 'https://your-api.com';
 const API_TIMEOUT = 30000;
 ```
 
-## 📝 Best Practices
+## Best Practices
 
 1. **Always validate inputs and outputs with Zod**
 2. **Use the ApiError class for consistent error handling**
@@ -231,17 +235,19 @@ const API_TIMEOUT = 30000;
 4. **Set tokens via apiClient.setToken() for authenticated requests**
 5. **Handle errors in UI components, not in services**
 
-## 🎯 Result
+## Result
 
 **Before (Hey API):**
+
 ```typescript
 const response = await getPets();
-const pets = response.data?.data; // 🤔 Nested confusion
+const pets = response.data?.data; // Nested confusion
 ```
 
 **After (Pure Axios):**
+
 ```typescript
-const pets = await PetsService.getPets(); // ✅ Clean and simple!
+const pets = await PetsService.getPets(); // Clean and simple!
 ```
 
-No more nested responses. No code generation. Just clean, simple TypeScript. 🎉
+No more nested responses. No code generation. Just clean, simple TypeScript.

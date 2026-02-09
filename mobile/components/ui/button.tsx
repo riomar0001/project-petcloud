@@ -1,6 +1,6 @@
 import React from 'react';
-import { TouchableOpacity, Text, ActivityIndicator, View } from 'react-native';
-import { AppButtonProps } from '../types';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { AppButtonProps } from '../../types';
 
 export const AppButton: React.FC<AppButtonProps> = ({
   title,
@@ -10,20 +10,20 @@ export const AppButton: React.FC<AppButtonProps> = ({
   disabled = false,
   icon,
   containerStyle,
-  size = 'md',
+  size = 'md'
 }) => {
   const isDisabled = disabled || loading;
 
   const sizeStyles = {
     sm: 'py-2.5 px-4',
     md: 'py-4 px-6',
-    lg: 'py-5 px-8',
+    lg: 'py-5 px-8'
   };
 
   const textSizes = {
     sm: 'text-sm',
     md: 'text-base',
-    lg: 'text-lg',
+    lg: 'text-lg'
   };
 
   const getButtonStyles = (): string => {
@@ -71,13 +71,7 @@ export const AppButton: React.FC<AppButtonProps> = ({
   const spinnerColor = variant === 'primary' ? '#FFFFFF' : '#059666';
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      disabled={isDisabled}
-      activeOpacity={0.8}
-      style={containerStyle}
-      className={getButtonStyles()}
-    >
+    <TouchableOpacity onPress={onPress} disabled={isDisabled} activeOpacity={0.8} style={containerStyle} className={getButtonStyles()}>
       {loading ? (
         <ActivityIndicator color={spinnerColor} size="small" />
       ) : (
