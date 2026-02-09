@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "PurrVet",
-    "slug": "purrvet",
+    "name": "PetCloud",
+    "slug": "petcloud",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "purrvet",
+    "scheme": "petcloud",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
