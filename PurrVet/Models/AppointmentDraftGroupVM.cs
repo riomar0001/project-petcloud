@@ -1,4 +1,4 @@
-﻿namespace PurrVet.Models {
+namespace PetCloud.Models {
     public class AppointmentDraftGroupVM {
         public string GroupDraftId { get; set; }
         public string GroupDate { get; set; }

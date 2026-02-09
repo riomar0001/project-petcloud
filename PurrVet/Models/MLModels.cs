@@ -1,6 +1,6 @@
-﻿using Microsoft.ML.Data;
+using Microsoft.ML.Data;
 
-namespace PurrVet.Services {
+namespace PetCloud.Services {
     public class ServiceDemandData {
         public int Year { get; set; }
         public int Month { get; set; }

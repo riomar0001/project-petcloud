@@ -1,4 +1,4 @@
-﻿using Microsoft.Identity.Web;
+using Microsoft.Identity.Web;
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Authentication;
 

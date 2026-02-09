@@ -1,6 +1,6 @@
-using PurrVet.DTOs.Pets;
+using PetCloud.DTOs.Pets;
 
-namespace PurrVet.DTOs.PetCards {
+namespace PetCloud.DTOs.PetCards {
     public class PetCardResponse {
         public PetListItemDto Pet { get; set; } = new();
         public string OwnerName { get; set; } = string.Empty;

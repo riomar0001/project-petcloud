@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using PurrVet.Models;
+using Microsoft.AspNetCore.Mvc;
+using PetCloud.Models;
 using System.Diagnostics;
 
-namespace PurrVet.Controllers {
+namespace PetCloud.Controllers {
     public class ErrorController : Controller {
         [Route("Error/{statusCode?}")]
         public IActionResult HandleError(int? statusCode) {

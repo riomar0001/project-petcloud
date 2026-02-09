@@ -1,7 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace PurrVet.Models {
+namespace PetCloud.Models {
     public class MicrosoftAccountConnection {
         [Key]
         public int Id { get; set; }

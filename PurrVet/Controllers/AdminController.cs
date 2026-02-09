@@ -1,21 +1,21 @@
-﻿using CsvHelper;
+using CsvHelper;
 using CsvHelper.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
-using PurrVet.Models;
-using PurrVet.Services;
+using PetCloud.Models;
+using PetCloud.Services;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using PurrVetUser = PurrVet.Models.User;
+using PetCloudUser = PurrVet.Models.User;
 
-namespace PurrVet.Controllers {
+namespace PetCloud.Controllers {
     public class AdminController : Controller {
         private readonly GraphServiceClient _graphServiceClient;
         private readonly ApplicationDbContext _context;
@@ -418,7 +418,7 @@ namespace PurrVet.Controllers {
                     var subject = $"Reminder: {petName}'s {category} appointment";
                     var htmlBody = $@"
                 <p>Hi {appointment.Pet?.Owner?.Name ?? "Pet Parent"},</p>
-                <p>This is <strong>Happy Paws Vet Clinic 🐾</strong>.</p>
+                <p>This is <strong>Happy Paws Vet Clinic ??</strong>.</p>
                 <p>Reminder for <strong>{petName}'s</strong> {category} appointment:</p>
                 <p><b>{date}</b></p>
                 <p>See you soon!</p>
@@ -1426,7 +1426,7 @@ namespace PurrVet.Controllers {
                             var phone = pet.Owner?.Phone;
                             var email = pet.Owner?.Email;
                             if (string.IsNullOrWhiteSpace(phone)) continue;
-                            string message = $"🐾 Good Day, {ownerName}! This is Happy Paws Veterinary Clinic. You have an upcoming appointment on {appt.AppointmentDate:MMMM dd, yyyy (dddd)} at {appt.AppointmentDate:hh:mm tt}. Service: {category?.ServiceType ?? "General"} - {subtype?.ServiceSubType ?? "Consultation"}.";
+                            string message = $"?? Good Day, {ownerName}! This is Happy Paws Veterinary Clinic. You have an upcoming appointment on {appt.AppointmentDate:MMMM dd, yyyy (dddd)} at {appt.AppointmentDate:hh:mm tt}. Service: {category?.ServiceType ?? "General"} - {subtype?.ServiceSubType ?? "Consultation"}.";
                             DateTime reminder5 = appt.AppointmentDate.AddDays(-5).Date.AddHours(8);
                             DateTime reminder3 = appt.AppointmentDate.AddDays(-3).Date.AddHours(8);
                             if (reminder5 > DateTime.Now) await _smsService.ScheduleReminder(phone, reminder5, message);
@@ -1717,7 +1717,7 @@ namespace PurrVet.Controllers {
 
                 return Json(new {
                     success = true,
-                    message = $"Group #{groupId} updated — {updatedCount} modified, {addedCount} added, {removedCount} removed."
+                    message = $"Group #{groupId} updated � {updatedCount} modified, {addedCount} added, {removedCount} removed."
                 });
             } catch (Exception ex) {
                 tx.Rollback();
@@ -2245,7 +2245,7 @@ namespace PurrVet.Controllers {
 
             var realJson = real.Select(a => new {
                 id = a.AppointmentID.ToString(),
-                title = $"{a.Pet?.Name} — {a.ServiceCategory?.ServiceType ?? "No Category"} - {a.ServiceSubtype?.ServiceSubType ?? ""}",
+                title = $"{a.Pet?.Name} � {a.ServiceCategory?.ServiceType ?? "No Category"} - {a.ServiceSubtype?.ServiceSubType ?? ""}",
                 start = a.AppointmentDate.ToString("yyyy-MM-ddTHH:mm:ss"),
                 allDay = false,
                 classNames = new[] { a.Status?.ToLower() ?? "unknown" },
@@ -2267,7 +2267,7 @@ namespace PurrVet.Controllers {
 
             var draftJson = drafts.Select(a => new {
                 id = $"DRAFT-{a.DraftID}",
-                title = $"{a.Pet?.Name ?? "No Pet"} — {a.ServiceCategory?.ServiceType ?? "Draft"} - {a.ServiceSubtype?.ServiceSubType ?? ""}",
+                title = $"{a.Pet?.Name ?? "No Pet"} � {a.ServiceCategory?.ServiceType ?? "Draft"} - {a.ServiceSubtype?.ServiceSubType ?? ""}",
                 start = a.AppointmentDate.ToString("yyyy-MM-dd") + "T" + (a.AppointmentTime ?? "00:00"),
                 allDay = false,
                 classNames = new[] { "draft" },

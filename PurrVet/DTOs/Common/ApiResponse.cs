@@ -1,4 +1,4 @@
-namespace PurrVet.DTOs.Common {
+namespace PetCloud.DTOs.Common {
     public class ApiResponse {
         public bool Success { get; set; }
         public string? Message { get; set; }

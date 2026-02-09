@@ -1,4 +1,4 @@
-﻿namespace PurrVet.Models {
+namespace PetCloud.Models {
     using System;
     using System.ComponentModel.DataAnnotations;
 

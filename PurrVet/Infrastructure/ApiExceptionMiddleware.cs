@@ -1,6 +1,6 @@
-using PurrVet.DTOs.Common;
+using PetCloud.DTOs.Common;
 
-namespace PurrVet.Infrastructure {
+namespace PetCloud.Infrastructure {
     public class ApiExceptionMiddleware {
         private readonly RequestDelegate _next;
         private readonly ILogger<ApiExceptionMiddleware> _logger;

@@ -1,4 +1,4 @@
-﻿namespace PurrVet.Models {
+namespace PetCloud.Models {
     public class OwnerDetailsViewModel {
         public Owner Owner { get; set; }
         public List<Pet> Pets { get; set; }

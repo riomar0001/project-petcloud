@@ -1,4 +1,4 @@
-﻿namespace PurrVet.Models {
+namespace PetCloud.Models {
     public class NotificationViewModel {
 
         public int NotificationID { get; set; }

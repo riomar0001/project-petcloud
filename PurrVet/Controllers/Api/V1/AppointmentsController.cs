@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PurrVet.DTOs.Appointments;
-using PurrVet.DTOs.Common;
-using PurrVet.Infrastructure;
-using PurrVet.Models;
+using PetCloud.DTOs.Appointments;
+using PetCloud.DTOs.Common;
+using PetCloud.Infrastructure;
+using PetCloud.Models;
 
-namespace PurrVet.Controllers.Api.V1 {
+namespace PetCloud.Controllers.Api.V1 {
     [ApiController]
     [Route("api/v1/appointments")]
     [Authorize(Policy = "OwnerOnly")]

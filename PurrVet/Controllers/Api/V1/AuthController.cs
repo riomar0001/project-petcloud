@@ -2,14 +2,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PurrVet.DTOs.Auth;
-using PurrVet.DTOs.Common;
-using PurrVet.Infrastructure;
-using PurrVet.Models;
-using PurrVet.Services;
+using PetCloud.DTOs.Auth;
+using PetCloud.DTOs.Common;
+using PetCloud.Infrastructure;
+using PetCloud.Models;
+using PetCloud.Services;
 using System.Text.RegularExpressions;
 
-namespace PurrVet.Controllers.Api.V1 {
+namespace PetCloud.Controllers.Api.V1 {
     [ApiController]
     [Route("api/v1/auth")]
     [Tags("Authentication")]
@@ -99,7 +99,7 @@ namespace PurrVet.Controllers.Api.V1 {
                 user.TwoFactorExpiry = DateTime.Now.AddMinutes(10);
                 await _context.SaveChangesAsync();
 
-                string subject = "Your PurrVet Login Code";
+                string subject = "Your PetCloud Login Code";
                 string body = $@"
                     <h3>Hello {user.FirstName},</h3>
                     <p>Your login code is:</p>

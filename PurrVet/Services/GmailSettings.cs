@@ -1,4 +1,4 @@
-﻿namespace PurrVet.Services {
+namespace PetCloud.Services {
     public class GmailSettings {
         public string Email { get; set; } = "";
         public string AppPassword { get; set; } = "";

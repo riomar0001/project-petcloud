@@ -1,11 +1,11 @@
-﻿using MailKit.Net.Smtp;
+using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
-namespace PurrVet.Services {
+namespace PetCloud.Services {
     public class EmailService {
         private readonly GmailSettings _settings;
 

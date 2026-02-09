@@ -1,6 +1,6 @@
-using PurrVet.DTOs.Common;
+using PetCloud.DTOs.Common;
 
-namespace PurrVet.DTOs.Notifications {
+namespace PetCloud.DTOs.Notifications {
     public class NotificationDto {
         public int NotificationId { get; set; }
         public string Message { get; set; } = string.Empty;

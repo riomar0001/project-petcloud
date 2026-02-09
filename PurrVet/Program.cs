@@ -1,4 +1,4 @@
-﻿using CsvHelper;
+using CsvHelper;
 using CsvHelper.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -11,10 +11,10 @@ using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Kiota.Http.HttpClientLibrary;
 using Microsoft.OpenApi.Models;
-using PurrVet.DTOs.Common;
-using PurrVet.Infrastructure;
-using PurrVet.Models;
-using PurrVet.Services;
+using PetCloud.DTOs.Common;
+using PetCloud.Infrastructure;
+using PetCloud.Models;
+using PetCloud.Services;
 using Scalar.AspNetCore;
 using System.Globalization;
 using System.Text;
@@ -89,11 +89,11 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddOpenApi("v1", options => {
     options.AddDocumentTransformer((document, context, ct) => {
         document.Info = new OpenApiInfo {
-            Title = "PurrVet Mobile API",
+            Title = "PetCloud Mobile API",
             Version = "1.0.0",
-            Description = "REST API for the PurrVet mobile application. Provides pet owners with access to pet management, appointments, notifications, and profile features.",
+            Description = "REST API for the PetCloud mobile application. Provides pet owners with access to pet management, appointments, notifications, and profile features.",
             Contact = new OpenApiContact {
-                Name = "PurrVet Support",
+                Name = "PetCloud Support",
                 Email = "support@happypawsvet.com"
             }
         };
@@ -158,7 +158,7 @@ builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.ConfigureApplicationCookie(options => {
-    options.Cookie.Name = "PurrVetAuth";
+    options.Cookie.Name = "PetCloudAuth";
     options.Cookie.HttpOnly = true;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Lax;
@@ -170,7 +170,7 @@ builder.Services.ConfigureApplicationCookie(options => {
 
 builder.Services.AddSession(options => {
     options.IdleTimeout = TimeSpan.FromDays(30);
-    options.Cookie.Name = "PurrVetSession";
+    options.Cookie.Name = "PetCloudSession";
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
@@ -185,7 +185,7 @@ if (app.Environment.IsDevelopment()) {
 
     app.MapScalarApiReference("/api/docs", options => {
         options
-            .WithTitle("PurrVet Mobile API")
+            .WithTitle("PetCloud Mobile API")
             .WithOpenApiRoutePattern("/api/docs/openapi/{documentName}.json")
             .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
     });
@@ -202,7 +202,7 @@ app.UseRouting();
 app.UseCors("MobileApp");
 app.UseSession();
 
-// Session restoration middleware — skip for API routes
+// Session restoration middleware � skip for API routes
 app.Use(async (context, next) => {
     if (context.Request.Path.StartsWithSegments("/api")) {
         await next();
@@ -227,7 +227,7 @@ app.Use(async (context, next) => {
     await next();
 });
 
-// Redirect middleware — skip for API routes
+// Redirect middleware � skip for API routes
 app.Use(async (context, next) => {
     if (context.Request.Path.StartsWithSegments("/api")) {
         await next();

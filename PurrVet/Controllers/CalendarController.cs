@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
-using PurrVet.Models;
+using PetCloud.Models;
 
-namespace PurrVet.Controllers {
+namespace PetCloud.Controllers {
     public class CalendarController : Controller {
         private readonly GraphServiceClient _graphServiceClient;
         private readonly ApplicationDbContext _context;
@@ -104,7 +104,7 @@ namespace PurrVet.Controllers {
                             DateTime = appt.AppointmentDate.AddMinutes(30).ToUniversalTime().ToString("o"),
                             TimeZone = "UTC"
                         },
-                        Location = new Location { DisplayName = "PurrVet Veterinary Clinic" }
+                        Location = new Location { DisplayName = "PetCloud Veterinary Clinic" }
                     };
 
                     await _graphServiceClient.Me.Events.PostAsync(@event);
@@ -182,7 +182,7 @@ namespace PurrVet.Controllers {
                             TimeZone = "UTC"
                         },
                         Location = new Location {
-                            DisplayName = "PurrVet Veterinary Clinic"
+                            DisplayName = "PetCloud Veterinary Clinic"
                         }
                     };
 
@@ -191,7 +191,7 @@ namespace PurrVet.Controllers {
                         appointment.IsSynced = true;
                         successCount++;
                     } catch (Exception ex) {
-                        Console.WriteLine($"❌ Error syncing owner appointment {appointment.AppointmentID}: {ex.Message}");
+                        Console.WriteLine($"? Error syncing owner appointment {appointment.AppointmentID}: {ex.Message}");
                         failureCount++;
                     }
                 }

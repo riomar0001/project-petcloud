@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace PurrVet.Migrations {
+namespace PetCloud.Migrations {
     /// <inheritdoc />
     public partial class _2falocation : Migration {
         /// <inheritdoc />

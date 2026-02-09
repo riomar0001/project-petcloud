@@ -1,4 +1,4 @@
-﻿namespace PurrVet.Models {
+namespace PetCloud.Models {
     public class DiagnosticsLaboratoryListViewModel {
         public IEnumerable<Appointment> DiagnosticsLaboratory { get; set; } = new List<Appointment>();
         public int CurrentPage { get; set; }

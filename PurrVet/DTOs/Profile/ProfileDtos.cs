@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace PurrVet.DTOs.Profile {
+namespace PetCloud.DTOs.Profile {
     public class ProfileResponse {
         public int UserId { get; set; }
         public int OwnerId { get; set; }

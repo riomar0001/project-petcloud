@@ -1,4 +1,4 @@
-﻿namespace PurrVet.Services {
+namespace PetCloud.Services {
     public class SmsReminderService {
         private readonly HttpClient _httpClient;
         private const string BaseUrl = "https://sms.iprogtech.com/api/v1/message-reminders";

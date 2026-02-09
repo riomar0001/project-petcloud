@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
-namespace PurrVet.Models {
+namespace PetCloud.Models {
     public class ServiceCategory {
         [Key]
         public int CategoryID { get; set; }

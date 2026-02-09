@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace PurrVet.Migrations
+namespace PetCloud.Migrations
 {
     /// <inheritdoc />
     public partial class AddRefreshTokens : Migration

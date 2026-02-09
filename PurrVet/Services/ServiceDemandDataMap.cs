@@ -1,6 +1,6 @@
-﻿using CsvHelper.Configuration;
+using CsvHelper.Configuration;
 
-namespace PurrVet.Services {
+namespace PetCloud.Services {
     public class ServiceDemandDataMap : ClassMap<ServiceDemandData> {
         public ServiceDemandDataMap() {
             Map(m => m.Year).Name("Year");

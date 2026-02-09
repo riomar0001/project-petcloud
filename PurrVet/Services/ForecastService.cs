@@ -1,11 +1,11 @@
-﻿using CsvHelper;
+using CsvHelper;
 using CsvHelper.Configuration;
 using Microsoft.ML;
 using Microsoft.ML.Data;
-using PurrVet.Models;
+using PetCloud.Models;
 using System.Globalization;
 
-namespace PurrVet.Services {
+namespace PetCloud.Services {
     public class ForecastResult {
         public List<string> Months { get; set; } = new();
         public List<double> ActualCounts { get; set; } = new();
@@ -243,7 +243,7 @@ namespace PurrVet.Services {
             var predictions = model.Transform(split.TestSet);
             var metrics = _mlContext.Regression.Evaluate(predictions, labelColumnName: serviceColumn, scoreColumnName: "Score");
 
-            Console.WriteLine($"R²: {metrics.RSquared:0.###}"); //accuracy
+            Console.WriteLine($"R�: {metrics.RSquared:0.###}"); //accuracy
             Console.WriteLine($"MAE: {metrics.MeanAbsoluteError:0.###}"); //average error
             Console.WriteLine($"RMSE: {metrics.RootMeanSquaredError:0.###}"); //
 

@@ -1,16 +1,16 @@
-﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PurrVet.Models;
-using PurrVet.Services;
+using PetCloud.Models;
+using PetCloud.Services;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace PurrVet.Controllers {
+namespace PetCloud.Controllers {
     public class AccountController : Controller {
         private readonly ApplicationDbContext _context;
         private readonly IPasswordHasher<User> _passwordHasher;
@@ -115,7 +115,7 @@ namespace PurrVet.Controllers {
 
                 await _context.SaveChangesAsync();
 
-                string subject = "Your PurrVet Login Code";
+                string subject = "Your PetCloud Login Code";
                 string body = $@"
             <h3>Hello {user.FirstName},</h3>
             <p>Your login code is:</p>
@@ -323,8 +323,8 @@ namespace PurrVet.Controllers {
         <h3>Hello {user.FirstName},</h3>
         <p>You requested to reset your password. Click the link below to set a new one:</p>
         <p><a href='{resetLink}' style='background-color:#00b4d8;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;'>Reset Password</a></p>
-        <p>If you didn’t request this, please ignore this email.</p>
-        <p>– Happy Paws Veterinary Clinic</p>";
+        <p>If you didn�t request this, please ignore this email.</p>
+        <p>� Happy Paws Veterinary Clinic</p>";
 
             await emailService.SendEmailAsync(user.Email, subject, "", htmlBody);
 

@@ -1,4 +1,4 @@
-﻿namespace PurrVet.Models {
+namespace PetCloud.Models {
     public class ServiceTypeListViewModel {
         public List<ServiceSubtype> ServiceSubtypes { get; set; } = new();
         public int CurrentPage { get; set; }

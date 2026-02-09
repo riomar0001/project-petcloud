@@ -1,4 +1,4 @@
-﻿namespace PurrVet.Models {
+namespace PetCloud.Models {
     public class ReCaptchaResponse {
         public bool success { get; set; }
         public string challenge_ts { get; set; }

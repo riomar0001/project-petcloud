@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace PurrVet.DTOs.Appointments {
+namespace PetCloud.DTOs.Appointments {
     public class AppointmentListItemDto {
         public int AppointmentId { get; set; }
         public DateTime AppointmentDate { get; set; }

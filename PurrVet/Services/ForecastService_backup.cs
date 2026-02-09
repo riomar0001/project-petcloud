@@ -1,12 +1,12 @@
-﻿using System.Globalization;
+using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
 using Microsoft.ML;
 using Microsoft.ML.Trainers.FastTree;
-using PurrVet.Models;
+using PetCloud.Models;
 using static PurrVet.Controllers.AdminController;
 
-namespace PurrVet.Services
+namespace PetCloud.Services
 {
     public class ForecastResult
     {
@@ -236,7 +236,7 @@ namespace PurrVet.Services
             var predictions = model.Transform(split.TestSet);
             var metrics = _mlContext.Regression.Evaluate(predictions, labelColumnName: serviceColumn, scoreColumnName: "Score");
 
-            Console.WriteLine($"R²: {metrics.RSquared:0.###}"); //accuracy
+            Console.WriteLine($"R�: {metrics.RSquared:0.###}"); //accuracy
             Console.WriteLine($"MAE: {metrics.MeanAbsoluteError:0.###}"); //average error
             Console.WriteLine($"RMSE: {metrics.RootMeanSquaredError:0.###}"); //
 

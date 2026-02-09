@@ -1,4 +1,4 @@
-﻿namespace PurrVet.Models {
+namespace PetCloud.Models {
     public class LogListViewModel {
         public IEnumerable<SystemLog> Logs { get; set; } = new List<SystemLog>();
 

@@ -1,7 +1,7 @@
-﻿using Microsoft.ML;
-using PurrVet.Models;
+using Microsoft.ML;
+using PetCloud.Models;
 
-namespace PurrVet.Services {
+namespace PetCloud.Services {
     public class ForecastServiceWithZip {
         private readonly MLContext _mlContext;
         private readonly string _modelFolder;

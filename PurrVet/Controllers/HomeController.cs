@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using PurrVet.Models;
+using PetCloud.Models;
 using System.Diagnostics;
 
-namespace PurrVet.Controllers {
+namespace PetCloud.Controllers {
     public class HomeController : Controller {
         private readonly ILogger<HomeController> _logger;
 

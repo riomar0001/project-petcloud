@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using PurrVet.DTOs.Common;
-using PurrVet.DTOs.Notifications;
-using PurrVet.Infrastructure;
-using PurrVet.Models;
+using PetCloud.DTOs.Common;
+using PetCloud.DTOs.Notifications;
+using PetCloud.Infrastructure;
+using PetCloud.Models;
 
-namespace PurrVet.Controllers.Api.V1 {
+namespace PetCloud.Controllers.Api.V1 {
     [ApiController]
     [Route("api/v1/notifications")]
     [Authorize(Policy = "OwnerOnly")]

@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using PurrVet.Models;
+using PetCloud.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace PurrVet.Infrastructure {
+namespace PetCloud.Infrastructure {
     public class JwtTokenService {
         private readonly IConfiguration _config;
         private readonly ApplicationDbContext _context;

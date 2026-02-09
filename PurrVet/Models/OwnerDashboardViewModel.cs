@@ -1,4 +1,4 @@
-﻿namespace PurrVet.Models {
+namespace PetCloud.Models {
     public class OwnerDashboardViewModel {
         public string UserName { get; set; }
         public List<dynamic> Pets { get; set; } = new();

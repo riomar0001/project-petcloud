@@ -1,4 +1,4 @@
-namespace PurrVet.DTOs.Dashboard {
+namespace PetCloud.DTOs.Dashboard {
     public class DashboardResponse {
         public string UserName { get; set; } = string.Empty;
         public List<DashboardPetDto> Pets { get; set; } = new();

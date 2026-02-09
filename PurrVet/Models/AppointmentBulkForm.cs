@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
-namespace PurrVet.Models {
+namespace PetCloud.Models {
     public class AppointmentBulkForm {
         [Required]
         public List<AppointmentInput> Appointments { get; set; } = new();

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace PurrVet.DTOs.Pets {
+namespace PetCloud.DTOs.Pets {
     public class PetListItemDto {
         public int PetId { get; set; }
         public string Name { get; set; } = string.Empty;

@@ -1,4 +1,4 @@
-﻿namespace PurrVet.Models {
+namespace PetCloud.Models {
     public class PetCardVM {
         public Pet Pet { get; set; }
         public List<Appointment> Records { get; set; }
