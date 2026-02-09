@@ -14,9 +14,10 @@ export default function LoginScreen() {
     password: ''
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [isError, setIsError] = useState(true);
+  const [isError, setIsError] = useState(false);
   const { login } = useAuthStore();
 
   const validateForm = (): boolean => {
@@ -57,11 +58,13 @@ export default function LoginScreen() {
         });
       } else {
         // Success - navigate to home/dashboard
-        router.replace('/(tabs)');
+        router.replace('/dashboard');
       }
     } catch (error: any) {
-      console.error('Login error:', error);
-      setIsError(true);
+      if (error.message === 'This API is only available for pet owners.') {
+        setIsError(true);
+        setErrorMessage("You're trying to log in as Admin/Staff. Please use the web portal instead.");
+      }
     } finally {
       setLoading(false);
     }
@@ -91,7 +94,7 @@ export default function LoginScreen() {
             {isError && (
               <View className="mb-4 flex-row items-center rounded-xl border border-red-200 bg-red-50 px-4 py-3">
                 <Ionicons name="alert-circle" size={20} color="#EF4444" />
-                <Text className="ml-2 flex-1 text-sm font-medium text-red-600">Invalid email or password. Please try again.</Text>
+                <Text className="ml-2 flex-1 text-sm font-medium text-red-600">{errorMessage}</Text>
                 <TouchableOpacity onPress={() => setIsError(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                   <Ionicons name="close" size={18} color="#EF4444" />
                 </TouchableOpacity>

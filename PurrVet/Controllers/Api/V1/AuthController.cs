@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -46,7 +45,7 @@ namespace PurrVet.Controllers.Api.V1 {
                 return Unauthorized(new ApiErrorResponse { Message = "Invalid email or password." });
 
             if (user.Type != "Owner")
-                return Unauthorized(new ApiErrorResponse { Message = "This API is only available for pet owners." });
+                return Unauthorized(new ApiErrorResponse { Message = "You're trying to log in as Admin/Staff. Please use the web portal instead." });
 
             if (user.Status == "Inactive")
                 return Unauthorized(new ApiErrorResponse { Message = "Your account is disabled due to inactivity. Please contact support." });

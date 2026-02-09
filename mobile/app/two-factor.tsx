@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { AppButton } from '../components/button';
 import { useAuthStore } from '@/store/authStore';
-import { AuthService, apiClient, ApiError } from '@/services/api';
+import { AuthService, apiClient, ApiError } from '@/api';
 
 const RESEND_COOLDOWN = 60;
 
@@ -130,7 +130,7 @@ export default function TwoFactorScreen() {
       apiClient.setToken(result.accessToken);
       setTokens(result.accessToken, result.refreshToken);
 
-      router.replace('/(tabs)');
+      router.replace('/dashboard');
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message || 'Invalid verification code');
