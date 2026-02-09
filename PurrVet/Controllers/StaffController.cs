@@ -146,7 +146,7 @@ namespace PetCloud.Controllers {
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddUser(PurrVetUser model, IFormFile? ProfileImage) {
+        public async Task<IActionResult> AddUser(PetCloudUser model, IFormFile? ProfileImage) {
             if (HttpContext.Session.GetString("UserRole") != "Staff")
                 return Json(new { success = false, message = "Unauthorized access." });
 
@@ -166,7 +166,7 @@ namespace PetCloud.Controllers {
                 return Json(new { success = false, message = "Phone number cannot exceed 12 digits." });
 
             try {
-                var hasher = new PasswordHasher<PurrVetUser>();
+                var hasher = new PasswordHasher<PetCloudUser>();
                 model.Password = hasher.HashPassword(model, model.Password);
                 model.Status = "Active";
 
@@ -274,7 +274,7 @@ namespace PetCloud.Controllers {
                 if (Password != ConfirmPassword)
                     return Json(new { success = false, message = "Passwords do not match." });
 
-                var hasher = new PasswordHasher<PurrVetUser>();
+                var hasher = new PasswordHasher<PetCloudUser>();
                 user.Password = hasher.HashPassword(user, Password);
             }
 
@@ -3939,7 +3939,7 @@ namespace PetCloud.Controllers {
                 if (string.IsNullOrWhiteSpace(CurrentPassword))
                     return Json(new { success = false, message = "Enter your current password to change it." });
 
-                var hasher = new PasswordHasher<PurrVetUser>();
+                var hasher = new PasswordHasher<PetCloudUser>();
                 var verify = hasher.VerifyHashedPassword(user, user.Password, CurrentPassword);
                 if (verify == PasswordVerificationResult.Failed)
                     return Json(new { success = false, message = "Incorrect current password." });
