@@ -13,7 +13,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using PetCloudUser = PurrVet.Models.User;
+using PetCloudUser = PetCloud.Models.User;
 
 namespace PetCloud.Controllers {
     public class StaffController : Controller {
@@ -1716,7 +1716,7 @@ namespace PetCloud.Controllers {
 
                 return Json(new {
                     success = true,
-                    message = $"Group #{groupId} updated — {updatedCount} modified, {addedCount} added, {removedCount} removed."
+                    message = $"Group #{groupId} updated ï¿½ {updatedCount} modified, {addedCount} added, {removedCount} removed."
                 });
             } catch (Exception ex) {
                 tx.Rollback();
@@ -2242,7 +2242,7 @@ namespace PetCloud.Controllers {
 
             var realJson = real.Select(a => new {
                 id = a.AppointmentID.ToString(),
-                title = $"{a.Pet?.Name} — {a.ServiceCategory?.ServiceType ?? "No Category"} - {a.ServiceSubtype?.ServiceSubType ?? ""}",
+                title = $"{a.Pet?.Name} ï¿½ {a.ServiceCategory?.ServiceType ?? "No Category"} - {a.ServiceSubtype?.ServiceSubType ?? ""}",
                 start = a.AppointmentDate.ToString("yyyy-MM-ddTHH:mm:ss"),
                 allDay = false,
                 classNames = new[] { a.Status?.ToLower() ?? "unknown" },
@@ -2264,7 +2264,7 @@ namespace PetCloud.Controllers {
 
             var draftJson = drafts.Select(a => new {
                 id = $"DRAFT-{a.DraftID}",
-                title = $"{a.Pet?.Name ?? "No Pet"} — {a.ServiceCategory?.ServiceType ?? "Draft"} - {a.ServiceSubtype?.ServiceSubType ?? ""}",
+                title = $"{a.Pet?.Name ?? "No Pet"} ï¿½ {a.ServiceCategory?.ServiceType ?? "Draft"} - {a.ServiceSubtype?.ServiceSubType ?? ""}",
                 start = a.AppointmentDate.ToString("yyyy-MM-dd") + "T" + (a.AppointmentTime ?? "00:00"),
                 allDay = false,
                 classNames = new[] { "draft" },
