@@ -1,0 +1,326 @@
+@model PetCloud.Models.OwnerDashboardViewModel
+
+@{
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
+    ViewBag.Title = "Dashboard";
+
+    var name = Model.UserName;
+    var pets = Model.Pets ?? new List<dynamic>();
+    var upcoming = Model.UpcomingAppointments ?? new List<dynamic>();
+    var vaccineDue = Model.VaccineDue ?? new List<dynamic>();
+    var dewormDue = Model.DewormDue ?? new List<dynamic>();
+    string defaultPhoto = Url.Content("~/uploads/profiles/pet.png");
+}
+
+<link href="/css/owner.css" rel="stylesheet" />
+
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <h2>Welcome Back, @name!</h2>
+    <p>Manage your pets and appointments</p>
+</div>
+
+<!-- Stats Grid for Owner -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon purple">
+            <i class="bi bi-heart-fill"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">My Pets</div>
+            <div class="stat-value">@pets.Count</div>
+            <a href="/Owner/Pets" class="see-details">View all <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon green">
+            <i class="bi bi-calendar-check-fill"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Upcoming Appointments</div>
+            <div class="stat-value">@upcoming.Count</div>
+            <a href="/Owner/Appointments" class="see-details">View all <i class="bi bi-arrow-right"></i></a>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon blue">
+            <i class="bi bi-capsule"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Vaccinations Due</div>
+            <div class="stat-value">@vaccineDue.Count</div>
+            <span class="stat-change @(vaccineDue.Count > 0 ? "negative" : "positive")">
+                <i class="bi bi-@(vaccineDue.Count > 0 ? "exclamation-circle" : "check-circle")"></i>
+                @(vaccineDue.Count > 0 ? "Attention needed" : "All up to date")
+            </span>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon orange">
+            <i class="bi bi-bug"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Deworming Due</div>
+            <div class="stat-value">@dewormDue.Count</div>
+            <span class="stat-change @(dewormDue.Count > 0 ? "negative" : "positive")">
+                <i class="bi bi-@(dewormDue.Count > 0 ? "exclamation-circle" : "check-circle")"></i>
+                @(dewormDue.Count > 0 ? "Attention needed" : "All up to date")
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="dashboard-content">
+    <div class="content-grid">
+        <!-- My Pets Carousel -->
+        <div class="chart-card-modern">
+            <div class="chart-header mb-3">
+                <h5>My Pets</h5>
+                <a href="/Owner/Pets" class="see-details-mp-appt">View All <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="carousel-row d-flex align-items-center">
+                <button id="petsPrev" class="carousel-arrow"><i class="bi bi-chevron-left"></i></button>
+                <div id="petsTrack" class="carousel-track flex-grow-1" aria-live="polite"></div>
+                <button id="petsNext" class="carousel-arrow"><i class="bi bi-chevron-right"></i></button>
+            </div>
+        </div>
+
+        <!-- Upcoming Appointments List -->
+        <div class="appointment-list-card chart-card-modern">
+            <div class="appointment-list-header">
+                <h5>Upcoming Appointments</h5>
+                <a href="/Owner/Appointments" class="see-details-mp-appt" style="font-size: 0.85rem;">View All <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="appointment-list" id="upcomingList"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Reminders Tables -->
+<div class="table-card-modern">
+    <div class="table-header">
+        <h5>Health Reminders</h5>
+    </div>
+    <div class="row g-0">
+        <div class="col-md-6 border-end">
+            <div class="p-3">
+                <h6 class="fw-bold mb-3"><i class="bi bi-heart-pulse me-2" style="color: var(--primary-green, #10B981);"></i>Vaccination Reminders</h6>
+                <div class="table-responsive">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th>Pet</th>
+                                <th>Service</th>
+                                <th>Due Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vaccineTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="p-3">
+                <h6 class="fw-bold mb-3"><i class="bi bi-bug me-2" style="color: var(--primary-green, #10B981);"></i>Deworming Reminders</h6>
+                <div class="table-responsive">
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th>Pet</th>
+                                <th>Service</th>
+                                <th>Due Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dewormTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@using System.Text.Json
+
+<script>
+    const petsData = @Html.Raw(JsonSerializer.Serialize(pets));
+    const upcomingData = @Html.Raw(JsonSerializer.Serialize(upcoming));
+    const vaccineData = @Html.Raw(JsonSerializer.Serialize(vaccineDue));
+    const dewormData = @Html.Raw(JsonSerializer.Serialize(dewormDue));
+    const defaultPhoto = "@defaultPhoto";
+
+    function getPetPageSize() {
+        if (window.innerWidth <= 576) return 1;
+        if (window.innerWidth <= 992) return 2;
+        return 3;
+    }
+
+    let PAGE_SIZES = { pets: getPetPageSize() };
+    const pageState = { pets: 0 };
+
+    function formatDateB(dateStr) {
+        if (!dateStr) return "";
+        const d = new Date(dateStr);
+        return isNaN(d) ? dateStr : d.toLocaleString('en-US', {
+            month: 'short', day: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', hour12: true
+        });
+    }
+
+    function escapeHtml(str) {
+        return str ? String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])) : '';
+    }
+
+    function petTemplate(p) {
+        const photo = p.PhotoPath && p.PhotoPath.length ? p.PhotoPath : defaultPhoto;
+        const ageYears = p.Birthdate ? Math.max(0, Math.floor((new Date() - new Date(p.Birthdate)) / (365.25*24*60*60*1000))) : 0;
+        return `
+            <img src="${photo}" onerror="this.src='${defaultPhoto}'" style="width:100%; height:220px; object-fit:cover; border-radius:0.75rem;" />
+            <div class="card-body text-center">
+                <h6 class="fw-bold mb-1">${escapeHtml(p.Name)}</h6>
+                <p class="text-muted small mb-1">${escapeHtml(p.Breed ?? '')}</p>
+                <p class="text-muted small mb-3">Age: ${ageYears} year${ageYears !== 1 ? 's' : ''}</p>
+                <a href="/Owner/ViewPet?id=${p.PetID}" class="btn btn-sm px-4" style="background-color: var(--primary-green, #10B981); color: white; border-radius: 8px;">View Pet Card</a>
+            </div>
+        `;
+    }
+
+    // Render pets carousel
+    function renderPets() {
+        const container = document.getElementById('petsTrack');
+        container.innerHTML = '';
+        if (!petsData || petsData.length === 0) {
+            container.innerHTML = `<div class="empty-note text-center text-muted">No pets found.</div>`;
+            return;
+        }
+        const pageSize = PAGE_SIZES.pets;
+        const totalPages = Math.ceil(petsData.length / pageSize);
+        const page = Math.min(pageState.pets, totalPages - 1);
+        const start = page * pageSize;
+        const slice = petsData.slice(start, start + pageSize);
+        slice.forEach(item => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'app-card card rounded-3';
+            wrapper.innerHTML = petTemplate(item);
+            container.appendChild(wrapper);
+        });
+    }
+
+    // Render upcoming appointments as activity list
+    function renderUpcoming() {
+        const container = document.getElementById('upcomingList');
+        container.innerHTML = '';
+        if (!upcomingData || upcomingData.length === 0) {
+            container.innerHTML = '<div class="text-center text-muted p-4">No upcoming appointments</div>';
+            return;
+        }
+        upcomingData.slice(0, 6).forEach(a => {
+            const petName = a.Pet?.Name ?? 'Unknown';
+            const svc = a.ServiceCategory?.ServiceType ?? 'Service';
+            const dt = a.AppointmentDate ? formatDateB(a.AppointmentDate) : '';
+            container.innerHTML += `
+                <div class="appointment-item">
+                    <div class="pet-icon">
+                        <i class="bi bi-calendar-check-fill"></i>
+                    </div>
+                    <div class="appointment-info">
+                        <div class="pet-name">${escapeHtml(petName)}</div>
+                        <div class="appointment-type">${escapeHtml(svc)}</div>
+                    </div>
+                    <div class="appointment-time">
+                        <div class="appointment-date">${dt}</div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    // Render vaccine reminders table
+    function renderVaccineTable() {
+        const tbody = document.getElementById('vaccineTable');
+        tbody.innerHTML = '';
+        if (!vaccineData || vaccineData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No reminders</td></tr>';
+            return;
+        }
+        vaccineData.forEach(d => {
+            const petName = d.Pet?.Name ?? 'Unknown';
+            const svc = d.ServiceCategory?.ServiceType ?? 'Service';
+            const dt = d.DueDate ? new Date(d.DueDate).toLocaleDateString('en-US', {
+                month: 'short', day: '2-digit', year: 'numeric'
+            }) : '';
+            const petId = d.Pet?.PetID ?? '#';
+            tbody.innerHTML += `
+                <tr>
+                    <td>${escapeHtml(petName)}</td>
+                    <td>${escapeHtml(svc)}</td>
+                    <td>${dt}</td>
+                    <td><a href="/Owner/ViewPet?id=${petId}" class="btn-action btn-view" title="View"><i class="bi bi-eye-fill"></i></a></td>
+                </tr>
+            `;
+        });
+    }
+
+    // Render deworm reminders table
+    function renderDewormTable() {
+        const tbody = document.getElementById('dewormTable');
+        tbody.innerHTML = '';
+        if (!dewormData || dewormData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No reminders</td></tr>';
+            return;
+        }
+        dewormData.forEach(d => {
+            const petName = d.Pet?.Name ?? 'Unknown';
+            const svc = d.ServiceCategory?.ServiceType ?? 'Service';
+            const dt = d.DueDate ? new Date(d.DueDate).toLocaleDateString('en-US', {
+                month: 'short', day: '2-digit', year: 'numeric'
+            }) : '';
+            const petId = d.Pet?.PetID ?? '#';
+            tbody.innerHTML += `
+                <tr>
+                    <td>${escapeHtml(petName)}</td>
+                    <td>${escapeHtml(svc)}</td>
+                    <td>${dt}</td>
+                    <td><a href="/Owner/ViewPet?id=${petId}" class="btn-action btn-view" title="View"><i class="bi bi-eye-fill"></i></a></td>
+                </tr>
+            `;
+        });
+    }
+
+    function renderAll() {
+        renderPets();
+        renderUpcoming();
+        renderVaccineTable();
+        renderDewormTable();
+    }
+
+    function gotoPage(section, delta) {
+        const dataLen = petsData.length;
+        const pageSize = PAGE_SIZES.pets;
+        const totalPages = Math.ceil(dataLen / pageSize);
+        pageState.pets = Math.min(Math.max(pageState.pets + delta, 0), totalPages - 1);
+        renderPets();
+    }
+
+    window.addEventListener('resize', () => {
+        const newPetSize = getPetPageSize();
+        if (newPetSize !== PAGE_SIZES.pets) {
+            PAGE_SIZES.pets = newPetSize;
+            pageState.pets = 0;
+            renderPets();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const prev = document.getElementById('petsPrev');
+        const next = document.getElementById('petsNext');
+        if (prev) prev.onclick = () => gotoPage('pets', -1);
+        if (next) next.onclick = () => gotoPage('pets', +1);
+        renderAll();
+    });
+</script>

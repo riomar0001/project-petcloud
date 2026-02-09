@@ -1,0 +1,216 @@
+@model PetCloud.Models.User
+
+@{
+    ViewBag.Title = "Users";
+    Layout = "~/Views/Shared/_DashboardLayoutModern.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<div class="p-4">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-modern mb-3">
+        <a href="@Url.Action("Users", "Admin")">Users</a>
+        <span class="separator">/</span>
+        <span class="current">Add User</span>
+    </div>
+
+    <!-- Toast -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055">
+        <div id="messageToast" class="toast align-items-center text-white border-0 toast-modern" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fw-semibold"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-accent">
+        <div class="p-4">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div class="stats-icon-box primary">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0">Add a New User</h5>
+                    <small class="text-muted">Create a new user account for the system</small>
+                </div>
+            </div>
+
+            <form id="addUserForm" method="post" enctype="multipart/form-data" action="@Url.Action("AddUser","Admin")">
+                @Html.AntiForgeryToken()
+
+                <!-- Profile Photo Upload -->
+                <div class="pet-profile-preview mb-4">
+                    <img id="profilePreview"
+                         src="@Url.Content(Model?.ProfileImage ?? "~/uploads/profiles/pet.png")"
+                         onerror="this.onerror=null;this.src='@Url.Content("~/uploads/profiles/pet.png")';" />
+                    <div class="mt-2">
+                        <label class="btn-modern-secondary btn-sm" style="cursor:pointer;">
+                            <i class="bi bi-camera"></i> Choose Photo
+                            <input type="file" name="ProfileImage" id="ProfileImage" accept="image/*" hidden />
+                        </label>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group-modern">
+                            <label><i class="bi bi-person me-2"></i> First Name</label>
+                            <input type="text" name="FirstName" class="form-control form-control-modern" placeholder="Enter first name" required />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group-modern">
+                            <label><i class="bi bi-person me-2"></i> Last Name</label>
+                            <input type="text" name="LastName" class="form-control form-control-modern" placeholder="Enter last name" required />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group-modern">
+                            <label><i class="bi bi-envelope me-2"></i> Email</label>
+                            <input type="email" name="Email" class="form-control form-control-modern" placeholder="Enter email" required />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group-modern">
+                            <label><i class="bi bi-phone me-2"></i> Phone</label>
+                            <input type="tel"
+                                   name="Phone"
+                                   id="Phone"
+                                   class="form-control form-control-modern"
+                                   placeholder="e.g. 09123456789"
+                                   inputmode="numeric"
+                                   pattern="[0-9]{11}"
+                                   minlength="11"
+                                   maxlength="11"
+                                   required />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group-modern">
+                            <label><i class="bi bi-lock me-2"></i> Password</label>
+                            <div class="position-relative">
+                                <input type="password" name="Password" id="userPassword" class="form-control form-control-modern" placeholder="Enter password" required />
+                                <span id="toggleUserPassword"
+                                      class="position-absolute top-50 end-0 translate-middle-y me-3"
+                                      style="cursor:pointer; color:#9ca3af;">
+                                    <i id="userEyeIcon" class="fa-solid fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group-modern">
+                            <label><i class="bi bi-shield-check me-2"></i> Type</label>
+                            <select name="Type" class="form-select form-select-modern" required>
+                                <option value="">-- Select Type --</option>
+                                <option>Admin</option>
+                                <option>Staff</option>
+                                <option>Owner</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-3 mt-4">
+                    <a href="@Url.Action("Users", "Admin")" class="btn-modern-secondary">
+                        <i class="bi bi-x-lg"></i> Cancel
+                    </a>
+                    <button type="submit" class="btn-modern-primary">
+                        <i class="bi bi-check-lg"></i> Save User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade modal-modern" id="confirmSaveModal" tabindex="-1" aria-labelledby="confirmSaveModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="confirmSaveModalLabel"><i class="bi bi-question-circle"></i> Confirm Action</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="stats-icon-box warning mx-auto mb-3" style="width:56px;height:56px;">
+                    <i class="bi bi-exclamation-triangle" style="font-size:1.5rem;"></i>
+                </div>
+                <p class="fw-semibold mb-0">Are you sure you want to add this user?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modern-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirmSaveBtn" class="btn-modern-primary">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            var toastEl = $('#messageToast');
+            var toastBody = toastEl.find('.toast-body');
+
+            $("#toggleUserPassword").click(function () {
+                const input = $("#userPassword");
+                const icon = $("#userEyeIcon");
+                const hidden = input.attr("type") === "password";
+                input.attr("type", hidden ? "text" : "password");
+                icon.toggleClass("fa-eye fa-eye-slash");
+            });
+
+            $('#ProfileImage').on('change', function (e) {
+                const [file] = e.target.files;
+                if (file) $('#profilePreview').attr('src', URL.createObjectURL(file));
+            });
+
+            $('#addUserForm').submit(function (e) {
+                e.preventDefault();
+                const form = this;
+                const modal = new bootstrap.Modal(document.getElementById('confirmSaveModal'));
+                modal.show();
+
+                $('#confirmSaveBtn').off('click').on('click', function () {
+                    modal.hide();
+
+                    var formData = new FormData(form);
+                    $.ajax({
+                        url: '@Url.Action("AddUser", "Admin")',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (res) {
+                            toastBody.text(res.message);
+                            toastEl.removeClass('bg-success bg-danger toast-success toast-danger')
+                                .addClass(res.success ? 'bg-success toast-success' : 'bg-danger toast-danger');
+                            new bootstrap.Toast(toastEl[0], { delay: 3000 }).show();
+
+                            if (res.success) {
+                                $(form)[0].reset();
+                                $('#profilePreview').attr('src', '@Url.Content("~/uploads/profiles/pet.png")');
+                                setTimeout(() => { window.location.href = '@Url.Action("Users", "Admin")'; }, 1200);
+                            }
+                        }
+                    });
+                });
+            });
+        });
+
+        document.getElementById("Phone").addEventListener("input", function () {
+            this.value = this.value.replace(/\D/g, '');
+            if (this.value.length > 11) {
+                this.value = this.value.slice(0, 11);
+            }
+        });
+    </script>
+}
