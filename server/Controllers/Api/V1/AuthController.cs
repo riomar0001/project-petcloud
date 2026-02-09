@@ -219,7 +219,7 @@ namespace PetCloud.Controllers.Api.V1 {
                 return BadRequest(new ApiErrorResponse { Message = "Names must not contain special characters or numbers." });
 
             var newUser = new User {
-                FirstName = request.FirstName,
+                FirstName = request.FirstName ,
                 LastName = request.LastName,
                 Email = request.Email,
                 Phone = request.Phone,
