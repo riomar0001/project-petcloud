@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { AppButton } from '../components/button';
-import { AppInput } from '../components/input';
+import { AppButton } from '../components/ui/button';
+import { AppInput } from '../components/ui/input';
 import { ForgotPasswordFormData, ValidationErrors } from '../types';
 
 export default function ForgotPasswordScreen() {

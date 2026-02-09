@@ -47,17 +47,11 @@ export class AuthService {
   /**
    * Register new user
    */
-  static async register(data: RegisterRequest): Promise<LoginResponse> {
+  static async register(data: RegisterRequest): Promise<void> {
     try {
       const validated = registerSchema.parse(data);
 
-      const response = await apiClient.post<ApiResponse<LoginResponse>>(
-        '/api/v1/auth/register',
-        validated
-      );
-
-      const validatedResponse = loginResponseSchema.parse(response.data.data);
-      return validatedResponse;
+      await apiClient.post('/api/v1/auth/register', validated);
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw handleValidationError(error);

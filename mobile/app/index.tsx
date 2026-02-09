@@ -3,8 +3,8 @@ import { router } from 'expo-router';
 import { View, Text, ScrollView, KeyboardAvoidingView, Platform, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { AppButton } from '../components/button';
-import { AppInput } from '../components/input';
+import { AppButton } from '../components/ui/button';
+import { AppInput } from '../components/ui/input';
 import { LoginFormData, ValidationErrors } from '../types';
 import { useAuthStore } from '@/store/authStore';
 
@@ -58,7 +58,7 @@ export default function LoginScreen() {
         });
       } else {
         // Success - navigate to home/dashboard
-        router.replace('/dashboard');
+        router.replace('/(tabs)/dashboard');
       }
     } catch (error: any) {
       if (error.message === 'This API is only available for pet owners.') {
