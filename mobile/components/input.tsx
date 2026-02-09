@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, TextInput } from 'react-native';
 import { AppInputProps } from '../types';
 
 export const AppInput: React.FC<AppInputProps> = ({

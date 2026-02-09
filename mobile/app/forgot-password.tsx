@@ -7,7 +7,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
-  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -45,15 +44,6 @@ export default function ForgotPasswordScreen() {
       setLoading(false);
       setEmailSent(true);
     }, 2000);
-  };
-
-  const handleResendEmail = async (): Promise<void> => {
-    if (!formData.email) return;
-
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 1500);
   };
 
   // Mask email for display
