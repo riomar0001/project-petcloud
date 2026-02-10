@@ -36,3 +36,10 @@ export const changePasswordSchema = z
   });
 
 export type ChangePasswordRequest = z.infer<typeof changePasswordSchema>;
+
+// Update Photo
+export const updatePhotoResponseSchema = z.object({
+  profileImageUrl: z.string(),
+});
+
+export type UpdatePhotoResponse = z.infer<typeof updatePhotoResponseSchema>;

@@ -451,6 +451,7 @@ namespace PetCloud.Controllers {
 
                     using (var stream = new MemoryStream()) {
                         await Photo.CopyToAsync(stream);
+                        stream.Seek(0, SeekOrigin.Begin);
 
                         using (var original = System.Drawing.Image.FromStream(stream)) {
                             int side = Math.Min(original.Width, original.Height);

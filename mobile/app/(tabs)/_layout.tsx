@@ -74,7 +74,16 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="notifications"
+        options={{
+          title: 'Alerts',
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name={focused ? 'notifications' : 'notifications-outline'} color={color} focused={focused} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="(profile)"
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, focused }) => (

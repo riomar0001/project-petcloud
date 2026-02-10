@@ -5,9 +5,11 @@ import {
   profileResponseSchema,
   updateProfileSchema,
   changePasswordSchema,
+  updatePhotoResponseSchema,
   type ProfileResponse,
   type UpdateProfileRequest,
   type ChangePasswordRequest,
+  type UpdatePhotoResponse,
 } from './schemas';
 
 export class ProfileService {
@@ -49,6 +51,30 @@ export class ProfileService {
         validated
       );
       return response.data.message || 'Password changed successfully!';
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw handleValidationError(error);
+      }
+      throw error;
+    }
+  }
+
+  static async updatePhoto(
+    photo: { uri: string; name: string; type: string }
+  ): Promise<UpdatePhotoResponse> {
+    try {
+      const formData = new FormData();
+      formData.append('photo', {
+        uri: photo.uri,
+        name: photo.name,
+        type: photo.type,
+      } as any);
+
+      const response = await apiClient.upload<ApiResponse<UpdatePhotoResponse>>(
+        '/api/v1/profile/photo',
+        formData
+      );
+      return updatePhotoResponseSchema.parse(response.data.data);
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw handleValidationError(error);

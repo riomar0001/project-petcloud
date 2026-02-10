@@ -1,0 +1,50 @@
+name: PetCloud
+
+services:
+  db:
+    container_name: mssql-database
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${SA_PASSWORD:-PurrVet@Docker2026!}"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$${MSSQL_SA_PASSWORD}" -C -Q "SELECT 1" -b
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  app:
+    container_name: backend-server
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "5090:5090"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_URLS: "http://+:5090"
+      ASPNETCORE_ENVIRONMENT: "Development"
+      AUTO_INIT_DB: "true"
+      SEED_SQL_PATH: "/app/seed-data.sql"
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=ProjectPurrDB;User Id=sa;Password=${SA_PASSWORD:-PurrVet@Docker2026!};TrustServerCertificate=True"
+      Gmail__Email: "${GMAIL_EMAIL}"
+      Gmail__AppPassword: "${GMAIL_APP_PASSWORD}"
+      Jwt__SecretKey: "YourSuperSecretKeyThatIsAtLeast32CharactersLongForPetCloudMobileApp2024!"
+      Jwt__Issuer: "PetCloud"
+      Jwt__Audience: "PetCloudMobileApp"
+      Jwt__AccessTokenExpiryMinutes: "60"
+      Jwt__RefreshTokenExpiryDays: "30"
+    volumes:
+      - ./seed-data.sql:/app/seed-data.sql:ro
+    restart: unless-stopped
+
+volumes:
+  mssql-data:

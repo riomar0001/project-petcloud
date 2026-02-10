@@ -355,4 +355,32 @@ using (var scope = app.Services.CreateScope()) {
     //exporter.ExportAllServiceModels();
     // Console.WriteLine("All models exported!");
 }
+// Docker: Auto-create database and seed data
+if (Environment.GetEnvironmentVariable("AUTO_INIT_DB") == "true")
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    context.Database.EnsureCreated();
+
+    var seedPath = Environment.GetEnvironmentVariable("SEED_SQL_PATH");
+    if (!context.Users.Any() && !string.IsNullOrEmpty(seedPath) && File.Exists(seedPath))
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("Seeding database...");
+        var sql = File.ReadAllText(seedPath);
+        var batches = System.Text.RegularExpressions.Regex.Split(sql, @"^\s*GO\s*$",
+            System.Text.RegularExpressions.RegexOptions.Multiline | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        foreach (var batch in batches)
+        {
+            var trimmed = batch.Trim();
+            if (!string.IsNullOrEmpty(trimmed))
+            {
+                try { context.Database.ExecuteSqlRaw(trimmed); }
+                catch (Exception ex) { logger.LogWarning("Seed batch skipped: {Message}", ex.Message); }
+            }
+        }
+        logger.LogInformation("Database seeded successfully.");
+    }
+}
+
 app.Run();

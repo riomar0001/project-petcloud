@@ -365,3 +365,5 @@ FodyWeavers.xsd
 # PurrVet custom ignores
 PurrVet/summaries/
 PurrVet/wwwroot/uploads/*
+
+.env
