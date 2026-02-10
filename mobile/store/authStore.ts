@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { apiClient, AuthService, ApiError } from '@/api';
 
@@ -6,6 +7,31 @@ const TOKEN_KEYS = {
   ACCESS: 'auth_access_token',
   REFRESH: 'auth_refresh_token',
 } as const;
+
+// Platform-aware token storage (localStorage on web, SecureStore on native)
+async function saveToken(key: string, value: string) {
+  if (Platform.OS === 'web') {
+    localStorage.setItem(key, value);
+  } else {
+    await SecureStore.setItemAsync(key, value);
+  }
+}
+
+async function getToken(key: string): Promise<string | null> {
+  if (Platform.OS === 'web') {
+    return localStorage.getItem(key);
+  } else {
+    return await SecureStore.getItemAsync(key);
+  }
+}
+
+async function deleteToken(key: string) {
+  if (Platform.OS === 'web') {
+    localStorage.removeItem(key);
+  } else {
+    await SecureStore.deleteItemAsync(key);
+  }
+}
 
 interface AuthStore {
   isAuthenticated: boolean;
@@ -24,13 +50,13 @@ interface AuthStore {
 }
 
 async function saveTokens(accessToken: string, refreshToken: string) {
-  await SecureStore.setItemAsync(TOKEN_KEYS.ACCESS, accessToken);
-  await SecureStore.setItemAsync(TOKEN_KEYS.REFRESH, refreshToken);
+  await saveToken(TOKEN_KEYS.ACCESS, accessToken);
+  await saveToken(TOKEN_KEYS.REFRESH, refreshToken);
 }
 
 async function deleteTokens() {
-  await SecureStore.deleteItemAsync(TOKEN_KEYS.ACCESS);
-  await SecureStore.deleteItemAsync(TOKEN_KEYS.REFRESH);
+  await deleteToken(TOKEN_KEYS.ACCESS);
+  await deleteToken(TOKEN_KEYS.REFRESH);
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -85,6 +111,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
         };
       }
     } catch (error: any) {
+    
+      
       if (error instanceof ApiError) {
         console.log({
           message: error.message,
@@ -138,8 +166,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   hydrate: async () => {
     try {
-      const accessToken = await SecureStore.getItemAsync(TOKEN_KEYS.ACCESS);
-      const refreshToken = await SecureStore.getItemAsync(TOKEN_KEYS.REFRESH);
+      const accessToken = await getToken(TOKEN_KEYS.ACCESS);
+      const refreshToken = await getToken(TOKEN_KEYS.REFRESH);
 
       if (accessToken && refreshToken) {
         apiClient.setToken(accessToken);

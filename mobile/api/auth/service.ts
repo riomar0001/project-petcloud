@@ -31,12 +31,15 @@ export class AuthService {
       const response = await apiClient.post<ApiResponse<LoginResponse>>(
         '/api/v1/auth/login',
         validated
-      );
+      );      
+
+      
+      
 
       // Validate and unwrap response
       const validatedResponse = loginResponseSchema.parse(response.data.data);
       return validatedResponse;
-    } catch (error) {
+    } catch (error) {      
       if (error instanceof z.ZodError) {
         throw handleValidationError(error);
       }
@@ -51,7 +54,7 @@ export class AuthService {
     try {
       const validated = registerSchema.parse(data);
 
-      await apiClient.post('/api/v1/auth/register', validated);
+       await apiClient.post('/api/v1/auth/register', validated);
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw handleValidationError(error);

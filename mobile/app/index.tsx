@@ -20,6 +20,7 @@ export default function LoginScreen() {
   const [isError, setIsError] = useState(false);
   const { login } = useAuthStore();
 
+
   const validateForm = (): boolean => {
     const newErrors: ValidationErrors = {};
 
@@ -54,13 +55,14 @@ export default function LoginScreen() {
         // Redirect to 2FA screen
         router.push({
           pathname: '/two-factor',
-          params: { userId: result.userId?.toString() || '' }
+          params: { email: formData.email }
         });
       } else {
         // Success - navigate to home/dashboard
         router.replace('/(tabs)/dashboard');
       }
     } catch (error: any) {
+      
       if (error.message === 'This API is only available for pet owners.') {
         setIsError(true);
         setErrorMessage("You're trying to log in as Admin/Staff. Please use the web portal instead.");

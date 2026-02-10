@@ -18,3 +18,11 @@ export type {
   ForgotPasswordRequest,
   ResetPasswordRequest,
 } from './auth/schemas';
+
+// Profile
+export { ProfileService } from './profile/service';
+export type {
+  ProfileResponse,
+  UpdateProfileRequest,
+  ChangePasswordRequest,
+} from './profile/schemas';
