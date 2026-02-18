@@ -214,7 +214,6 @@ echo.
 echo Password for all accounts: Password123!
 echo.
 echo   SQL Server  -^>  localhost:%SQL_PORT%
-echo   PurrVet App -^>  http://localhost:5090
 echo.
 
 endlocal
