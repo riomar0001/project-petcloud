@@ -46,29 +46,29 @@ SET IDENTITY_INSERT Users ON;
 -- Admin User (custom credentials)
 INSERT INTO Users (UserID, FirstName, LastName, Email, Phone, Password, Type, Status, CreatedAt, ProfileImage, TwoFactorEnabled, FailedLoginAttempts)
 VALUES
-(1, '{{ADMIN_FIRST_NAME}}', '{{ADMIN_LAST_NAME}}', '{{ADMIN_EMAIL}}', '09171234567', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Admin', 'Active', '2026-01-01 08:00:00', 'pet.png', 1, 0);
+(1, '{{ADMIN_FIRST_NAME}}', '{{ADMIN_LAST_NAME}}', '{{ADMIN_EMAIL}}', '09171234567', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Admin', 'Active', '2026-01-01 08:00:00', 'pet.png', 1, 0);
 
 -- Staff Users (first one has custom credentials)
 INSERT INTO Users (UserID, FirstName, LastName, Email, Phone, Password, Type, Status, CreatedAt, ProfileImage, TwoFactorEnabled, FailedLoginAttempts)
 VALUES
-(2, '{{STAFF_FIRST_NAME}}', '{{STAFF_LAST_NAME}}', '{{STAFF_EMAIL}}', '09171234568', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Staff', 'Active', '2026-01-05 09:00:00', 'pet.png', 1, 0),
-(3, 'Michael', 'Chen', 'michael.chen@happypaws.com', '09171234569', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Staff', 'Active', '2026-01-10 09:00:00', 'pet.png', 1, 0),
-(4, 'Emily', 'Rodriguez', 'emily.rodriguez@happypaws.com', '09171234570', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Staff', 'Active', '2026-01-15 09:00:00', 'pet.png', 1, 0),
-(5, 'David', 'Williams', 'david.williams@happypaws.com', '09171234571', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Staff', 'Active', '2026-01-20 09:00:00', 'pet.png', 1, 0);
+(2, '{{STAFF_FIRST_NAME}}', '{{STAFF_LAST_NAME}}', '{{STAFF_EMAIL}}', '09171234568', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Staff', 'Active', '2026-01-05 09:00:00', 'pet.png', 1, 0),
+(3, 'Michael', 'Chen', 'michael.chen@happypaws.com', '09171234569', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Staff', 'Active', '2026-01-10 09:00:00', 'pet.png', 1, 0),
+(4, 'Emily', 'Rodriguez', 'emily.rodriguez@happypaws.com', '09171234570', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Staff', 'Active', '2026-01-15 09:00:00', 'pet.png', 1, 0),
+(5, 'David', 'Williams', 'david.williams@happypaws.com', '09171234571', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Staff', 'Active', '2026-01-20 09:00:00', 'pet.png', 1, 0);
 
 -- Owner Users (first one has custom credentials)
 INSERT INTO Users (UserID, FirstName, LastName, Email, Phone, Password, Type, Status, CreatedAt, ProfileImage, TwoFactorEnabled, FailedLoginAttempts, LastTwoFactorVerification)
 VALUES
-(6, '{{OWNER_FIRST_NAME}}', '{{OWNER_LAST_NAME}}', '{{OWNER_EMAIL}}', '{{OWNER_PHONE}}', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-01 10:00:00', 'pet.png', 1, 0, '2026-02-09 08:00:00'),
-(7, 'Maria', 'Garcia', 'maria.garcia@email.com', '09181234568', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-02 11:00:00', 'pet.png', 1, 0, '2026-02-08 09:00:00'),
-(8, 'James', 'Brown', 'james.brown@email.com', '09181234569', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-03 12:00:00', 'pet.png', 1, 0, '2026-02-07 10:00:00'),
-(9, 'Lisa', 'Anderson', 'lisa.anderson@email.com', '09181234570', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-04 13:00:00', 'pet.png', 1, 0, '2026-02-06 11:00:00'),
-(10, 'Robert', 'Taylor', 'robert.taylor@email.com', '09181234571', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-05 14:00:00', 'pet.png', 1, 0, '2026-02-05 12:00:00'),
-(11, 'Jennifer', 'Martinez', 'jennifer.martinez@email.com', '09181234572', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-06 15:00:00', 'pet.png', 0, 0, '2026-02-04 13:00:00'),
-(12, 'William', 'Lee', 'william.lee@email.com', '09181234573', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-07 16:00:00', 'pet.png', 0, 0, '2026-02-03 14:00:00'),
-(13, 'Jessica', 'White', 'jessica.white@email.com', '09181234574', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-08 17:00:00', 'pet.png', 1, 0, '2026-02-02 15:00:00'),
-(14, 'Daniel', 'Harris', 'daniel.harris@email.com', '09181234575', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-09 18:00:00', 'pet.png', 1, 0, '2026-02-01 16:00:00'),
-(15, 'Amanda', 'Clark', 'amanda.clark@email.com', '09181234576', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-09 19:00:00', 'pet.png', 0, 0, '2026-01-31 17:00:00');
+(6, '{{OWNER_FIRST_NAME}}', '{{OWNER_LAST_NAME}}', '{{OWNER_EMAIL}}', '{{OWNER_PHONE}}', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-01 10:00:00', 'pet.png', 1, 0, '2026-02-09 08:00:00'),
+(7, 'Maria', 'Garcia', 'maria.garcia@email.com', '09181234568', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-02 11:00:00', 'pet.png', 1, 0, '2026-02-08 09:00:00'),
+(8, 'James', 'Brown', 'james.brown@email.com', '09181234569', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-03 12:00:00', 'pet.png', 1, 0, '2026-02-07 10:00:00'),
+(9, 'Lisa', 'Anderson', 'lisa.anderson@email.com', '09181234570', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-04 13:00:00', 'pet.png', 1, 0, '2026-02-06 11:00:00'),
+(10, 'Robert', 'Taylor', 'robert.taylor@email.com', '09181234571', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-05 14:00:00', 'pet.png', 1, 0, '2026-02-05 12:00:00'),
+(11, 'Jennifer', 'Martinez', 'jennifer.martinez@email.com', '09181234572', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-06 15:00:00', 'pet.png', 0, 0, '2026-02-04 13:00:00'),
+(12, 'William', 'Lee', 'william.lee@email.com', '09181234573', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-07 16:00:00', 'pet.png', 0, 0, '2026-02-03 14:00:00'),
+(13, 'Jessica', 'White', 'jessica.white@email.com', '09181234574', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-08 17:00:00', 'pet.png', 1, 0, '2026-02-02 15:00:00'),
+(14, 'Daniel', 'Harris', 'daniel.harris@email.com', '09181234575', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-09 18:00:00', 'pet.png', 1, 0, '2026-02-01 16:00:00'),
+(15, 'Amanda', 'Clark', 'amanda.clark@email.com', '09181234576', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-09 19:00:00', 'pet.png', 0, 0, '2026-01-31 17:00:00');
 
 SET IDENTITY_INSERT Users OFF;
 

@@ -46,29 +46,29 @@ SET IDENTITY_INSERT Users ON;
 -- Admin User (custom credentials)
 INSERT INTO Users (UserID, FirstName, LastName, Email, Phone, Password, Type, Status, CreatedAt, ProfileImage, TwoFactorEnabled, FailedLoginAttempts)
 VALUES
-(1, 'Test', 'test', 'inguitomario00@gmail.com', '09171234567', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Admin', 'Active', '2026-01-01 08:00:00', 'pet.png', 1, 0);
+(1, 'Mario', 'Mario', 'inguitomario00@gmail.com', '09171234567', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Admin', 'Active', '2026-01-01 08:00:00', 'pet.png', 1, 0);
 
 -- Staff Users (first one has custom credentials)
 INSERT INTO Users (UserID, FirstName, LastName, Email, Phone, Password, Type, Status, CreatedAt, ProfileImage, TwoFactorEnabled, FailedLoginAttempts)
 VALUES
-(2, 'test', 'test', 'mariojringuito@gmail.com', '09171234568', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Staff', 'Active', '2026-01-05 09:00:00', 'pet.png', 1, 0),
-(3, 'Michael', 'Chen', 'michael.chen@happypaws.com', '09171234569', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Staff', 'Active', '2026-01-10 09:00:00', 'pet.png', 1, 0),
-(4, 'Emily', 'Rodriguez', 'emily.rodriguez@happypaws.com', '09171234570', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Staff', 'Active', '2026-01-15 09:00:00', 'pet.png', 1, 0),
-(5, 'David', 'Williams', 'david.williams@happypaws.com', '09171234571', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Staff', 'Active', '2026-01-20 09:00:00', 'pet.png', 1, 0);
+(2, 'mario', 'mario', 'mariojringuito@gmail.com', '09171234568', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Staff', 'Active', '2026-01-05 09:00:00', 'pet.png', 1, 0),
+(3, 'Michael', 'Chen', 'michael.chen@happypaws.com', '09171234569', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Staff', 'Active', '2026-01-10 09:00:00', 'pet.png', 1, 0),
+(4, 'Emily', 'Rodriguez', 'emily.rodriguez@happypaws.com', '09171234570', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Staff', 'Active', '2026-01-15 09:00:00', 'pet.png', 1, 0),
+(5, 'David', 'Williams', 'david.williams@happypaws.com', '09171234571', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Staff', 'Active', '2026-01-20 09:00:00', 'pet.png', 1, 0);
 
 -- Owner Users (first one has custom credentials)
 INSERT INTO Users (UserID, FirstName, LastName, Email, Phone, Password, Type, Status, CreatedAt, ProfileImage, TwoFactorEnabled, FailedLoginAttempts, LastTwoFactorVerification)
 VALUES
-(6, 'test', 'test', 'mariojringuito@riomar.dev', '09292932986', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-01 10:00:00', 'pet.png', 1, 0, '2026-02-09 08:00:00'),
-(7, 'Maria', 'Garcia', 'maria.garcia@email.com', '09181234568', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-02 11:00:00', 'pet.png', 1, 0, '2026-02-08 09:00:00'),
-(8, 'James', 'Brown', 'james.brown@email.com', '09181234569', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-03 12:00:00', 'pet.png', 1, 0, '2026-02-07 10:00:00'),
-(9, 'Lisa', 'Anderson', 'lisa.anderson@email.com', '09181234570', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-04 13:00:00', 'pet.png', 1, 0, '2026-02-06 11:00:00'),
-(10, 'Robert', 'Taylor', 'robert.taylor@email.com', '09181234571', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-05 14:00:00', 'pet.png', 1, 0, '2026-02-05 12:00:00'),
-(11, 'Jennifer', 'Martinez', 'jennifer.martinez@email.com', '09181234572', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-06 15:00:00', 'pet.png', 0, 0, '2026-02-04 13:00:00'),
-(12, 'William', 'Lee', 'william.lee@email.com', '09181234573', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-07 16:00:00', 'pet.png', 0, 0, '2026-02-03 14:00:00'),
-(13, 'Jessica', 'White', 'jessica.white@email.com', '09181234574', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-08 17:00:00', 'pet.png', 1, 0, '2026-02-02 15:00:00'),
-(14, 'Daniel', 'Harris', 'daniel.harris@email.com', '09181234575', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-09 18:00:00', 'pet.png', 1, 0, '2026-02-01 16:00:00'),
-(15, 'Amanda', 'Clark', 'amanda.clark@email.com', '09181234576', 'AQAAAAIAAYagAAAAEH4cxxiIkR8ajC6TU/4c2UB+ykec3Eepow7zk9OJBsBlryGdWi6sR70iuDznR9gVyg==', 'Owner', 'Active', '2026-02-09 19:00:00', 'pet.png', 0, 0, '2026-01-31 17:00:00');
+(6, 'mario', 'mario', 'm.inguito.484470@umindanao.edu.ph', '09292932986', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-01 10:00:00', 'pet.png', 1, 0, '2026-02-09 08:00:00'),
+(7, 'Maria', 'Garcia', 'maria.garcia@email.com', '09181234568', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-02 11:00:00', 'pet.png', 1, 0, '2026-02-08 09:00:00'),
+(8, 'James', 'Brown', 'james.brown@email.com', '09181234569', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-03 12:00:00', 'pet.png', 1, 0, '2026-02-07 10:00:00'),
+(9, 'Lisa', 'Anderson', 'lisa.anderson@email.com', '09181234570', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-04 13:00:00', 'pet.png', 1, 0, '2026-02-06 11:00:00'),
+(10, 'Robert', 'Taylor', 'robert.taylor@email.com', '09181234571', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-05 14:00:00', 'pet.png', 1, 0, '2026-02-05 12:00:00'),
+(11, 'Jennifer', 'Martinez', 'jennifer.martinez@email.com', '09181234572', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-06 15:00:00', 'pet.png', 0, 0, '2026-02-04 13:00:00'),
+(12, 'William', 'Lee', 'william.lee@email.com', '09181234573', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-07 16:00:00', 'pet.png', 0, 0, '2026-02-03 14:00:00'),
+(13, 'Jessica', 'White', 'jessica.white@email.com', '09181234574', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-08 17:00:00', 'pet.png', 1, 0, '2026-02-02 15:00:00'),
+(14, 'Daniel', 'Harris', 'daniel.harris@email.com', '09181234575', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-09 18:00:00', 'pet.png', 1, 0, '2026-02-01 16:00:00'),
+(15, 'Amanda', 'Clark', 'amanda.clark@email.com', '09181234576', 'AQAAAAIAAYagAAAAEM/ziYXxk1kFpu23fR56wGcE2R3t/L67vdtwpf6jrumxhvY4RRQJE1Hb/Y9bbJuL0Q==', 'Owner', 'Active', '2026-02-09 19:00:00', 'pet.png', 0, 0, '2026-01-31 17:00:00');
 
 SET IDENTITY_INSERT Users OFF;
 
@@ -80,7 +80,7 @@ SET IDENTITY_INSERT Owners ON;
 
 INSERT INTO Owners (OwnerID, UserID, Name, Email, Phone)
 VALUES
-(1, 6, 'test test', 'mariojringuito@riomar.dev', '09292932986'),
+(1, 6, 'mario mario', 'm.inguito.484470@umindanao.edu.ph', '09292932986'),
 (2, 7, 'Maria Garcia', 'maria.garcia@email.com', '09181234568'),
 (3, 8, 'James Brown', 'james.brown@email.com', '09181234569'),
 (4, 9, 'Lisa Anderson', 'lisa.anderson@email.com', '09181234570'),
@@ -276,7 +276,7 @@ VALUES
 (7, 'Appointment', 'Reminder: Charlie has a nail trimming appointment on Feb 9 at 11:30 AM.', NULL, 9, 0, '/Owner/Appointments', '2026-02-09 08:00:00'),
 (8, 'Appointment', 'Bailey''s appointment has been successfully booked for Feb 9 at 2:00 PM.', NULL, 13, 1, '/Owner/Appointments', '2026-02-08 15:00:00'),
 (9, 'User', 'New owner registered: Amanda Clark via mobile app.', 'Staff', NULL, 1, '/Staff/Owners', '2026-02-09 19:05:00'),
-(10, 'Appointment', 'New appointment request from test test for Feb 9, 10:00 AM.', 'Staff', NULL, 1, '/Staff/Appointments', '2026-02-08 11:15:00'),
+(10, 'Appointment', 'New appointment request from mario mario for Feb 9, 10:00 AM.', 'Staff', NULL, 1, '/Staff/Appointments', '2026-02-08 11:15:00'),
 (11, 'Appointment', 'Appointment cancelled by Jessica White for Feb 9, 3:00 PM.', 'Staff', NULL, 1, '/Staff/Appointments', '2026-02-07 10:30:00'),
 (12, 'System', 'Database backup completed successfully.', 'Admin', NULL, 1, NULL, '2026-02-09 02:00:00'),
 (13, 'User', 'New staff member added: David Williams.', 'Admin', NULL, 1, '/Admin/Users', '2026-01-20 09:15:00'),
@@ -293,10 +293,10 @@ SET IDENTITY_INSERT SystemLogs ON;
 
 INSERT INTO SystemLogs (LogID, ActionType, Module, Description, PerformedBy, Timestamp)
 VALUES
-(1, 'Create', 'User', 'New admin user created: Test test', 'System', '2026-01-01 08:00:00'),
-(2, 'Create', 'User', 'New staff member added: test test', 'UserID:1', '2026-01-05 09:00:00'),
+(1, 'Create', 'User', 'New admin user created: Mario Mario', 'System', '2026-01-01 08:00:00'),
+(2, 'Create', 'User', 'New staff member added: mario mario', 'UserID:1', '2026-01-05 09:00:00'),
 (3, 'Create', 'User', 'New staff member added: Michael Chen', 'UserID:1', '2026-01-10 09:00:00'),
-(4, 'Create', 'User', 'New owner registered via web: test test', 'UserID:2', '2026-02-01 10:00:00'),
+(4, 'Create', 'User', 'New owner registered via web: mario mario', 'UserID:2', '2026-02-01 10:00:00'),
 (5, 'Create', 'Pet', 'New pet added: Max (Golden Retriever)', 'UserID:6', '2026-02-01 10:30:00'),
 (6, 'Create', 'Appointment', 'Appointment created for Max - Rabies Vaccination', 'UserID:6', '2026-01-10 09:00:00'),
 (7, 'Update', 'Appointment', 'Appointment #1 marked as completed for Max', 'UserID:2', '2026-01-15 10:30:00'),
@@ -307,7 +307,7 @@ VALUES
 (12, 'Update', 'Pet', 'Pet photo updated for Bella', 'UserID:6', '2026-02-05 14:20:00'),
 (13, 'Delete', 'Appointment', 'Appointment #24 cancelled by owner request', 'UserID:13', '2026-02-07 10:30:00'),
 (14, 'Create', 'Notification', 'System notification sent to all owners regarding app update', 'UserID:1', '2026-02-07 09:00:00'),
-(15, 'Update', 'User', 'User profile updated: test test changed phone number', 'UserID:6', '2026-02-08 10:00:00'),
+(15, 'Update', 'User', 'User profile updated: mario mario changed phone number', 'UserID:6', '2026-02-08 10:00:00'),
 (16, 'Create', 'Appointment', 'Appointment created for Rocky - Tick Treatment', 'UserID:8', '2026-02-09 16:00:00'),
 (17, 'Update', 'Appointment', 'Appointment #8 marked as completed - Spay surgery for Daisy', 'UserID:3', '2026-02-01 11:00:00'),
 (18, 'Create', 'Pet', 'New pet added: Whiskers (Domestic Shorthair)', 'UserID:15', '2026-02-09 19:35:00'),
