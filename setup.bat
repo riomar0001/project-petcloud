@@ -123,16 +123,6 @@ echo.
 echo   Gmail SMTP Configuration
 echo.
 
-:input_gmail_email
-set /p GMAIL_EMAIL="Gmail address: "
-powershell -Command "if ('!GMAIL_EMAIL!' -match '^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$') { exit 0 } else { exit 1 }" >nul 2>&1
-if errorlevel 1 ( echo   Invalid email address. Please try again. & goto input_gmail_email )
-
-:input_gmail_password
-set /p GMAIL_APP_PASSWORD="Gmail app password: "
-if "!GMAIL_APP_PASSWORD!"=="" ( echo   This field cannot be empty. Please try again. & goto input_gmail_password )
-echo.
-
 echo   Admin Account
 :input_admin_first
 set /p ADMIN_FIRST_NAME="Admin first name: "
@@ -193,8 +183,6 @@ powershell -Command "(Get-Content '%OUTPUT%') -replace '{{ADMIN_FIRST_NAME}}', '
 echo Seed data generated: %OUTPUT%
 
 (
-    echo GMAIL_EMAIL=%GMAIL_EMAIL%
-    echo GMAIL_APP_PASSWORD=%GMAIL_APP_PASSWORD%
     echo SA_PASSWORD=%SA_PASSWORD%
     echo SQL_CONTAINER=%SQL_CONTAINER%
 ) > "%ENV_FILE%"
@@ -209,31 +197,6 @@ docker exec "%SQL_CONTAINER%" /opt/mssql-tools18/bin/sqlcmd ^
     -i /tmp/seed-data.sql
 
 echo Database seeded successfully.
-echo.
-
-:: ============================================
-:: STEP 5: Build and start the application
-:: ============================================
-
-echo --------------------------------------------
-echo   Step 5: Building and starting PurrVet app...
-echo --------------------------------------------
-echo.
-
-docker build ^
-    -t purrvet-app ^
-    -f "%DOCKER_DIR%\Dockerfile" ^
-    "%SCRIPT_DIR%"
-
-docker run -d ^
-    --name purrvet-app ^
-    --link "%SQL_CONTAINER%:sqlserver" ^
-    -p 5090:5090 ^
-    --env-file "%ENV_FILE%" ^
-    -e "ConnectionStrings__DefaultConnection=Server=sqlserver,%SQL_PORT%;Database=ProjectPurrDB;User Id=sa;Password=%SA_PASSWORD%;TrustServerCertificate=True;" ^
-    purrvet-app
-
-echo PurrVet application started.
 echo.
 
 :: ============================================
