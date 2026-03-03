@@ -76,17 +76,17 @@ export default function AppointmentsScreen() {
       <View className="px-6 mt-3 mb-6 flex-row justify-end">
         <TouchableOpacity
           onPress={() => router.push('/(tabs)/(appointments)/create')}
-          className="w-40 flex-row items-center justify-center rounded-lg bg-mountain-meadow-600 px-3 py-2 shadow"
-          activeOpacity={0.8}
+          className="flex-row items-center justify-center rounded-full bg-mountain-meadow-600 px-5 h-12 shadow"
+          activeOpacity={0.7}
+          style={{ elevation: 4 }}
         >
-          <Ionicons name="add-circle-outline" size={15} color="#FFFFFF" />
-          <Text className="ml-2 text-sm font-semibold text-white">Book Appointment</Text>
+          <Ionicons name="add" size={20} color="#FFFFFF" />
+          <Text className="ml-3 text-base font-semibold text-white">Book Appointment</Text>
         </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="px-6 pt-6 pb-8">
-          {/* Quick Stats */}
           <View className="mb-6 flex-row justify-between">
             <View className="flex-1 mr-3 rounded-xl bg-white px-4 py-4 shadow-sm">
               <Text className="text-xs text-gray-400">Upcoming</Text>
@@ -96,13 +96,9 @@ export default function AppointmentsScreen() {
               <Text className="text-xs text-gray-400">Completed</Text>
               <Text className="mt-1 text-2xl font-bold text-blue-600">0</Text>
             </View>
-            <View className="flex-1 ml-3 rounded-xl bg-white px-4 py-4 shadow-sm">
-              <Text className="text-xs text-gray-400">Pets</Text>
-              <Text className="mt-1 text-2xl font-bold text-purple-600">3</Text>
-            </View>
           </View>
 
-          {/* Filter Tabs */}
+          {/* Filter*/}
           <View className="mb-4 flex-row">
             {['all', 'upcoming', 'completed'].map((tab) => (
               <TouchableOpacity
