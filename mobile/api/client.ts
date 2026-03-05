@@ -1,9 +1,13 @@
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { Platform } from 'react-native';
 
 /**
  * API Configuration
+ * - Use localhost for web
+ * - Use emulator-friendly host for native (Android emulator: 10.0.2.2)
+ * - If you run the app on a physical device, replace with your machine IP (e.g. http://192.168.x.x:5090)
  */
-const API_BASE_URL = 'http://192.168.137.198:5090';
+const API_BASE_URL = Platform.OS === 'web' ? 'http://localhost:5090' : 'http://192.168.1.42:5090';
 const API_TIMEOUT = 30000;
 
 /**

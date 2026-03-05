@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,77 +22,19 @@ type AppointmentFormData = z.infer<typeof appointmentSchema>;
 const SERVICE_OPTIONS = ['Checkup', 'Vaccination', 'Dental', 'Grooming', 'Surgery', 'Boarding'];
 
 export default function CreateAppointmentScreen() {
-  const { pets, addAppointment } = useAppStore();
-  const [petModalVisible, setPetModalVisible] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [pet, setPet] = useState('Geste');
+  const appointmentTypes = ['Checkup', 'Vaccination', 'Dental', 'Grooming', 'Surgery', 'Emergency'];
+  const [selectedType, setSelectedType] = useState(appointmentTypes[0]);
+  const [date, setDate] = useState(new Date());
+  const [showPicker, setShowPicker] = useState(false);
+  const [notes, setNotes] = useState('');
+  const times = ['08:00 AM','09:00 AM','10:00 AM','11:00 AM','12:00 PM','01:00 PM','02:00 PM','03:00 PM'];
+  const [selectedTime, setSelectedTime] = useState(times[1]);
 
-  const {
-    control,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<AppointmentFormData>({
-    resolver: zodResolver(appointmentSchema),
-    defaultValues: {
-      petId: '',
-      serviceType: '',
-      notes: '',
-    },
-  });
-
-  const selectedServiceType = watch('serviceType');
-  const selectedPetId = watch('petId');
-  const selectedPet = pets.find((p) => p.id === selectedPetId);
-
-  const onSubmit = (data: AppointmentFormData) => {
-    addAppointment({
-      petId: data.petId,
-      serviceType: data.serviceType,
-      date: data.date.toISOString().split('T')[0],
-      time: data.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      notes: data.notes,
-    });
-    router.back();
+  const handleConfirm = () => {
+    console.log({ pet, service: selectedType, date, time: selectedTime, notes });
+    router.push('/(tabs)/(appointments)');
   };
-
-  const SelectPetModal = () => (
-    <Modal visible={petModalVisible} transparent animationType="slide">
-      <View className="flex-1 justify-end bg-black/50">
-        <View className="rounded-t-3xl bg-white p-6 pb-12">
-          <View className="mb-4 flex-row items-center justify-between">
-            <Text className="text-xl font-bold text-gray-900">Select Pet</Text>
-            <TouchableOpacity onPress={() => setPetModalVisible(false)} className="p-2">
-              <Ionicons name="close" size={24} color="#6B7280" />
-            </TouchableOpacity>
-          </View>
-          {pets.length === 0 ? (
-            <Text className="py-4 text-center text-gray-500">No pets available. Please add a pet first.</Text>
-          ) : (
-            pets.map((pet) => (
-              <TouchableOpacity
-                key={pet.id}
-                className="flex-row items-center border-b border-gray-100 py-4"
-                onPress={() => {
-                  setValue('petId', pet.id, { shouldValidate: true });
-                  setPetModalVisible(false);
-                }}
-              >
-                <View className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-mountain-meadow-100">
-                  <Ionicons name="paw" size={20} color="#059666" />
-                </View>
-                <View>
-                  <Text className="text-base font-semibold text-gray-900">{pet.name}</Text>
-                  <Text className="text-xs text-gray-500">{pet.species} • {pet.breed}</Text>
-                </View>
-              </TouchableOpacity>
-            ))
-          )}
-        </View>
-      </View>
-    </Modal>
-  );
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
@@ -117,148 +59,128 @@ export default function CreateAppointmentScreen() {
           {/* Select Pet */}
           <View className="mb-6">
             <Text className="mb-2 text-sm font-semibold text-gray-700">Select Pet</Text>
-            <Controller
-              control={control}
-              name="petId"
-              render={() => (
-                <TouchableOpacity
-                  onPress={() => setPetModalVisible(true)}
-                  className={`flex-row items-center justify-between rounded-2xl border bg-white p-4 ${errors.petId ? 'border-red-500' : 'border-gray-200'
-                    }`}
-                  activeOpacity={0.7}
-                >
-                  <View className="flex-row items-center">
-                    <View className="mr-3 h-12 w-12 items-center justify-center rounded-full bg-gray-50">
-                      <Ionicons name="paw-outline" size={24} color={selectedPet ? "#059666" : "#9CA3AF"} />
-                    </View>
-                    <View>
-                      <Text className={`text-base font-medium ${selectedPet ? 'text-gray-900' : 'text-gray-400'}`}>
-                        {selectedPet ? selectedPet.name : 'Choose a pet'}
-                      </Text>
-                      {selectedPet && <Text className="text-xs text-gray-500">{selectedPet.species}</Text>}
-                    </View>
-                  </View>
-                  <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
-                </TouchableOpacity>
-              )}
-            />
-            {errors.petId && <Text className="mt-1 text-xs text-red-500">{errors.petId.message}</Text>}
+            <TouchableOpacity
+              onPress={() => {
+                if (Platform.OS === 'web') {
+                  const input = window.prompt('Select pet name', pet || '');
+                  if (input !== null) setPet(input);
+                } else {
+                  setPet(pet || 'Geste');
+                }
+              }}
+              className="mb-0 flex-row items-center justify-between rounded-lg border border-gray-300 px-4 py-3 bg-white"
+            >
+              <Text className="text-gray-700">{pet || 'Select pet'}</Text>
+              <Ionicons name="chevron-down" size={18} color="#6B7280" />
+            </TouchableOpacity>
           </View>
 
-          {/* Select Service (Chips) */}
-          <View className="mb-6">
-            <Text className="mb-2 text-sm font-semibold text-gray-700">Service Type</Text>
-            <View className="flex-row flex-wrap gap-2">
-              {SERVICE_OPTIONS.map((service) => {
-                const isSelected = selectedServiceType === service;
-                return (
-                  <TouchableOpacity
-                    key={service}
-                    onPress={() => setValue('serviceType', service, { shouldValidate: true })}
-                    className={`rounded-full px-4 py-2 border ${isSelected ? 'border-[#059666] bg-mountain-meadow-50' : 'border-gray-200 bg-white'
-                      }`}
-                  >
-                    <Text className={`text-sm font-medium ${isSelected ? 'text-[#059666]' : 'text-gray-600'}`}>
-                      {service}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
+          {/* Appointment */}
+          <View className="mb-4">
+            <Text className="mb-3 text-sm font-semibold text-gray-700">Appointment Type</Text>
+            <View className="mb-2 flex-row flex-wrap">
+              {appointmentTypes.map((t) => (
+                <TouchableOpacity
+                  key={t}
+                  onPress={() => setSelectedType(t)}
+                  className={`mr-3 mb-3 px-4 py-2 rounded-full border ${selectedType === t ? 'bg-mountain-meadow-600 border-transparent' : 'bg-white border-gray-300'}`}
+                >
+                  <Text className={`${selectedType === t ? 'text-white' : 'text-gray-700'} text-sm font-semibold`}>{t}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
             {errors.serviceType && <Text className="mt-1 text-xs text-red-500">{errors.serviceType.message}</Text>}
           </View>
 
           {/* Date & Time */}
-          <View className="mb-6 flex-row gap-3">
-            <View className="flex-1">
-              <Text className="mb-2 text-sm font-semibold text-gray-700">Date</Text>
-              <Controller
-                control={control}
-                name="date"
-                render={({ field: { value } }) => (
-                  <>
-                    <TouchableOpacity
-                      onPress={() => setShowDatePicker(true)}
-                      className={`flex-row items-center rounded-2xl border bg-white px-4 py-4 ${errors.date ? 'border-red-500' : 'border-gray-200'
-                        }`}
-                    >
-                      <Ionicons name="calendar-outline" size={20} color="#9CA3AF" className="mr-2" />
-                      <Text className={`ml-2 text-base ${value ? 'text-gray-900' : 'text-gray-400'}`}>
-                        {value ? value.toLocaleDateString() : 'Select Date'}
-                      </Text>
-                    </TouchableOpacity>
-                    {showDatePicker && (
-                      <DateTimePicker
-                        value={value || new Date()}
-                        mode="date"
-                        display="default"
-                        minimumDate={new Date()}
-                        onChange={(event, date) => {
-                          setShowDatePicker(false);
-                          if (date) setValue('date', date, { shouldValidate: true });
-                        }}
-                      />
-                    )}
-                  </>
-                )}
-              />
-              {errors.date && <Text className="mt-1 text-xs text-red-500">{errors.date.message}</Text>}
+          <View className="mb-4">
+            <Text className="mb-2 text-sm font-semibold text-gray-700">Date</Text>
+            <View className="mb-3 flex-row items-center">
+              <TouchableOpacity
+                onPress={() => {
+                  if (Platform.OS === 'web') {
+                    const input = window.prompt('Enter date (MM/DD/YYYY)', date.toLocaleDateString());
+                    if (input) {
+                      const parsed = new Date(input);
+                      if (!isNaN(parsed.getTime())) setDate(parsed);
+                    }
+                  } else {
+                    setShowPicker(true);
+                  }
+                }}
+                className="flex-1 mr-3 flex-row items-center rounded-lg border border-gray-300 px-4 py-3 bg-white"
+              >
+                <Text className="text-gray-500">{date.toLocaleDateString()}</Text>
+                <Ionicons name="calendar-outline" size={18} color="#6B7280" className="ml-auto" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  if (Platform.OS === 'web') {
+                    const input = window.prompt('Select time', selectedTime);
+                    if (input) setSelectedTime(input);
+                  } else {
+                    const currentIndex = times.indexOf(selectedTime);
+                    setSelectedTime(times[(currentIndex + 1) % times.length]);
+                  }
+                }}
+                className="w-32 flex-row items-center justify-between rounded-lg border border-gray-300 px-3 py-3 bg-white"
+              >
+                <Text className="text-gray-700">{selectedTime}</Text>
+                <Ionicons name="chevron-down" size={18} color="#6B7280" />
+              </TouchableOpacity>
             </View>
 
-            <View className="flex-1">
-              <Text className="mb-2 text-sm font-semibold text-gray-700">Time</Text>
-              <Controller
-                control={control}
-                name="time"
-                render={({ field: { value } }) => (
-                  <>
-                    <TouchableOpacity
-                      onPress={() => setShowTimePicker(true)}
-                      className={`flex-row items-center rounded-2xl border bg-white px-4 py-4 ${errors.time ? 'border-red-500' : 'border-gray-200'
-                        }`}
-                    >
-                      <Ionicons name="time-outline" size={20} color="#9CA3AF" className="mr-2" />
-                      <Text className={`ml-2 text-base ${value ? 'text-gray-900' : 'text-gray-400'}`}>
-                        {value ? value.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Select Time'}
-                      </Text>
-                    </TouchableOpacity>
-                    {showTimePicker && (
-                      <DateTimePicker
-                        value={value || new Date()}
-                        mode="time"
-                        display="default"
-                        onChange={(event, date) => {
-                          setShowTimePicker(false);
-                          if (date) setValue('time', date, { shouldValidate: true });
-                        }}
-                      />
-                    )}
-                  </>
-                )}
-              />
-              {errors.time && <Text className="mt-1 text-xs text-red-500">{errors.time.message}</Text>}
-            </View>
+            {Platform.OS !== 'web' && showPicker && (() => {
+              try {
+                // require at runtime so Metro/web bundler doesn't try to resolve the native-only package for web
+                // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                const DateTimePicker = eval('require')('@react-native-community/datetimepicker').default;
+                return (
+                  <DateTimePicker
+                    value={date}
+                    mode="datetime"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowPicker(false);
+                      if (selectedDate) setDate(selectedDate);
+                    }}
+                  />
+                );
+              } catch (err) {
+                return null;
+              }
+            })()}
           </View>
 
           {/* Notes */}
-          <View className="mb-8">
-            <Text className="mb-2 text-sm font-semibold text-gray-700">Notes (Optional)</Text>
-            <Controller
-              control={control}
-              name="notes"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  className="min-h-[100px] rounded-2xl border border-gray-200 bg-white p-4 text-base text-gray-900"
-                  placeholder="Any special instructions or concerns..."
-                  placeholderTextColor="#9CA3AF"
-                  multiline
-                  textAlignVertical="top"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                />
-              )}
+          <View className="mb-6">
+            <Text className="mb-2 text-sm font-semibold text-gray-700">Notes</Text>
+            <TextInput
+              placeholder="Any special notes or symptoms..."
+              value={notes}
+              onChangeText={setNotes}
+              multiline
+              className="h-28 rounded-lg border border-gray-300 px-4 py-3 bg-white"
             />
+          </View>
+
+          {/* Footer Buttons */}
+          <View className="flex-row items-center justify-between">
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="flex-1 mr-3 rounded-full border border-gray-300 px-4 py-3 bg-white"
+            >
+              <Text className="text-center text-sm text-gray-700">Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              disabled={!pet || !selectedType}
+              onPress={handleConfirm}
+              className={`flex-1 ml-3 rounded-full py-3 ${!pet || !selectedType ? 'bg-gray-300' : 'bg-mountain-meadow-600'}`}
+            >
+              <Text className="text-center text-sm font-semibold text-white">Save Changes</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Submit Button */}
