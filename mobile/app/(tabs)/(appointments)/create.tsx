@@ -3,6 +3,23 @@ import { View, Text, ScrollView, TouchableOpacity, TextInput, Platform } from 'r
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useAppStore } from '@/store/useAppStore';
+
+const appointmentSchema = z.object({
+  petId: z.string().min(1, 'Please select a pet'),
+  serviceType: z.string().min(1, 'Please select a service'),
+  date: z.date({ message: 'Date is required' }),
+  time: z.date({ message: 'Time is required' }),
+  notes: z.string().optional(),
+});
+
+type AppointmentFormData = z.infer<typeof appointmentSchema>;
+
+const SERVICE_OPTIONS = ['Checkup', 'Vaccination', 'Dental', 'Grooming', 'Surgery', 'Boarding'];
 
 export default function CreateAppointmentScreen() {
   const [pet, setPet] = useState('Geste');
@@ -22,7 +39,7 @@ export default function CreateAppointmentScreen() {
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
       {/* Header */}
-      <View className="flex-row items-center bg-white px-5 pb-4 pt-3">
+      <View className="flex-row items-center bg-white px-5 pb-4 pt-3 shadow-sm">
         <TouchableOpacity
           onPress={() => router.back()}
           className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-gray-100"
@@ -36,10 +53,11 @@ export default function CreateAppointmentScreen() {
         </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View className="px-6 pt-5 pb-8">
+
           {/* Select Pet */}
-          <View className="mb-4">
+          <View className="mb-6">
             <Text className="mb-2 text-sm font-semibold text-gray-700">Select Pet</Text>
             <TouchableOpacity
               onPress={() => {
@@ -71,6 +89,7 @@ export default function CreateAppointmentScreen() {
                 </TouchableOpacity>
               ))}
             </View>
+            {errors.serviceType && <Text className="mt-1 text-xs text-red-500">{errors.serviceType.message}</Text>}
           </View>
 
           {/* Date & Time */}
@@ -163,8 +182,19 @@ export default function CreateAppointmentScreen() {
               <Text className="text-center text-sm font-semibold text-white">Save Changes</Text>
             </TouchableOpacity>
           </View>
+
+          {/* Submit Button */}
+          <TouchableOpacity
+            onPress={handleSubmit(onSubmit)}
+            className="rounded-2xl bg-[#059666] py-4 items-center shadow-sm"
+            activeOpacity={0.8}
+          >
+            <Text className="text-base font-bold text-white">Confirm Booking</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <SelectPetModal />
     </SafeAreaView>
   );
 }

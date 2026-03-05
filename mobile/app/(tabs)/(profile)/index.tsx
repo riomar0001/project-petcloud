@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +19,8 @@ export default function ProfileViewScreen() {
   const { logout } = useAuthStore();
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -112,6 +115,24 @@ export default function ProfileViewScreen() {
 
           {/* Settings */}
           <View className="mt-5 rounded-2xl border border-gray-100 bg-white">
+            <SettingsToggleRow
+              icon="notifications-outline"
+              iconBg="bg-purple-100"
+              iconColor="#A855F7"
+              label="Notifications"
+              value={notificationsEnabled}
+              onValueChange={setNotificationsEnabled}
+            />
+            <View className="mx-5 h-px bg-gray-100" />
+            <SettingsToggleRow
+              icon="moon-outline"
+              iconBg="bg-slate-100"
+              iconColor="#475569"
+              label="Dark Mode"
+              value={darkModeEnabled}
+              onValueChange={setDarkModeEnabled}
+            />
+            <View className="mx-5 h-px bg-gray-100" />
             <SettingsRow
               icon="key-outline"
               iconBg="bg-amber-100"
@@ -189,5 +210,36 @@ function SettingsRow({
       <Text className="flex-1 text-sm font-semibold text-gray-900">{label}</Text>
       <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
     </TouchableOpacity>
+  );
+}
+
+function SettingsToggleRow({
+  icon,
+  iconBg,
+  iconColor,
+  label,
+  value,
+  onValueChange,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  iconBg: string;
+  iconColor: string;
+  label: string;
+  value: boolean;
+  onValueChange: (val: boolean) => void;
+}) {
+  return (
+    <View className="flex-row items-center px-5 py-4">
+      <View className={`mr-3 h-10 w-10 items-center justify-center rounded-xl ${iconBg}`}>
+        <Ionicons name={icon} size={18} color={iconColor} />
+      </View>
+      <Text className="flex-1 text-sm font-semibold text-gray-900">{label}</Text>
+      <Switch
+        value={value}
+        onValueChange={onValueChange}
+        trackColor={{ false: '#E5E7EB', true: '#34D399' }}
+        thumbColor={value ? '#059666' : '#f4f3f4'}
+      />
+    </View>
   );
 }
