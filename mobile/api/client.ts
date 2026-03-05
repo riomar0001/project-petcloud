@@ -3,7 +3,7 @@ import axios, { AxiosInstance, AxiosError, AxiosRequestConfig, AxiosResponse } f
 /**
  * API Configuration
  */
-const API_BASE_URL = 'http://localhost:5090';
+const API_BASE_URL = 'http://192.168.137.198:5090';
 const API_TIMEOUT = 30000;
 
 /**

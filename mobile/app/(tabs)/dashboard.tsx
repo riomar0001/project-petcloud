@@ -14,12 +14,14 @@ export default function DashboardScreen() {
 
         <View className="px-6 pt-5 pb-8">
           {/* Quick Stats */}
-          <View className="flex-row gap-3">
+          <View className="flex-row flex-wrap justify-between gap-y-3">
             {[
-              { icon: 'paw' as const, label: 'My Pets', value: '--', color: '#059666', bg: 'bg-mountain-meadow-100' },
-              { icon: 'calendar' as const, label: 'Upcoming', value: '--', color: '#3B82F6', bg: 'bg-blue-100' },
+              { icon: 'paw' as const, label: 'My Pets', value: '2', color: '#A855F7', bg: 'bg-purple-100' }, // Purple
+              { icon: 'calendar' as const, label: 'Upcoming Appts', value: '1', color: '#059666', bg: 'bg-mountain-meadow-100' }, // Green
+              { icon: 'medical' as const, label: 'Vaccinated', value: '0', color: '#3B82F6', bg: 'bg-blue-100' }, // Blue
+              { icon: 'medkit' as const, label: 'Deworming Due', value: '0', color: '#6B7280', bg: 'bg-gray-200' }, // Gray
             ].map((stat, i) => (
-              <View key={i} className="flex-1 rounded-2xl border border-gray-100 bg-white p-4">
+              <View key={i} className="w-[48%] rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
                 <View className={`mb-3 h-10 w-10 items-center justify-center rounded-xl ${stat.bg}`}>
                   <Ionicons name={stat.icon} size={20} color={stat.color} />
                 </View>
