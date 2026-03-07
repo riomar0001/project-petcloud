@@ -59,7 +59,7 @@ async function deleteTokens() {
   await deleteToken(TOKEN_KEYS.REFRESH);
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthStore>((set, get) => ({
   // State
   isAuthenticated: false,
   accessToken: null,
@@ -186,3 +186,14 @@ export const useAuthStore = create<AuthStore>((set) => ({
     }
   }
 }));
+
+// Wire up token refresh / auto-logout into the API client
+apiClient.setAuthHandlers({
+  getRefreshToken: () => useAuthStore.getState().refreshToken,
+  onTokensRefreshed: (accessToken, refreshToken) => {
+    useAuthStore.getState().setTokens(accessToken, refreshToken);
+  },
+  onLogout: () => {
+    useAuthStore.getState().clearAuth();
+  },
+});

@@ -306,7 +306,7 @@ export default function UpdatePetScreen() {
                 mode="date"
                 display="default"
                 maximumDate={new Date()}
-                onChange={(_, date) => {
+                 onChange={(_: any, date: Date | undefined) => {
                   setShowDatePicker(false);
                   if (date) { setBirthdate(date); setErrors((e) => ({ ...e, birthdate: '' })); }
                 }}

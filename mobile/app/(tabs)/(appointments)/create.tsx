@@ -56,6 +56,7 @@ export default function CreateAppointmentScreen() {
   const [petModalVisible, setPetModalVisible] = useState(false);
   const [serviceModalVisible, setServiceModalVisible] = useState(false);
   const [subtypeModalVisible, setSubtypeModalVisible] = useState(false);
+  const [timeModalVisible, setTimeModalVisible] = useState(false);
 
   // Feedback
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -134,7 +135,7 @@ export default function CreateAppointmentScreen() {
   if (loadingInit) {
     return (
       <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
-        <View className="flex-row items-center bg-white px-5 pb-4 pt-3">
+        <View className="flex-row items-center bg-white px-5 pb-4 pt-3 shadow-sm">
           <TouchableOpacity
             onPress={() => router.back()}
             className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-gray-100"
@@ -268,7 +269,7 @@ export default function CreateAppointmentScreen() {
                 mode="date"
                 display="default"
                 minimumDate={tomorrow}
-                onChange={(_, d) => {
+                onChange={(_: any, d: Date | undefined) => {
                   setShowDatePicker(false);
                   if (d) setDate(d);
                 }}
@@ -280,47 +281,27 @@ export default function CreateAppointmentScreen() {
           <View className="mb-5">
             <Text className="mb-2 text-sm font-semibold text-gray-700">Time Slot</Text>
             {loadingSlots ? (
-              <View className="items-center py-4">
-                <ActivityIndicator color="#059666" />
-              </View>
-            ) : timeSlots.length === 0 ? (
-              <View className="items-center rounded-2xl border border-dashed border-gray-200 bg-white py-6">
-                <Text className="text-sm text-gray-400">No available slots for this date</Text>
+              <View className="flex-row items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 py-4">
+                <Text className="text-base text-gray-400">Loading slots...</Text>
+                <ActivityIndicator size="small" color="#059666" />
               </View>
             ) : (
-              <View className="flex-row flex-wrap gap-2">
-                {timeSlots.map((slot) => (
-                  <TouchableOpacity
-                    key={slot.time}
-                    onPress={() => {
-                      if (slot.available) {
-                        setSelectedTime(slot.time);
-                        setErrors((e) => ({ ...e, time: '' }));
-                      }
-                    }}
-                    disabled={!slot.available}
-                    className={`rounded-xl px-4 py-2.5 border ${
-                      !slot.available
-                        ? 'border-gray-100 bg-gray-100'
-                        : selectedTime === slot.time
-                        ? 'border-mountain-meadow-600 bg-mountain-meadow-600'
-                        : 'border-gray-200 bg-white'
-                    }`}
-                  >
-                    <Text
-                      className={`text-sm font-semibold ${
-                        !slot.available
-                          ? 'text-gray-300'
-                          : selectedTime === slot.time
-                          ? 'text-white'
-                          : 'text-gray-700'
-                      }`}
-                    >
-                      {slot.time}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+              <TouchableOpacity
+                onPress={() => timeSlots.length > 0 && setTimeModalVisible(true)}
+                disabled={timeSlots.length === 0}
+                className={`flex-row items-center justify-between rounded-2xl border bg-white px-4 py-4 ${
+                  errors.time ? 'border-red-500' : 'border-gray-200'
+                }`}
+              >
+                <Text className={`text-base ${selectedTime ? 'text-gray-900' : 'text-gray-400'}`}>
+                  {timeSlots.length === 0
+                    ? 'No available slots for this date'
+                    : selectedTime
+                    ? selectedTime
+                    : 'Choose a time slot'}
+                </Text>
+                <Ionicons name="chevron-down" size={18} color="#6B7280" />
+              </TouchableOpacity>
             )}
             {errors.time ? <Text className="mt-1 text-xs text-red-500">{errors.time}</Text> : null}
           </View>
@@ -423,6 +404,47 @@ export default function CreateAppointmentScreen() {
                 )}
               </TouchableOpacity>
             ))}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Time Slot Modal */}
+      <Modal visible={timeModalVisible} transparent animationType="slide">
+        <View className="flex-1 justify-end bg-black/50">
+          <View className="rounded-t-3xl bg-white p-6 pb-12" style={{ maxHeight: '70%' }}>
+            <View className="mb-4 flex-row items-center justify-between">
+              <Text className="text-xl font-bold text-gray-900">Select Time Slot</Text>
+              <TouchableOpacity onPress={() => setTimeModalVisible(false)} className="p-2">
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {timeSlots.map((slot) => (
+                <TouchableOpacity
+                  key={slot.time}
+                  disabled={!slot.available}
+                  className="flex-row items-center justify-between border-b border-gray-100 py-4"
+                  onPress={() => {
+                    setSelectedTime(slot.time);
+                    setTimeModalVisible(false);
+                    setErrors((e) => ({ ...e, time: '' }));
+                  }}
+                >
+                  <Text
+                    className={`text-base font-medium ${
+                      !slot.available ? 'text-gray-300' : selectedTime === slot.time ? 'text-mountain-meadow-600' : 'text-gray-900'
+                    }`}
+                  >
+                    {slot.time}
+                  </Text>
+                  {!slot.available ? (
+                    <Text className="text-xs text-gray-300">Unavailable</Text>
+                  ) : selectedTime === slot.time ? (
+                    <Ionicons name="checkmark-circle" size={20} color="#059666" />
+                  ) : null}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
         </View>
       </Modal>

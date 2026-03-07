@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosError, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { Platform } from 'react-native';
 
 /**
@@ -24,12 +24,21 @@ export class ApiError extends Error {
   }
 }
 
+interface AuthHandlers {
+  getRefreshToken: () => string | null;
+  onTokensRefreshed: (accessToken: string, refreshToken: string) => void;
+  onLogout: () => void;
+}
+
 /**
  * API Client
  */
 class ApiClient {
   private instance: AxiosInstance;
   private token: string | null = null;
+  private authHandlers: AuthHandlers | null = null;
+  private isRefreshing = false;
+  private refreshQueue: Array<(token: string) => void> = [];
 
   constructor() {
     this.instance = axios.create({
@@ -58,7 +67,58 @@ class ApiClient {
     // Response interceptor
     this.instance.interceptors.response.use(
       (response) => response,
-      (error: AxiosError) => {
+      async (error: AxiosError) => {
+        const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+        // Attempt silent token refresh on 401, except for auth endpoints
+        if (
+          error.response?.status === 401 &&
+          !originalRequest?._retry &&
+          this.authHandlers &&
+          !originalRequest?.url?.includes('/auth/')
+        ) {
+          if (this.isRefreshing) {
+            // Queue this request until the ongoing refresh completes
+            return new Promise<AxiosResponse>((resolve, reject) => {
+              this.refreshQueue.push((newToken: string) => {
+                originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                resolve(this.instance(originalRequest));
+              });
+            });
+          }
+
+          originalRequest._retry = true;
+          this.isRefreshing = true;
+
+          const refreshToken = this.authHandlers.getRefreshToken();
+
+          if (!refreshToken) {
+            this.isRefreshing = false;
+            this.authHandlers.onLogout();
+            throw new ApiError('Session expired. Please log in again.', 401);
+          }
+
+          try {
+            const res = await this.instance.post('/api/v1/auth/refresh', { refreshToken });
+            const { accessToken: newAccess, refreshToken: newRefresh } = res.data.data;
+
+            this.setToken(newAccess);
+            this.authHandlers.onTokensRefreshed(newAccess, newRefresh);
+
+            this.refreshQueue.forEach((cb) => cb(newAccess));
+            this.refreshQueue = [];
+
+            originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+            return this.instance(originalRequest);
+          } catch {
+            this.refreshQueue = [];
+            this.authHandlers.onLogout();
+            throw new ApiError('Session expired. Please log in again.', 401);
+          } finally {
+            this.isRefreshing = false;
+          }
+        }
+
         if (error.response) {
           const data = error.response.data as any;
           throw new ApiError(
@@ -77,6 +137,10 @@ class ApiClient {
 
   setToken(token: string | null) {
     this.token = token;
+  }
+
+  setAuthHandlers(handlers: AuthHandlers) {
+    this.authHandlers = handlers;
   }
 
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<T>> {
