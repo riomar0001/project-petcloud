@@ -20,7 +20,6 @@ export default function ProfileViewScreen() {
   const { logout } = useAuthStore();
   const { profile, isLoading, fetchProfile } = useProfileStore();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -121,14 +120,6 @@ export default function ProfileViewScreen() {
               onValueChange={setNotificationsEnabled}
             />
             <View className="mx-5 h-px bg-gray-100" />
-            <SettingsToggleRow
-              icon="moon-outline"
-              iconBg="bg-slate-100"
-              iconColor="#475569"
-              label="Dark Mode"
-              value={darkModeEnabled}
-              onValueChange={setDarkModeEnabled}
-            />
             <View className="mx-5 h-px bg-gray-100" />
             <SettingsRow
               icon="key-outline"

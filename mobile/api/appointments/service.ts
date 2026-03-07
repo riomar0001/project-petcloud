@@ -18,7 +18,7 @@ import {
 
 export class AppointmentsService {
   /**
-   * List all appointments across the clinic
+   * List appointments for the authenticated owner.
    */
   static async listAppointments(): Promise<AppointmentListItem[]> {
     try {

@@ -88,7 +88,7 @@ export default function DashboardScreen() {
   ];
 
   return (
-    <SafeAreaView className="flex-col bg-gray-100" edges={['top']}>
+    <SafeAreaView className="flex-col bg-gray-50" edges={['top']}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="mx-6 mt-5 flex-row items-center rounded-2xl bg-white px-6 pb-5 pt-4 shadow-sm">
@@ -105,7 +105,7 @@ export default function DashboardScreen() {
 
           {/* Greeting — next to avatar */}
           <View className="ml-3 flex-1">
-            <Text className="text-2xl font-bold text-gray-900">
+            <Text className="text-xl font-bold text-gray-900">
               {greeting}, {firstName || 'there'}!
             </Text>
             <Text className="text-md text-gray-400">Welcome to PurrVet</Text>

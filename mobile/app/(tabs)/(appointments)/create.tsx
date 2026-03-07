@@ -12,9 +12,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { AppointmentsService, PetsService, ApiError } from '@/api';
 import type { PetListItem, ServiceCategory, TimeSlot } from '@/api';
+
+// Lazy native-only import — avoids crashing the module on web
+const DateTimePicker =
+  Platform.OS !== 'web'
+    ? require('@react-native-community/datetimepicker').default
+    : null;
 
 function formatDateForApi(date: Date): string {
   const y = date.getFullYear();
@@ -38,7 +43,11 @@ export default function CreateAppointmentScreen() {
   const [selectedPet, setSelectedPet] = useState<PetListItem | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
   const [selectedSubtypeId, setSelectedSubtypeId] = useState<number | null>(null);
-  const [date, setDate] = useState<Date>(new Date());
+  const [date, setDate] = useState<Date>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d;
+  });
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -108,7 +117,7 @@ export default function CreateAppointmentScreen() {
         notes: notes.trim() || null,
       });
       showToast(message, true);
-      setTimeout(() => router.replace('/(tabs)/(appointments)'), 1200);
+      setTimeout(() => router.back(), 1000);
     } catch (error: any) {
       showToast(
         error instanceof ApiError ? error.message : 'Failed to book appointment',
@@ -253,7 +262,7 @@ export default function CreateAppointmentScreen() {
               </Text>
               <Ionicons name="calendar-outline" size={18} color="#6B7280" />
             </TouchableOpacity>
-            {showDatePicker && (
+            {showDatePicker && DateTimePicker && (
               <DateTimePicker
                 value={date}
                 mode="date"

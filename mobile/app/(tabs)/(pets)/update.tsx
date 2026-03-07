@@ -7,13 +7,18 @@ import {
   TextInput,
   Modal,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
-import DateTimePicker from '@react-native-community/datetimepicker';
+
+const DateTimePicker =
+  Platform.OS !== 'web'
+    ? require('@react-native-community/datetimepicker').default
+    : null;
 import { PetsService, ApiError } from '@/api';
 import { resolveImageUrl } from '@/utils/imageUrl';
 
@@ -295,7 +300,7 @@ export default function UpdatePetScreen() {
             {errors.birthdate ? (
               <Text className="mt-1 text-xs text-red-500">{errors.birthdate}</Text>
             ) : null}
-            {showDatePicker && (
+            {showDatePicker && DateTimePicker && (
               <DateTimePicker
                 value={birthdate || new Date()}
                 mode="date"

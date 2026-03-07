@@ -19,31 +19,31 @@ namespace PetCloud.Controllers.Api.V1 {
         }
 
         [HttpGet]
-        [EndpointSummary("List all appointments")]
-        [EndpointDescription("Returns all appointments across the clinic. The owner's own appointments include full details; other owners' appointments show limited info.")]
+        [EndpointSummary("List appointments for the authenticated owner")]
+        [EndpointDescription("Returns only the appointments belonging to the authenticated owner's pets.")]
         [ProducesResponseType(typeof(ApiResponse<List<AppointmentListItemDto>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
         public IActionResult GetAppointments() {
             var ownerId = User.GetOwnerId();
 
-            var allAppointments = _context.Appointments
-                .Include(a => a.Pet).ThenInclude(p => p.Owner)
+            var appointments = _context.Appointments
+                .Include(a => a.Pet)
                 .Include(a => a.ServiceCategory)
                 .Include(a => a.ServiceSubtype)
+                .Where(a => a.Pet.OwnerID == ownerId)
+                .Select(a => new AppointmentListItemDto {
+                    AppointmentId = a.AppointmentID,
+                    AppointmentDate = a.AppointmentDate,
+                    Status = a.Status,
+                    GroupId = a.GroupID,
+                    Notes = a.Notes,
+                    PetId = a.PetID,
+                    PetName = a.Pet.Name,
+                    ServiceType = a.ServiceCategory != null ? a.ServiceCategory.ServiceType : null,
+                    ServiceSubtype = a.ServiceSubtype != null ? a.ServiceSubtype.ServiceSubType : null,
+                    IsOwnAppointment = true
+                })
                 .ToList();
-
-            var appointments = allAppointments.Select(a => new AppointmentListItemDto {
-                AppointmentId = a.AppointmentID,
-                AppointmentDate = a.AppointmentDate,
-                Status = a.Pet.OwnerID == ownerId ? a.Status : "Not Available",
-                GroupId = a.GroupID,
-                Notes = a.Pet.OwnerID == ownerId ? a.Notes : "Booked by another owner",
-                PetId = a.PetID,
-                PetName = a.Pet.Name,
-                ServiceType = a.ServiceCategory?.ServiceType,
-                ServiceSubtype = a.ServiceSubtype?.ServiceSubType,
-                IsOwnAppointment = a.Pet.OwnerID == ownerId
-            }).ToList();
 
             return Ok(new ApiResponse<List<AppointmentListItemDto>> { Success = true, Data = appointments });
         }
