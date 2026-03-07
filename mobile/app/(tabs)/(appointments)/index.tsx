@@ -1,79 +1,120 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { AppointmentsService } from '@/api';
+import type { AppointmentListItem } from '@/api';
 
-const mockAppointments = [
-  {
-    id: '1',
-    pet: 'Geste',
-    type: 'Checkup',
-    date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-    time: '10:00 AM',
-    vet: 'Dr. Sarah',
-    status: 'upcoming',
-  },
-  {
-    id: '2',
-    pet: 'Bella',
-    type: 'Vaccination',
-    date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-    time: '02:00 PM',
-    vet: 'Dr. Mike',
-    status: 'upcoming',
-  },
-  {
-    id: '3',
-    pet: 'Max',
-    type: 'Dental',
-    date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
-    time: '09:00 AM',
-    vet: 'Dr. Sarah',
-    status: 'upcoming',
-  },
-];
+type FilterType = 'all' | 'upcoming' | 'completed' | 'cancelled';
 
-const getServiceIconColor = (type: string) => {
-  const colors: { [key: string]: string } = {
-    'Checkup': '#059666',
-    'Vaccination': '#3B82F6',
-    'Dental': '#F59E0B',
-    'Grooming': '#EC4899',
-    'Surgery': '#EF4444',
-    'Emergency': '#DC2626',
-  };
-  return colors[type] || '#6B7280';
-};
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
 
-const getServiceIcon = (type: string) => {
-  const icons: { [key: string]: string } = {
-    'Checkup': 'stethoscope',
-    'Vaccination': 'medical',
-    'Dental': 'medkit',
-    'Grooming': 'sparkles',
-    'Surgery': 'cut',
-    'Emergency': 'alert-circle',
-  };
-  return icons[type] || 'calendar';
-};
+function formatTime(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+function statusColor(status: string): string {
+  switch (status.toLowerCase()) {
+    case 'confirmed': return '#059666';
+    case 'pending': return '#F59E0B';
+    case 'completed': return '#3B82F6';
+    case 'cancelled': return '#EF4444';
+    case 'cancellationrequested': return '#F97316';
+    default: return '#6B7280';
+  }
+}
+
+function serviceColor(type: string | null | undefined): string {
+  const t = (type ?? '').toLowerCase();
+  if (t.includes('vaccine') || t.includes('vaccination')) return '#3B82F6';
+  if (t.includes('deworm') || t.includes('deworming')) return '#F59E0B';
+  if (t.includes('checkup') || t.includes('consultation')) return '#059666';
+  if (t.includes('dental')) return '#8B5CF6';
+  if (t.includes('groo')) return '#EC4899';
+  return '#6B7280';
+}
+
+function serviceIcon(type: string | null | undefined): keyof typeof import('@expo/vector-icons').Ionicons.glyphMap {
+  const t = (type ?? '').toLowerCase();
+  if (t.includes('vaccine') || t.includes('vaccination')) return 'medical';
+  if (t.includes('deworm') || t.includes('deworming')) return 'medkit';
+  if (t.includes('dental')) return 'build-outline';
+  if (t.includes('groo')) return 'color-wand-outline';
+  return 'calendar';
+}
+
+function applyFilter(items: AppointmentListItem[], filter: FilterType): AppointmentListItem[] {
+  if (filter === 'all') return items;
+  if (filter === 'upcoming') {
+    return items.filter((a) =>
+      a.status.toLowerCase() === 'pending' || a.status.toLowerCase() === 'confirmed'
+    );
+  }
+  if (filter === 'completed') {
+    return items.filter((a) => a.status.toLowerCase() === 'completed');
+  }
+  if (filter === 'cancelled') {
+    return items.filter(
+      (a) =>
+        a.status.toLowerCase() === 'cancelled' ||
+        a.status.toLowerCase() === 'cancellationrequested'
+    );
+  }
+  return items;
+}
 
 export default function AppointmentsScreen() {
-  const [filterType, setFilterType] = useState('all');
+  const [appointments, setAppointments] = useState<AppointmentListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [filterType, setFilterType] = useState<FilterType>('all');
 
-  const upcomingCount = mockAppointments.length;
-  
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
+    try {
+      const data = await AppointmentsService.listAppointments();
+      setAppointments(data);
+    } catch {
+      // silently fail
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load])
+  );
+
+  const displayed = applyFilter(appointments, filterType);
+  const upcomingCount = appointments.filter(
+    (a) => a.status.toLowerCase() === 'pending' || a.status.toLowerCase() === 'confirmed'
+  ).length;
+  const completedCount = appointments.filter((a) => a.status.toLowerCase() === 'completed').length;
+
+  const FILTERS: { key: FilterType; label: string }[] = [
+    { key: 'all', label: 'All' },
+    { key: 'upcoming', label: 'Upcoming' },
+    { key: 'completed', label: 'Completed' },
+    { key: 'cancelled', label: 'Cancelled' },
+  ];
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
       {/* Header */}
       <View className="bg-mountain-meadow-50 px-6 py-4">
-        <View className="mb-2">
-          <Text className="text-2xl font-bold text-gray-900">My Appointments</Text>
-          <Text className="mt-0.5 text-sm text-gray-400">View and schedule Appointments</Text>
-        </View>
+        <Text className="text-2xl font-bold text-gray-900">My Appointments</Text>
+        <Text className="mt-0.5 text-sm text-gray-400">View and schedule appointments</Text>
       </View>
 
-      <View className="px-6 mt-3 mb-6 flex-row justify-end">
+      <View className="px-6 mt-3 mb-4 flex-row justify-end">
         <TouchableOpacity
           onPress={() => router.push('/(tabs)/(appointments)/create')}
           className="flex-row items-center justify-center rounded-full bg-mountain-meadow-600 px-5 h-12 shadow"
@@ -81,101 +122,137 @@ export default function AppointmentsScreen() {
           style={{ elevation: 4 }}
         >
           <Ionicons name="add" size={20} color="#FFFFFF" />
-          <Text className="ml-3 text-base font-semibold text-white">Book Appointment</Text>
+          <Text className="ml-2 text-sm font-semibold text-white">Book Appointment</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View className="px-6 pt-6 pb-8">
-          <View className="mb-6 flex-row justify-between">
-            <View className="flex-1 mr-3 rounded-xl bg-white px-4 py-4 shadow-sm">
-              <Text className="text-xs text-gray-400">Upcoming</Text>
-              <Text className="mt-1 text-2xl font-bold text-mountain-meadow-600">{upcomingCount}</Text>
+      {loading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#059666" />
+        </View>
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => { setRefreshing(true); load(true); }}
+              tintColor="#059666"
+            />
+          }
+        >
+          <View className="px-6 pb-8">
+            {/* Stats */}
+            <View className="mb-5 flex-row gap-3">
+              <View className="flex-1 rounded-xl bg-white px-4 py-4 shadow-sm">
+                <Text className="text-xs text-gray-400">Upcoming</Text>
+                <Text className="mt-1 text-2xl font-bold text-mountain-meadow-600">{upcomingCount}</Text>
+              </View>
+              <View className="flex-1 rounded-xl bg-white px-4 py-4 shadow-sm">
+                <Text className="text-xs text-gray-400">Completed</Text>
+                <Text className="mt-1 text-2xl font-bold text-blue-600">{completedCount}</Text>
+              </View>
             </View>
-            <View className="flex-1 mx-1.5 rounded-xl bg-white px-4 py-4 shadow-sm">
-              <Text className="text-xs text-gray-400">Completed</Text>
-              <Text className="mt-1 text-2xl font-bold text-blue-600">0</Text>
-            </View>
-          </View>
 
-          {/* Filter*/}
-          <View className="mb-4 flex-row">
-            {['all', 'upcoming', 'completed'].map((tab) => (
-              <TouchableOpacity
-                key={tab}
-                onPress={() => setFilterType(tab)}
-                className={`mr-3 rounded-full px-4 py-2 ${filterType === tab ? 'bg-mountain-meadow-600' : 'bg-white border border-gray-300'}`}
-              >
-                <Text className={`text-xs font-semibold capitalize ${filterType === tab ? 'text-white' : 'text-gray-700'}`}>
-                  {tab}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Appointments List */}
-          <View>
-            <Text className="mb-3 text-sm font-semibold text-gray-700">Upcoming Appointments</Text>
-            {mockAppointments.length > 0 ? (
-              mockAppointments.map((apt) => (
+            {/* Filters */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4 -mx-1">
+              {FILTERS.map((f) => (
                 <TouchableOpacity
-                  key={apt.id}
-                  onPress={() => {/* navigate to detail */}}
-                  className="mb-3 flex-row rounded-xl bg-white p-4 shadow-sm"
+                  key={f.key}
+                  onPress={() => setFilterType(f.key)}
+                  className={`mr-2 mx-1 rounded-full px-4 py-2 ${
+                    filterType === f.key
+                      ? 'bg-mountain-meadow-600'
+                      : 'bg-white border border-gray-200'
+                  }`}
                 >
-                  {/* Service Icon */}
-                  <View
-                    className="mr-4 h-12 w-12 items-center justify-center rounded-full"
-                    style={{ backgroundColor: getServiceIconColor(apt.type) + '20' }}
+                  <Text
+                    className={`text-xs font-semibold ${
+                      filterType === f.key ? 'text-white' : 'text-gray-700'
+                    }`}
                   >
-                    <Ionicons
-                      name={getServiceIcon(apt.type)}
-                      size={24}
-                      color={getServiceIconColor(apt.type)}
-                    />
-                  </View>
+                    {f.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
 
-                  {/* Appointment Details */}
-                  <View className="flex-1">
-                    <View className="mb-1 flex-row items-center justify-between">
-                      <Text className="text-sm font-semibold text-gray-900">{apt.pet}</Text>
-                      <View
-                        className="px-2 py-1 rounded-full"
-                        style={{ backgroundColor: getServiceIconColor(apt.type) + '15' }}
-                      >
-                        <Text
-                          className="text-xs font-semibold"
-                          style={{ color: getServiceIconColor(apt.type) }}
+            {/* List */}
+            {displayed.length > 0 ? (
+              displayed.map((apt) => {
+                const color = serviceColor(apt.serviceType);
+                return (
+                  <TouchableOpacity
+                    key={apt.appointmentId}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/(tabs)/(appointments)/[id]',
+                        params: {
+                          id: apt.appointmentId.toString(),
+                          petName: apt.petName,
+                          serviceType: apt.serviceType ?? '',
+                          serviceSubtype: apt.serviceSubtype ?? '',
+                          appointmentDate: apt.appointmentDate,
+                          status: apt.status,
+                          notes: apt.notes ?? '',
+                        },
+                      })
+                    }
+                    className="mb-3 flex-row rounded-2xl bg-white p-4 shadow-sm"
+                    activeOpacity={0.8}
+                  >
+                    <View
+                      className="mr-4 h-12 w-12 items-center justify-center rounded-full"
+                      style={{ backgroundColor: color + '20' }}
+                    >
+                      <Ionicons name={serviceIcon(apt.serviceType)} size={22} color={color} />
+                    </View>
+
+                    <View className="flex-1">
+                      <View className="mb-1 flex-row items-center justify-between">
+                        <Text className="text-sm font-semibold text-gray-900">{apt.petName}</Text>
+                        <View
+                          className="rounded-full px-2 py-0.5"
+                          style={{ backgroundColor: statusColor(apt.status) + '20' }}
                         >
-                          {apt.type}
+                          <Text
+                            className="text-xs font-semibold"
+                            style={{ color: statusColor(apt.status) }}
+                          >
+                            {apt.status}
+                          </Text>
+                        </View>
+                      </View>
+                      <Text className="text-xs font-medium text-gray-600">
+                        {apt.serviceType ?? 'Appointment'}
+                        {apt.serviceSubtype ? ` · ${apt.serviceSubtype}` : ''}
+                      </Text>
+                      <View className="mt-1.5 flex-row items-center">
+                        <Ionicons name="calendar-outline" size={13} color="#6B7280" />
+                        <Text className="ml-1 text-xs text-gray-500">
+                          {formatDate(apt.appointmentDate)} at {formatTime(apt.appointmentDate)}
                         </Text>
                       </View>
                     </View>
-                    <Text className="text-xs text-gray-500">with {apt.vet}</Text>
-                    <View className="mt-2 flex-row items-center">
-                      <Ionicons name="calendar-outline" size={14} color="#6B7280" />
-                      <Text className="ml-1 text-xs text-gray-600">
-                        {apt.date.toLocaleDateString()} at {apt.time}
-                      </Text>
-                    </View>
-                  </View>
 
-                  {/* Arrow */}
-                  <Ionicons name="chevron-forward" size={20} color="#D1D5DB" />
-                </TouchableOpacity>
-              ))
+                    <Ionicons name="chevron-forward" size={18} color="#D1D5DB" style={{ alignSelf: 'center' }} />
+                  </TouchableOpacity>
+                );
+              })
             ) : (
               <View className="items-center py-12">
                 <View className="mb-3 h-16 w-16 items-center justify-center rounded-full bg-mountain-meadow-50">
                   <Ionicons name="calendar-outline" size={32} color="#059666" />
                 </View>
-                <Text className="text-sm font-semibold text-gray-900">No upcoming appointments</Text>
-                <Text className="mt-1 text-xs text-gray-400">Schedule your first visit</Text>
+                <Text className="text-sm font-semibold text-gray-900">No appointments found</Text>
+                <Text className="mt-1 text-xs text-gray-400">
+                  {filterType === 'all' ? 'Schedule your first visit' : `No ${filterType} appointments`}
+                </Text>
               </View>
             )}
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }

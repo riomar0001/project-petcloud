@@ -1,40 +1,146 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Platform } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  Modal,
+  ActivityIndicator,
+  Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useAppStore } from '@/store/useAppStore';
+import { AppointmentsService, PetsService, ApiError } from '@/api';
+import type { PetListItem, ServiceCategory, TimeSlot } from '@/api';
 
-const appointmentSchema = z.object({
-  petId: z.string().min(1, 'Please select a pet'),
-  serviceType: z.string().min(1, 'Please select a service'),
-  date: z.date({ message: 'Date is required' }),
-  time: z.date({ message: 'Time is required' }),
-  notes: z.string().optional(),
-});
-
-type AppointmentFormData = z.infer<typeof appointmentSchema>;
-
-const SERVICE_OPTIONS = ['Checkup', 'Vaccination', 'Dental', 'Grooming', 'Surgery', 'Boarding'];
+function formatDateForApi(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
 
 export default function CreateAppointmentScreen() {
-  const [pet, setPet] = useState('Geste');
-  const appointmentTypes = ['Checkup', 'Vaccination', 'Dental', 'Grooming', 'Surgery', 'Emergency'];
-  const [selectedType, setSelectedType] = useState(appointmentTypes[0]);
-  const [date, setDate] = useState(new Date());
-  const [showPicker, setShowPicker] = useState(false);
-  const [notes, setNotes] = useState('');
-  const times = ['08:00 AM','09:00 AM','10:00 AM','11:00 AM','12:00 PM','01:00 PM','02:00 PM','03:00 PM'];
-  const [selectedTime, setSelectedTime] = useState(times[1]);
+  // Data
+  const [pets, setPets] = useState<PetListItem[]>([]);
+  const [services, setServices] = useState<ServiceCategory[]>([]);
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
 
-  const handleConfirm = () => {
-    console.log({ pet, service: selectedType, date, time: selectedTime, notes });
-    router.push('/(tabs)/(appointments)');
+  // Loading states
+  const [loadingInit, setLoadingInit] = useState(true);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Form state
+  const [selectedPet, setSelectedPet] = useState<PetListItem | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | null>(null);
+  const [selectedSubtypeId, setSelectedSubtypeId] = useState<number | null>(null);
+  const [date, setDate] = useState<Date>(new Date());
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [notes, setNotes] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  // Modals
+  const [petModalVisible, setPetModalVisible] = useState(false);
+  const [serviceModalVisible, setServiceModalVisible] = useState(false);
+  const [subtypeModalVisible, setSubtypeModalVisible] = useState(false);
+
+  // Feedback
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [toast, setToast] = useState<{ message: string; success: boolean } | null>(null);
+
+  const showToast = useCallback((message: string, success: boolean) => {
+    setToast({ message, success });
+    setTimeout(() => setToast(null), 3500);
+  }, []);
+
+  // Load pets + services on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const [petsData, servicesData] = await Promise.all([
+          PetsService.listPets(),
+          AppointmentsService.getServices(),
+        ]);
+        setPets(petsData);
+        setServices(servicesData);
+      } catch {
+        showToast('Failed to load data', false);
+      } finally {
+        setLoadingInit(false);
+      }
+    })();
+  }, []);
+
+  // Fetch time slots whenever date changes
+  useEffect(() => {
+    setSelectedTime(null);
+    setTimeSlots([]);
+    setLoadingSlots(true);
+    AppointmentsService.getTimeSlots(formatDateForApi(date))
+      .then((res) => setTimeSlots(res.slots))
+      .catch(() => setTimeSlots([]))
+      .finally(() => setLoadingSlots(false));
+  }, [date]);
+
+  const validate = () => {
+    const errs: Record<string, string> = {};
+    if (!selectedPet) errs.pet = 'Please select a pet';
+    if (!selectedCategory) errs.service = 'Please select a service';
+    if (!selectedTime) errs.time = 'Please select a time slot';
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
   };
+
+  const handleSubmit = async () => {
+    if (!validate()) return;
+    setSubmitting(true);
+    try {
+      const message = await AppointmentsService.createAppointment({
+        petId: selectedPet!.petId,
+        categoryId: selectedCategory!.categoryId,
+        subtypeId: selectedSubtypeId,
+        appointmentDate: formatDateForApi(date),
+        appointmentTime: selectedTime!,
+        notes: notes.trim() || null,
+      });
+      showToast(message, true);
+      setTimeout(() => router.replace('/(tabs)/(appointments)'), 1200);
+    } catch (error: any) {
+      showToast(
+        error instanceof ApiError ? error.message : 'Failed to book appointment',
+        false
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  if (loadingInit) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+        <View className="flex-row items-center bg-white px-5 pb-4 pt-3">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-gray-100"
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={20} color="#374151" />
+          </TouchableOpacity>
+          <Text className="text-xl font-bold text-gray-900">Book Appointment</Text>
+        </View>
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#059666" />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
@@ -53,148 +159,295 @@ export default function CreateAppointmentScreen() {
         </View>
       </View>
 
+      {/* Toast */}
+      {toast && (
+        <View className="px-6 pt-3">
+          <View
+            className={`flex-row items-center rounded-xl px-4 py-3 ${
+              toast.success ? 'border border-green-200 bg-green-50' : 'border border-red-200 bg-red-50'
+            }`}
+          >
+            <Ionicons
+              name={toast.success ? 'checkmark-circle' : 'alert-circle'}
+              size={20}
+              color={toast.success ? '#16A34A' : '#EF4444'}
+            />
+            <Text
+              className={`ml-2 flex-1 text-sm font-medium ${
+                toast.success ? 'text-green-700' : 'text-red-600'
+              }`}
+            >
+              {toast.message}
+            </Text>
+          </View>
+        </View>
+      )}
+
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View className="px-6 pt-5 pb-8">
 
           {/* Select Pet */}
-          <View className="mb-6">
+          <View className="mb-5">
             <Text className="mb-2 text-sm font-semibold text-gray-700">Select Pet</Text>
             <TouchableOpacity
-              onPress={() => {
-                if (Platform.OS === 'web') {
-                  const input = window.prompt('Select pet name', pet || '');
-                  if (input !== null) setPet(input);
-                } else {
-                  setPet(pet || 'Geste');
-                }
-              }}
-              className="mb-0 flex-row items-center justify-between rounded-lg border border-gray-300 px-4 py-3 bg-white"
+              onPress={() => setPetModalVisible(true)}
+              className={`flex-row items-center justify-between rounded-2xl border bg-white px-4 py-4 ${
+                errors.pet ? 'border-red-500' : 'border-gray-200'
+              }`}
             >
-              <Text className="text-gray-700">{pet || 'Select pet'}</Text>
+              <Text className={`text-base ${selectedPet ? 'text-gray-900' : 'text-gray-400'}`}>
+                {selectedPet ? selectedPet.name : 'Choose your pet'}
+              </Text>
               <Ionicons name="chevron-down" size={18} color="#6B7280" />
             </TouchableOpacity>
+            {errors.pet ? <Text className="mt-1 text-xs text-red-500">{errors.pet}</Text> : null}
           </View>
 
-          {/* Appointment */}
-          <View className="mb-4">
-            <Text className="mb-3 text-sm font-semibold text-gray-700">Appointment Type</Text>
-            <View className="mb-2 flex-row flex-wrap">
-              {appointmentTypes.map((t) => (
-                <TouchableOpacity
-                  key={t}
-                  onPress={() => setSelectedType(t)}
-                  className={`mr-3 mb-3 px-4 py-2 rounded-full border ${selectedType === t ? 'bg-mountain-meadow-600 border-transparent' : 'bg-white border-gray-300'}`}
-                >
-                  <Text className={`${selectedType === t ? 'text-white' : 'text-gray-700'} text-sm font-semibold`}>{t}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            {errors.serviceType && <Text className="mt-1 text-xs text-red-500">{errors.serviceType.message}</Text>}
+          {/* Service */}
+          <View className="mb-5">
+            <Text className="mb-2 text-sm font-semibold text-gray-700">Service</Text>
+            <TouchableOpacity
+              onPress={() => setServiceModalVisible(true)}
+              className={`flex-row items-center justify-between rounded-2xl border bg-white px-4 py-4 ${
+                errors.service ? 'border-red-500' : 'border-gray-200'
+              }`}
+            >
+              <Text className={`text-base ${selectedCategory ? 'text-gray-900' : 'text-gray-400'}`}>
+                {selectedCategory ? selectedCategory.serviceType : 'Choose a service'}
+              </Text>
+              <Ionicons name="chevron-down" size={18} color="#6B7280" />
+            </TouchableOpacity>
+            {errors.service ? (
+              <Text className="mt-1 text-xs text-red-500">{errors.service}</Text>
+            ) : null}
           </View>
 
-          {/* Date & Time */}
-          <View className="mb-4">
-            <Text className="mb-2 text-sm font-semibold text-gray-700">Date</Text>
-            <View className="mb-3 flex-row items-center">
+          {/* Subtype (if available) */}
+          {selectedCategory && selectedCategory.subtypes.length > 0 && (
+            <View className="mb-5">
+              <Text className="mb-2 text-sm font-semibold text-gray-700">
+                Subtype <Text className="font-normal text-gray-400">(optional)</Text>
+              </Text>
               <TouchableOpacity
-                onPress={() => {
-                  if (Platform.OS === 'web') {
-                    const input = window.prompt('Enter date (MM/DD/YYYY)', date.toLocaleDateString());
-                    if (input) {
-                      const parsed = new Date(input);
-                      if (!isNaN(parsed.getTime())) setDate(parsed);
-                    }
-                  } else {
-                    setShowPicker(true);
-                  }
-                }}
-                className="flex-1 mr-3 flex-row items-center rounded-lg border border-gray-300 px-4 py-3 bg-white"
+                onPress={() => setSubtypeModalVisible(true)}
+                className="flex-row items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 py-4"
               >
-                <Text className="text-gray-500">{date.toLocaleDateString()}</Text>
-                <Ionicons name="calendar-outline" size={18} color="#6B7280" className="ml-auto" />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => {
-                  if (Platform.OS === 'web') {
-                    const input = window.prompt('Select time', selectedTime);
-                    if (input) setSelectedTime(input);
-                  } else {
-                    const currentIndex = times.indexOf(selectedTime);
-                    setSelectedTime(times[(currentIndex + 1) % times.length]);
-                  }
-                }}
-                className="w-32 flex-row items-center justify-between rounded-lg border border-gray-300 px-3 py-3 bg-white"
-              >
-                <Text className="text-gray-700">{selectedTime}</Text>
+                <Text className={`text-base ${selectedSubtypeId ? 'text-gray-900' : 'text-gray-400'}`}>
+                  {selectedCategory.subtypes.find((s) => s.subtypeId === selectedSubtypeId)
+                    ?.serviceSubType ?? 'None (optional)'}
+                </Text>
                 <Ionicons name="chevron-down" size={18} color="#6B7280" />
               </TouchableOpacity>
             </View>
+          )}
 
-            {Platform.OS !== 'web' && showPicker && (() => {
-              try {
-                // require at runtime so Metro/web bundler doesn't try to resolve the native-only package for web
-                // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                const DateTimePicker = eval('require')('@react-native-community/datetimepicker').default;
-                return (
-                  <DateTimePicker
-                    value={date}
-                    mode="datetime"
-                    display="default"
-                    onChange={(event, selectedDate) => {
-                      setShowPicker(false);
-                      if (selectedDate) setDate(selectedDate);
+          {/* Date */}
+          <View className="mb-5">
+            <Text className="mb-2 text-sm font-semibold text-gray-700">Date</Text>
+            <TouchableOpacity
+              onPress={() => setShowDatePicker(true)}
+              className="flex-row items-center justify-between rounded-2xl border border-gray-200 bg-white px-4 py-4"
+            >
+              <Text className="text-base text-gray-900">
+                {date.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })}
+              </Text>
+              <Ionicons name="calendar-outline" size={18} color="#6B7280" />
+            </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker
+                value={date}
+                mode="date"
+                display="default"
+                minimumDate={tomorrow}
+                onChange={(_, d) => {
+                  setShowDatePicker(false);
+                  if (d) setDate(d);
+                }}
+              />
+            )}
+          </View>
+
+          {/* Time Slots */}
+          <View className="mb-5">
+            <Text className="mb-2 text-sm font-semibold text-gray-700">Time Slot</Text>
+            {loadingSlots ? (
+              <View className="items-center py-4">
+                <ActivityIndicator color="#059666" />
+              </View>
+            ) : timeSlots.length === 0 ? (
+              <View className="items-center rounded-2xl border border-dashed border-gray-200 bg-white py-6">
+                <Text className="text-sm text-gray-400">No available slots for this date</Text>
+              </View>
+            ) : (
+              <View className="flex-row flex-wrap gap-2">
+                {timeSlots.map((slot) => (
+                  <TouchableOpacity
+                    key={slot.time}
+                    onPress={() => {
+                      if (slot.available) {
+                        setSelectedTime(slot.time);
+                        setErrors((e) => ({ ...e, time: '' }));
+                      }
                     }}
-                  />
-                );
-              } catch (err) {
-                return null;
-              }
-            })()}
+                    disabled={!slot.available}
+                    className={`rounded-xl px-4 py-2.5 border ${
+                      !slot.available
+                        ? 'border-gray-100 bg-gray-100'
+                        : selectedTime === slot.time
+                        ? 'border-mountain-meadow-600 bg-mountain-meadow-600'
+                        : 'border-gray-200 bg-white'
+                    }`}
+                  >
+                    <Text
+                      className={`text-sm font-semibold ${
+                        !slot.available
+                          ? 'text-gray-300'
+                          : selectedTime === slot.time
+                          ? 'text-white'
+                          : 'text-gray-700'
+                      }`}
+                    >
+                      {slot.time}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+            {errors.time ? <Text className="mt-1 text-xs text-red-500">{errors.time}</Text> : null}
           </View>
 
           {/* Notes */}
-          <View className="mb-6">
-            <Text className="mb-2 text-sm font-semibold text-gray-700">Notes</Text>
+          <View className="mb-8">
+            <Text className="mb-2 text-sm font-semibold text-gray-700">
+              Notes <Text className="font-normal text-gray-400">(optional)</Text>
+            </Text>
             <TextInput
               placeholder="Any special notes or symptoms..."
+              placeholderTextColor="#9CA3AF"
               value={notes}
               onChangeText={setNotes}
               multiline
-              className="h-28 rounded-lg border border-gray-300 px-4 py-3 bg-white"
+              numberOfLines={4}
+              textAlignVertical="top"
+              className="h-28 rounded-2xl border border-gray-200 bg-white px-4 py-3 text-base text-gray-900"
             />
           </View>
 
-          {/* Footer Buttons */}
-          <View className="flex-row items-center justify-between">
-            <TouchableOpacity
-              onPress={() => router.back()}
-              className="flex-1 mr-3 rounded-full border border-gray-300 px-4 py-3 bg-white"
-            >
-              <Text className="text-center text-sm text-gray-700">Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              disabled={!pet || !selectedType}
-              onPress={handleConfirm}
-              className={`flex-1 ml-3 rounded-full py-3 ${!pet || !selectedType ? 'bg-gray-300' : 'bg-mountain-meadow-600'}`}
-            >
-              <Text className="text-center text-sm font-semibold text-white">Save Changes</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Submit Button */}
+          {/* Submit */}
           <TouchableOpacity
-            onPress={handleSubmit(onSubmit)}
-            className="rounded-2xl bg-[#059666] py-4 items-center shadow-sm"
+            onPress={handleSubmit}
+            disabled={submitting}
+            className={`rounded-2xl py-4 items-center shadow-sm ${
+              submitting ? 'bg-gray-300' : 'bg-mountain-meadow-600'
+            }`}
             activeOpacity={0.8}
           >
-            <Text className="text-base font-bold text-white">Confirm Booking</Text>
+            {submitting ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text className="text-base font-bold text-white">Confirm Booking</Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
 
-      <SelectPetModal />
+      {/* Pet Select Modal */}
+      <Modal visible={petModalVisible} transparent animationType="slide">
+        <View className="flex-1 justify-end bg-black/50">
+          <View className="rounded-t-3xl bg-white p-6 pb-12">
+            <View className="mb-4 flex-row items-center justify-between">
+              <Text className="text-xl font-bold text-gray-900">Select Pet</Text>
+              <TouchableOpacity onPress={() => setPetModalVisible(false)} className="p-2">
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+            {pets.length === 0 ? (
+              <View className="items-center py-6">
+                <Text className="text-sm text-gray-400">No pets found. Add a pet first.</Text>
+              </View>
+            ) : (
+              pets.map((p) => (
+                <TouchableOpacity
+                  key={p.petId}
+                  className="border-b border-gray-100 py-4"
+                  onPress={() => {
+                    setSelectedPet(p);
+                    setPetModalVisible(false);
+                    setErrors((e) => ({ ...e, pet: '' }));
+                  }}
+                >
+                  <Text className="text-base font-medium text-gray-900">{p.name}</Text>
+                  <Text className="text-xs text-gray-400">{p.breed} · {p.type}</Text>
+                </TouchableOpacity>
+              ))
+            )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Service Select Modal */}
+      <Modal visible={serviceModalVisible} transparent animationType="slide">
+        <View className="flex-1 justify-end bg-black/50">
+          <View className="rounded-t-3xl bg-white p-6 pb-12">
+            <View className="mb-4 flex-row items-center justify-between">
+              <Text className="text-xl font-bold text-gray-900">Select Service</Text>
+              <TouchableOpacity onPress={() => setServiceModalVisible(false)} className="p-2">
+                <Ionicons name="close" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+            {services.map((svc) => (
+              <TouchableOpacity
+                key={svc.categoryId}
+                className="border-b border-gray-100 py-4"
+                onPress={() => {
+                  setSelectedCategory(svc);
+                  setSelectedSubtypeId(null);
+                  setServiceModalVisible(false);
+                  setErrors((e) => ({ ...e, service: '' }));
+                }}
+              >
+                <Text className="text-base font-medium text-gray-900">{svc.serviceType}</Text>
+                {svc.subtypes.length > 0 && (
+                  <Text className="text-xs text-gray-400">
+                    {svc.subtypes.length} subtype{svc.subtypes.length !== 1 ? 's' : ''} available
+                  </Text>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </Modal>
+
+      {/* Subtype Modal */}
+      {selectedCategory && (
+        <Modal visible={subtypeModalVisible} transparent animationType="slide">
+          <View className="flex-1 justify-end bg-black/50">
+            <View className="rounded-t-3xl bg-white p-6 pb-12">
+              <View className="mb-4 flex-row items-center justify-between">
+                <Text className="text-xl font-bold text-gray-900">Select Subtype</Text>
+                <TouchableOpacity onPress={() => setSubtypeModalVisible(false)} className="p-2">
+                  <Ionicons name="close" size={24} color="#6B7280" />
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity
+                className="border-b border-gray-100 py-4"
+                onPress={() => { setSelectedSubtypeId(null); setSubtypeModalVisible(false); }}
+              >
+                <Text className="text-base text-gray-400">None (skip)</Text>
+              </TouchableOpacity>
+              {selectedCategory.subtypes.map((st) => (
+                <TouchableOpacity
+                  key={st.subtypeId}
+                  className="border-b border-gray-100 py-4"
+                  onPress={() => { setSelectedSubtypeId(st.subtypeId); setSubtypeModalVisible(false); }}
+                >
+                  <Text className="text-base font-medium text-gray-900">{st.serviceSubType}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }

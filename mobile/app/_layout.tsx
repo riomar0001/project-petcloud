@@ -1,17 +1,33 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Stack } from 'expo-router';
 import '../global.css';
 import { useAuthStore } from '@/store/authStore';
+import { useProfileStore } from '@/store/useProfileStore';
+import { useNotificationStore } from '@/store/useNotificationStore';
 import { View, ActivityIndicator } from 'react-native';
 
 export default function RootLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isHydrated = useAuthStore((state) => state.isHydrated);
   const hydrate = useAuthStore((state) => state.hydrate);
+  const clearProfile = useProfileStore((state) => state.clearProfile);
+  const resetNotifications = useNotificationStore((state) => state.reset);
+
+  // Track previous auth state to detect logout
+  const wasAuthenticated = useRef(isAuthenticated);
 
   useEffect(() => {
     hydrate();
   }, []);
+
+  // Clear derived stores when the user logs out
+  useEffect(() => {
+    if (wasAuthenticated.current && !isAuthenticated) {
+      clearProfile();
+      resetNotifications();
+    }
+    wasAuthenticated.current = isAuthenticated;
+  }, [isAuthenticated]);
 
   if (!isHydrated) {
     return (

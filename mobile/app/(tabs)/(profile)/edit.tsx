@@ -14,11 +14,13 @@ import { router } from 'expo-router';
 import { ProfileService, ApiError } from '@/api';
 import { AppInput } from '@/components/ui/input';
 import { AppButton } from '@/components/ui/button';
+import { useProfileStore } from '@/store/useProfileStore';
 
 type ValidationErrors = Record<string, string | undefined>;
 
 export default function EditProfileScreen() {
-  const [loading, setLoading] = useState(true);
+  const { profile, fetchProfile, patchProfile } = useProfileStore();
+  const [loading, setLoading] = useState(!profile);
   const [saving, setSaving] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -33,22 +35,36 @@ export default function EditProfileScreen() {
   }, []);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const data = await ProfileService.getProfile();
-        setFirstName(data.firstName);
-        setLastName(data.lastName);
-        setPhone(data.phone || '');
-        setEmail(data.email);
-      } catch (error) {
-        if (error instanceof ApiError) {
-          showToast(error.message, false);
+    if (profile) {
+      setFirstName(profile.firstName);
+      setLastName(profile.lastName);
+      setPhone(profile.phone || '');
+      setEmail(profile.email);
+      setLoading(false);
+    } else {
+      (async () => {
+        try {
+          await fetchProfile();
+        } catch (error) {
+          if (error instanceof ApiError) {
+            showToast(error.message, false);
+          }
+        } finally {
+          setLoading(false);
         }
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [showToast]);
+      })();
+    }
+  }, []);
+
+  // Sync fields when profile loads from store
+  useEffect(() => {
+    if (profile && !firstName) {
+      setFirstName(profile.firstName);
+      setLastName(profile.lastName);
+      setPhone(profile.phone || '');
+      setEmail(profile.email);
+    }
+  }, [profile]);
 
   const handleSave = async () => {
     const errs: ValidationErrors = {};
@@ -65,6 +81,12 @@ export default function EditProfileScreen() {
     setSaving(true);
     try {
       const message = await ProfileService.updateProfile({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        phone: phone.trim(),
+      });
+      // Reflect changes immediately across all screens
+      patchProfile({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         phone: phone.trim(),

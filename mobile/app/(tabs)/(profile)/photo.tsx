@@ -7,8 +7,11 @@ import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { ProfileService } from '@/api';
 import { AppButton } from '@/components/ui/button';
+import { useProfileStore } from '@/store/useProfileStore';
+import { resolveImageUrl } from '@/utils/imageUrl';
 
 export default function UpdatePhotoScreen() {
+  const { profile, setPhotoUrl } = useProfileStore();
   const [selectedImage, setSelectedImage] = useState<{
     uri: string;
     name: string;
@@ -72,7 +75,9 @@ export default function UpdatePhotoScreen() {
 
     setUploading(true);
     try {
-      await ProfileService.updatePhoto(selectedImage);
+      const result = await ProfileService.updatePhoto(selectedImage);
+      // Update global profile store so all screens reflect immediately
+      setPhotoUrl(result.profileImageUrl);
       showToast('Profile photo updated!', true);
       setTimeout(() => router.back(), 1000);
     } catch (error: any) {
@@ -81,6 +86,9 @@ export default function UpdatePhotoScreen() {
       setUploading(false);
     }
   };
+
+  const currentPhotoUrl = resolveImageUrl(profile?.profileImageUrl);
+  const previewUri = selectedImage?.uri ?? currentPhotoUrl;
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
@@ -128,11 +136,12 @@ export default function UpdatePhotoScreen() {
       <View className="flex-1 px-6 pt-5">
         {/* Preview */}
         <View className="items-center rounded-2xl border border-gray-100 bg-white p-8">
-          {selectedImage ? (
+          {previewUri ? (
             <Image
-              source={{ uri: selectedImage.uri }}
+              source={{ uri: previewUri }}
               style={{ width: 160, height: 160, borderRadius: 80 }}
               contentFit="cover"
+              transition={200}
             />
           ) : (
             <View className="h-40 w-40 items-center justify-center rounded-full bg-gray-100">
@@ -140,7 +149,11 @@ export default function UpdatePhotoScreen() {
             </View>
           )}
           <Text className="mt-4 text-sm text-gray-400">
-            {selectedImage ? 'Looking good! Upload when ready.' : 'Select a photo to preview'}
+            {selectedImage
+              ? 'Looking good! Upload when ready.'
+              : currentPhotoUrl
+              ? 'Your current photo — tap below to change it.'
+              : 'Select a photo to preview'}
           </Text>
         </View>
 

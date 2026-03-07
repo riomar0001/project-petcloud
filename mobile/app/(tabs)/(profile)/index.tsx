@@ -1,40 +1,26 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { useAuthStore } from '@/store/authStore';
-import { ProfileService, ApiError } from '@/api';
-import type { ProfileResponse } from '@/api';
+import { useProfileStore } from '@/store/useProfileStore';
+import { resolveImageUrl } from '@/utils/imageUrl';
+import { Alert } from 'react-native';
 
 export default function ProfileViewScreen() {
   const { logout } = useAuthStore();
-  const [profile, setProfile] = useState<ProfileResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { profile, isLoading, fetchProfile } = useProfileStore();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
-
-  const fetchProfile = useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await ProfileService.getProfile();
-      setProfile(data);
-    } catch (error) {
-      if (error instanceof ApiError) {
-        console.warn('Failed to load profile:', error.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -49,7 +35,9 @@ export default function ProfileViewScreen() {
     ]);
   };
 
-  if (loading) {
+  const photoUrl = resolveImageUrl(profile?.profileImageUrl);
+
+  if (isLoading && !profile) {
     return (
       <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
         <View className="flex-1 items-center justify-center">
@@ -75,9 +63,18 @@ export default function ProfileViewScreen() {
               onPress={() => router.push('/(tabs)/(profile)/photo')}
               activeOpacity={0.7}
             >
-              <View className="mb-1 h-20 w-20 items-center justify-center rounded-full bg-mountain-meadow-100">
-                <Ionicons name="person" size={36} color="#059666" />
-              </View>
+              {photoUrl ? (
+                <Image
+                  source={{ uri: photoUrl }}
+                  style={{ width: 80, height: 80, borderRadius: 40 }}
+                  contentFit="cover"
+                  transition={200}
+                />
+              ) : (
+                <View className="h-20 w-20 items-center justify-center rounded-full bg-mountain-meadow-100">
+                  <Ionicons name="person" size={36} color="#059666" />
+                </View>
+              )}
               <View className="absolute -bottom-0.5 -right-0.5 h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-mountain-meadow-600">
                 <Ionicons name="camera" size={13} color="#FFFFFF" />
               </View>
