@@ -107,11 +107,11 @@ export default function AppointmentsScreen() {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-gray-100" edges={['top']}>
       {/* Header */}
-      <View className="bg-mountain-meadow-50 px-6 py-4">
+      <View className="bg-white px-6 py-4">
         <Text className="text-2xl font-bold text-gray-900">My Appointments</Text>
-        <Text className="mt-0.5 text-sm text-gray-400">View and schedule appointments</Text>
+        <Text className="mt-0.5 text-md text-gray-400">View and schedule appointments</Text>
       </View>
 
       <View className="px-6 mt-3 mb-4 flex-row justify-end">

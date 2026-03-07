@@ -53,6 +53,9 @@ export default function DashboardScreen() {
   const firstName = profile?.firstName ?? data?.userName ?? '';
   const photoUrl = resolveImageUrl(profile?.profileImageUrl);
 
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+
   const stats = [
     {
       icon: 'paw' as const,
@@ -85,10 +88,10 @@ export default function DashboardScreen() {
   ];
 
   return (
-    <SafeAreaView className="flex-col bg-gray-50" edges={['top']}>
+    <SafeAreaView className="flex-col bg-gray-100" edges={['top']}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View className="flex-row items-center bg-white px-6 pb-5 pt-4">
+        <View className="mx-6 mt-5 flex-row items-center rounded-2xl bg-white px-6 pb-5 pt-4 shadow-sm">
           {/* Avatar */}
           <TouchableOpacity onPress={() => router.push('/(tabs)/(profile)')} activeOpacity={0.8}>
             {photoUrl ? (
@@ -100,10 +103,12 @@ export default function DashboardScreen() {
             )}
           </TouchableOpacity>
 
-          {/* Greeting — centered between avatar and bell */}
-          <View className="flex-1 items-center">
-            <Text className="text-lg font-bold text-gray-900">Hello, {firstName || 'there'} 👋</Text>
-            <Text className="text-xs text-gray-400">Welcome to PurrVet</Text>
+          {/* Greeting — next to avatar */}
+          <View className="ml-3 flex-1">
+            <Text className="text-2xl font-bold text-gray-900">
+              {greeting}, {firstName || 'there'}!
+            </Text>
+            <Text className="text-md text-gray-400">Welcome to PurrVet</Text>
           </View>
 
           {/* Notification Bell */}
