@@ -28,6 +28,7 @@ function statusColor(status: string): string {
     case 'pending': return '#F59E0B';
     case 'completed': return '#3B82F6';
     case 'cancelled': return '#EF4444';
+    case 'cancellation requested':
     case 'cancellationrequested': return '#F97316';
     default: return '#6B7280';
   }
@@ -39,6 +40,7 @@ function statusBg(status: string): string {
     case 'pending': return 'bg-amber-100';
     case 'completed': return 'bg-blue-100';
     case 'cancelled': return 'bg-red-100';
+    case 'cancellation requested':
     case 'cancellationrequested': return 'bg-orange-100';
     default: return 'bg-gray-100';
   }
@@ -58,14 +60,13 @@ export default function AppointmentDetailScreen() {
   const appointmentId = Number(params.id);
   const [cancelling, setCancelling] = useState(false);
 
-  const isCancellable =
-    params.status.toLowerCase() === 'pending' ||
-    params.status.toLowerCase() === 'confirmed';
+  const cancellableStatuses = ['pending', 'confirmed', 'requested', 'r', 'cancellation requested'];
+  const isCancellable = cancellableStatuses.includes(params.status.toLowerCase());
 
   const handleCancel = () => {
     Alert.alert(
       'Cancel Appointment',
-      'Are you sure you want to request cancellation for this appointment?',
+      'Are you sure you want to cancel this appointment? This cannot be undone.',
       [
         { text: 'No', style: 'cancel' },
         {
@@ -75,7 +76,7 @@ export default function AppointmentDetailScreen() {
             setCancelling(true);
             try {
               await AppointmentsService.cancelAppointment(appointmentId);
-              Alert.alert('Success', 'Cancellation request submitted.', [
+              Alert.alert('Cancelled', 'Appointment cancelled successfully.', [
                 { text: 'OK', onPress: () => router.back() },
               ]);
             } catch (error: any) {
@@ -179,7 +180,7 @@ export default function AppointmentDetailScreen() {
                 <>
                   <Ionicons name="close-circle-outline" size={18} color="#EF4444" />
                   <Text className="ml-2 text-sm font-semibold text-red-500">
-                    Request Cancellation
+                    Cancel Appointment
                   </Text>
                 </>
               )}

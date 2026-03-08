@@ -24,6 +24,7 @@ function statusColor(status: string): string {
     case 'pending': return '#F59E0B';
     case 'completed': return '#3B82F6';
     case 'cancelled': return '#EF4444';
+    case 'cancellation requested':
     case 'cancellationrequested': return '#F97316';
     default: return '#6B7280';
   }
@@ -52,7 +53,7 @@ function applyFilter(items: AppointmentListItem[], filter: FilterType): Appointm
   if (filter === 'all') return items;
   if (filter === 'upcoming') {
     return items.filter((a) =>
-      a.status.toLowerCase() === 'pending' || a.status.toLowerCase() === 'confirmed'
+      ['pending', 'confirmed', 'requested', 'r', 'cancellation requested'].includes(a.status.toLowerCase())
     );
   }
   if (filter === 'completed') {
@@ -189,7 +190,7 @@ export default function AppointmentsScreen() {
                         pathname: '/(tabs)/(appointments)/[id]',
                         params: {
                           id: apt.appointmentId.toString(),
-                          petName: apt.petName,
+                          petName: apt.petName ?? '',
                           serviceType: apt.serviceType ?? '',
                           serviceSubtype: apt.serviceSubtype ?? '',
                           appointmentDate: apt.appointmentDate,
@@ -210,7 +211,7 @@ export default function AppointmentsScreen() {
 
                     <View className="flex-1">
                       <View className="mb-1 flex-row items-center justify-between">
-                        <Text className="text-sm font-semibold text-gray-900">{apt.petName}</Text>
+                        <Text className="text-sm font-semibold text-gray-900">{apt.petName ?? '—'}</Text>
                         <View
                           className="rounded-full px-2 py-0.5"
                           style={{ backgroundColor: statusColor(apt.status) + '20' }}
