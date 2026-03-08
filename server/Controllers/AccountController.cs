@@ -42,17 +42,15 @@ namespace PetCloud.Controllers {
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(string email, string password, [FromForm(Name = "g-recaptcha-response")] string gRecaptcha, bool rememberMe = false) {
-            var secretKey = _configuration["GoogleReCaptcha:SecretKey"];
-            var httpClient = new HttpClient();
-
-            var googleReply = await httpClient.GetStringAsync(
-                 $"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={gRecaptcha}"
-              );
-
-            var captchaResult = JsonSerializer.Deserialize<ReCaptchaResponse>(googleReply);
-
-            if (captchaResult == null || !captchaResult.success)
-                return Json(new { success = false, message = "reCAPTCHA verification failed." });
+            // CAPTCHA TEMPORARILY DISABLED
+            // var secretKey = _configuration["GoogleReCaptcha:SecretKey"];
+            // var httpClient = new HttpClient();
+            // var googleReply = await httpClient.GetStringAsync(
+            //      $"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={gRecaptcha}"
+            //   );
+            // var captchaResult = JsonSerializer.Deserialize<ReCaptchaResponse>(googleReply);
+            // if (captchaResult == null || !captchaResult.success)
+            //     return Json(new { success = false, message = "reCAPTCHA verification failed." });
 
             var currentIp = HttpContext.Connection.RemoteIpAddress?.ToString();
             var currentDevice = Request.Headers["User-Agent"].ToString();
