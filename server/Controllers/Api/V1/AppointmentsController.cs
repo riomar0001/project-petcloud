@@ -197,13 +197,13 @@ namespace PetCloud.Controllers.Api.V1 {
         }
 
         [HttpPost("{id}/cancel")]
-        [EndpointSummary("Request cancellation")]
-        [EndpointDescription("Request cancellation for all appointments in a group. Only groups where every appointment is still pending/requested can be cancelled.")]
+        [EndpointSummary("Cancel appointment")]
+        [EndpointDescription("Directly cancels all appointments in the group. Only appointments with status Pending, Requested, or Cancellation Requested can be cancelled.")]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
-        public IActionResult RequestCancellation(int id) {
+        public IActionResult CancelAppointment(int id) {
             var ownerId = User.GetOwnerId();
             var userName = User.GetUserName();
 
@@ -214,32 +214,33 @@ namespace PetCloud.Controllers.Api.V1 {
             if (appointment == null)
                 return NotFound(new ApiErrorResponse { Message = "Appointment not found." });
 
-            if (appointment.Pet.OwnerID != ownerId)
+            if (appointment.Pet?.OwnerID != ownerId)
                 return StatusCode(403, new ApiErrorResponse { Message = "You do not have access to this appointment." });
 
-            if (appointment.GroupID == null)
-                return BadRequest(new ApiErrorResponse { Message = "This appointment is not part of a group." });
+            var cancellable = new[] { "Pending", "Requested", "R", "Cancellation Requested" };
 
-            var groupAppointments = _context.Appointments
-                .Where(a => a.GroupID == appointment.GroupID)
-                .ToList();
+            var toCancel = appointment.GroupID != null
+                ? _context.Appointments.Where(a => a.GroupID == appointment.GroupID).ToList()
+                : new List<Appointment> { appointment };
 
-            var invalidStatuses = groupAppointments
-                .Where(a => a.Status.ToLower() != "pending" && a.Status.ToLower() != "requested" && a.Status.ToLower() != "r")
-                .ToList();
+            if (toCancel.Any(a => !cancellable.Contains(a.Status)))
+                return BadRequest(new ApiErrorResponse { Message = "This appointment cannot be cancelled." });
 
-            if (invalidStatuses.Any())
-                return BadRequest(new ApiErrorResponse { Message = "This group contains appointments that cannot be cancelled." });
+            foreach (var appt in toCancel)
+                appt.Status = "Cancelled";
 
-            foreach (var appt in groupAppointments) {
-                appt.Status = "Cancellation Requested";
-                _context.Appointments.Update(appt);
-            }
+            _context.Notifications.Add(new Notification {
+                Message = $"An appointment on {appointment.AppointmentDate:MMM dd, yyyy hh:mm tt} was cancelled by the owner (via mobile).",
+                Type = "Appointment",
+                TargetRole = "Staff",
+                CreatedAt = DateTime.Now,
+                IsRead = false
+            });
 
             _context.SystemLogs.Add(new SystemLog {
                 ActionType = "Update",
                 Module = "Appointment",
-                Description = $"Owner requested cancellation for group #{appointment.GroupID} ({groupAppointments.Count} appointments) (via mobile).",
+                Description = $"Owner cancelled appointment #{id}{(appointment.GroupID != null ? $" (group #{appointment.GroupID}, {toCancel.Count} items)" : "")} via mobile.",
                 PerformedBy = userName,
                 Timestamp = DateTime.Now
             });
@@ -248,7 +249,7 @@ namespace PetCloud.Controllers.Api.V1 {
 
             return Ok(new ApiResponse {
                 Success = true,
-                Message = $"Cancellation request sent for Group #{appointment.GroupID} ({groupAppointments.Count} appointments)."
+                Message = $"Appointment cancelled successfully."
             });
         }
 

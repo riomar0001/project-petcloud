@@ -4111,6 +4111,60 @@ namespace PetCloud.Controllers {
             }
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult CancelAppointment(int id) {
+            if (HttpContext.Session.GetString("UserRole") != "Admin")
+                return Json(new { success = false, message = "Unauthorized access." });
+
+            var appointment = _context.Appointments
+                .Include(a => a.Pet).ThenInclude(p => p.Owner)
+                .FirstOrDefault(a => a.AppointmentID == id);
+
+            if (appointment == null)
+                return Json(new { success = false, message = "Appointment not found." });
+
+            var cancellable = new[] { "Pending", "Requested", "R", "Cancellation Requested" };
+
+            List<PetCloud.Models.Appointment> toCancel;
+            if (appointment.GroupID != null) {
+                toCancel = _context.Appointments
+                    .Include(a => a.Pet).ThenInclude(p => p.Owner)
+                    .Where(a => a.GroupID == appointment.GroupID)
+                    .ToList();
+            } else {
+                toCancel = new List<PetCloud.Models.Appointment> { appointment };
+            }
+
+            if (toCancel.Any(a => !cancellable.Contains(a.Status)))
+                return Json(new { success = false, message = "One or more appointments cannot be cancelled (already completed or cancelled)." });
+
+            foreach (var appt in toCancel)
+                appt.Status = "Cancelled";
+
+            var ownerId = appointment.Pet?.Owner?.UserID;
+            if (ownerId != null) {
+                _context.Notifications.Add(new PetCloud.Models.Notification {
+                    Message = $"Your appointment on {appointment.AppointmentDate:MMM dd, yyyy hh:mm tt} has been cancelled by the clinic.",
+                    Type = "Appointment",
+                    TargetUserId = ownerId,
+                    CreatedAt = DateTime.Now,
+                    IsRead = false
+                });
+            }
+
+            _context.SystemLogs.Add(new PetCloud.Models.SystemLog {
+                ActionType = "Update",
+                Module = "Appointment",
+                Description = $"Cancelled appointment #{id}{(appointment.GroupID != null ? $" (group #{appointment.GroupID}, {toCancel.Count} items)" : "")}.",
+                PerformedBy = HttpContext.Session.GetString("UserName") ?? "Unknown",
+                Timestamp = DateTime.Now
+            });
+            _context.SaveChanges();
+
+            return Json(new { success = true, message = $"Appointment cancelled successfully." });
+        }
+
         [HttpGet]
         public IActionResult GetUnavailabilityBlocks() {
             if (HttpContext.Session.GetString("UserRole") != "Admin")

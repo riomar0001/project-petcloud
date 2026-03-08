@@ -371,54 +371,54 @@ namespace PetCloud.Controllers {
             return Json(new { success = true, date = date.ToString("yyyy-MM-dd"), slots });
         }
 
-        [HttpPost("Owner/RequestCancellation/{id}")]
+        [HttpPost("Owner/CancelAppointment/{id}")]
         [ValidateAntiForgeryToken]
-        public IActionResult RequestCancellation(int id) {
+        public IActionResult CancelAppointment(int id) {
+            var ownerId = HttpContext.Session.GetInt32("OwnerID");
+            if (ownerId == null)
+                return Json(new { success = false, message = "Unauthorized access." });
+
             var appointment = _context.Appointments
+                .Include(a => a.Pet)
                 .FirstOrDefault(a => a.AppointmentID == id);
 
             if (appointment == null)
                 return Json(new { success = false, message = "Appointment not found." });
 
-            if (appointment.GroupID == null)
-                return Json(new { success = false, message = "This appointment is not part of a group." });
+            if (appointment.Pet?.OwnerID != ownerId)
+                return Json(new { success = false, message = "You do not have access to this appointment." });
 
-            var groupAppointments = _context.Appointments
-                .Where(a => a.GroupID == appointment.GroupID)
-                .ToList();
+            var cancellable = new[] { "Pending", "Requested", "R", "Cancellation Requested" };
 
-            if (!groupAppointments.Any())
-                return Json(new { success = false, message = "No appointments found for this group." });
+            var toCancel = appointment.GroupID != null
+                ? _context.Appointments.Where(a => a.GroupID == appointment.GroupID).ToList()
+                : new List<Appointment> { appointment };
 
-            var invalidStatuses = groupAppointments
-                .Where(a => a.Status.ToLower() != "pending" && a.Status.ToLower() != "requested")
-                .ToList();
+            if (toCancel.Any(a => !cancellable.Contains(a.Status)))
+                return Json(new { success = false, message = "This appointment cannot be cancelled." });
 
-            if (invalidStatuses.Any())
-                return Json(new {
-                    success = false,
-                    message = "This group contains appointments that cannot be cancelled."
-                });
+            foreach (var appt in toCancel)
+                appt.Status = "Cancelled";
 
-            foreach (var appt in groupAppointments) {
-                appt.Status = "Cancellation Requested";
-                _context.Appointments.Update(appt);
-            }
+            _context.Notifications.Add(new Notification {
+                Message = $"An appointment on {appointment.AppointmentDate:MMM dd, yyyy hh:mm tt} was cancelled by the owner.",
+                Type = "Appointment",
+                TargetRole = "Staff",
+                CreatedAt = DateTime.Now,
+                IsRead = false
+            });
 
             _context.SystemLogs.Add(new SystemLog {
                 ActionType = "Update",
                 Module = "Appointment",
-                Description = $"Owner requested cancellation for group #{appointment.GroupID} ({groupAppointments.Count} appointments).",
+                Description = $"Owner cancelled appointment #{id}{(appointment.GroupID != null ? $" (group #{appointment.GroupID}, {toCancel.Count} items)" : "")}.",
                 PerformedBy = HttpContext.Session.GetString("UserName") ?? "Owner",
                 Timestamp = DateTime.Now
             });
 
             _context.SaveChanges();
 
-            return Json(new {
-                success = true,
-                message = $"Cancellation request sent for Group #{appointment.GroupID} ({groupAppointments.Count} appointments)."
-            });
+            return Json(new { success = true, message = "Appointment cancelled successfully." });
         }
 
         [HttpGet]

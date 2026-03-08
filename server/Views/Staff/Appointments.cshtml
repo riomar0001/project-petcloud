@@ -535,6 +535,12 @@
     <i class="bi bi-pencil me-1"></i>${editLabel}
     </a>
     </div>
+
+    ${['pending','requested','r','cancellation requested'].includes(event.extendedProps.status?.toLowerCase())
+    ? `<button class="btn-modern-danger w-100 mt-2" onclick="cancelAppointment(${event.id})">
+    <i class="bi bi-x-circle me-1"></i>Cancel Appointment
+    </button>`
+    : ``}
     `;
 
     document.getElementById('prevGroupBtn').onclick = () => {
@@ -748,6 +754,21 @@
 
     function scheduleAppointment(date, time) {
     window.location.href = `/Admin/AddAppointment?date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}`;
+    }
+
+    async function cancelAppointment(appointmentId) {
+    if (!confirm('Cancel this appointment? This cannot be undone.')) return;
+    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+    try {
+    const res = await fetch('/Staff/CancelAppointment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+    body: `id=${appointmentId}&__RequestVerificationToken=${encodeURIComponent(token)}`
+    });
+    const data = await res.json();
+    showToast(data.message, data.success ? 'success' : 'danger');
+    if (data.success) setTimeout(() => calendar.refetchEvents(), 800);
+    } catch { showToast('An error occurred.', 'danger'); }
     }
 
     let currentReminderAppointmentId = null;

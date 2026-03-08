@@ -90,7 +90,7 @@
             <div class="modal-header">
                 <h6 class="modal-title">
                     <i class="bi bi-calendar-x"></i>
-                    Request Appointment Cancellation
+                    Cancel Appointment
                 </h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -110,7 +110,7 @@
                     <i class="bi bi-x-circle me-1"></i> Close
                 </button>
                 <button class="btn-modern-danger" onclick="submitCancelRequest()">
-                    <i class="bi bi-send me-1"></i> Submit Request
+                    <i class="bi bi-x-circle me-1"></i> Cancel Appointment
                 </button>
             </div>
         </div>
@@ -492,49 +492,32 @@
         new bootstrap.Modal(document.getElementById("cancelModal")).show();
     }
 
-          async function submitCancelRequest() {
-        const id = document.getElementById("cancelAppointmentId").value;
-        const notes = document.getElementById("cancelNotes").value.trim();
-        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        async function submitCancelRequest() {
+            const id = document.getElementById("cancelAppointmentId").value;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
-        if (!notes) {
-            showToast("Please enter a reason for cancellation.", "danger");
-            return;
-        }
+            try {
+                const res = await fetch(`/Owner/CancelAppointment/${id}`, {
+                    method: "POST",
+                    headers: {
+                        "RequestVerificationToken": token,
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: `__RequestVerificationToken=${encodeURIComponent(token)}`
+                });
 
-        try {
-            const res = await fetch(`/Owner/RequestCancellation/${id}`, {
-                method: "POST",
-                headers: {
-                    "RequestVerificationToken": token,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ notes })
-            });
+                const modal = bootstrap.Modal.getInstance(document.getElementById("cancelModal"));
+                modal.hide();
 
-            const modal = bootstrap.Modal.getInstance(document.getElementById("cancelModal"));
-            modal.hide(); 
+                const data = await res.json();
+                showToast(data.message, data.success ? "success" : "danger");
 
-            if (!res.ok) {
-                showToast("Something went wrong. Please try again.", "danger");
-                return;
+                if (data.success) setTimeout(() => location.reload(), 1000);
+            } catch (error) {
+                bootstrap.Modal.getInstance(document.getElementById("cancelModal"))?.hide();
+                showToast("Failed to cancel. Please check your connection.", "danger");
             }
-
-            const data = await res.json();
-            showToast(data.message, data.success ? "success" : "danger");
-
-            if (data.success) {
-                document.getElementById("cancelNotes").value = "";
-                setTimeout(() => location.reload(), 1000);
-            }
-        } catch (error) {
-            const modal = bootstrap.Modal.getInstance(document.getElementById("cancelModal"));
-            modal.hide(); 
-
-            showToast("Failed to submit request. Please check your connection.", "danger");
-            console.error("Cancel error:", error);
         }
-    }
 
 </script>
 
