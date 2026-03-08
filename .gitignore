@@ -367,3 +367,4 @@ PurrVet/summaries/
 PurrVet/wwwroot/uploads/*
 
 .env
+/.claude
