@@ -38,7 +38,7 @@ namespace PetCloud.Controllers.Api.V1 {
                     GroupId = a.GroupID,
                     Notes = a.Notes,
                     PetId = a.PetID,
-                    PetName = a.Pet.Name,
+                    PetName = a.Pet != null ? a.Pet.Name : null,
                     ServiceType = a.ServiceCategory != null ? a.ServiceCategory.ServiceType : null,
                     ServiceSubtype = a.ServiceSubtype != null ? a.ServiceSubtype.ServiceSubType : null,
                     IsOwnAppointment = true

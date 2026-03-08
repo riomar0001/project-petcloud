@@ -7,8 +7,8 @@ namespace PetCloud.DTOs.Appointments {
         public string Status { get; set; } = string.Empty;
         public int? GroupId { get; set; }
         public string? Notes { get; set; }
-        public int PetId { get; set; }
-        public string PetName { get; set; } = string.Empty;
+        public int? PetId { get; set; }
+        public string? PetName { get; set; }
         public string? ServiceType { get; set; }
         public string? ServiceSubtype { get; set; }
         public bool IsOwnAppointment { get; set; }

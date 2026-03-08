@@ -412,6 +412,8 @@
         data.forEach(e => {
         if (e.isDraft) {
         e.classNames = ["draft"];
+        } else if ((e.status || "").toLowerCase() === "unavailable") {
+        e.classNames = ["unavailable"];
         }
         });
         successCallback(data);
@@ -453,6 +455,10 @@
         eventClick: function (info) {
 
         if (info.event.extendedProps.isDraft) {
+        return false;
+        }
+
+        if ((info.event.extendedProps.status || "").toLowerCase() === "unavailable") {
         return false;
         }
 

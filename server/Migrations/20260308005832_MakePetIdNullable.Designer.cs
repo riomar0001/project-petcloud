@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PetCloud.Models;
 
@@ -11,9 +12,11 @@ using PetCloud.Models;
 namespace PetCloud.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260308005832_MakePetIdNullable")]
+    partial class MakePetIdNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -66,6 +69,9 @@ namespace PetCloud.Migrations
                     b.Property<int?>("PetID")
                         .HasColumnType("int");
 
+                    b.Property<int?>("PetID1")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("ReminderCounterDate")
                         .HasColumnType("datetime2");
 
@@ -86,6 +92,8 @@ namespace PetCloud.Migrations
                     b.HasIndex("GroupID");
 
                     b.HasIndex("PetID");
+
+                    b.HasIndex("PetID1");
 
                     b.HasIndex("SubtypeID");
 
@@ -570,8 +578,13 @@ namespace PetCloud.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("PetCloud.Models.Pet", "Pet")
+                        .WithMany()
+                        .HasForeignKey("PetID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("PetCloud.Models.Pet", null)
                         .WithMany("Appointments")
-                        .HasForeignKey("PetID");
+                        .HasForeignKey("PetID1");
 
                     b.HasOne("PetCloud.Models.ServiceSubtype", "ServiceSubtype")
                         .WithMany()

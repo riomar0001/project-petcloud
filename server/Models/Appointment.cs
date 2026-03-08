@@ -7,7 +7,7 @@ namespace PetCloud.Models {
         public int AppointmentID { get; set; }
 
         [ForeignKey("Pet")]
-        public int PetID { get; set; }
+        public int? PetID { get; set; }
         [ForeignKey("AppointmentGroup")]
         public int? GroupID { get; set; }
 
@@ -33,7 +33,7 @@ namespace PetCloud.Models {
         public int EmailSentToday { get; set; }
         public DateTime? ReminderCounterDate { get; set; }
 
-        public Pet Pet { get; set; }
+        public Pet? Pet { get; set; }
         public AppointmentGroup? AppointmentGroup { get; set; }
         public ServiceCategory? ServiceCategory { get; set; }
         public ServiceSubtype? ServiceSubtype { get; set; }

@@ -4009,6 +4009,151 @@ namespace PetCloud.Controllers {
             }
         }
 
+        // ─── Set Unavailability ───────────────────────────────────────────────
+
+        [HttpGet]
+        public IActionResult SetUnavailability() {
+            if (HttpContext.Session.GetString("UserRole") != "Staff")
+                return RedirectToAction("Login", "Account");
+
+            ViewBag.Title = "Set Unavailability";
+            ViewBag.CurrentStaffName = HttpContext.Session.GetString("UserName");
+            ViewBag.CurrentStaffId = HttpContext.Session.GetInt32("UserID");
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SetUnavailability(DateTime startDate, DateTime endDate,
+            bool wholeDay, string? startTime, string? endTime, string? reason) {
+
+            if (HttpContext.Session.GetString("UserRole") != "Staff")
+                return Json(new { success = false, message = "Unauthorized access." });
+
+            if (startDate == default || endDate == default || startDate > endDate)
+                return Json(new { success = false, message = "Invalid date range." });
+
+            if (!wholeDay) {
+                if (string.IsNullOrWhiteSpace(startTime) || string.IsNullOrWhiteSpace(endTime))
+                    return Json(new { success = false, message = "Start time and end time are required." });
+                if (!TimeSpan.TryParse(startTime, out var st) || !TimeSpan.TryParse(endTime, out var et) || st >= et)
+                    return Json(new { success = false, message = "Invalid time range." });
+            }
+
+            var staffFullName = HttpContext.Session.GetString("UserName") ?? "Staff";
+            var noteText = string.IsNullOrWhiteSpace(reason) ? "Unavailable" : reason;
+            int created = 0, skipped = 0;
+
+            try {
+                for (var date = startDate.Date; date <= endDate.Date; date = date.AddDays(1)) {
+                    if (wholeDay) {
+                        var tsStart = new TimeSpan(9, 0, 0);
+                        var tsEnd = new TimeSpan(18, 0, 0);
+                        for (var t = tsStart; t <= tsEnd; t = t.Add(TimeSpan.FromMinutes(5))) {
+                            var dt = date.Add(t);
+                            if (!_context.Appointments.Any(a => a.AppointmentDate == dt)) {
+                                _context.Appointments.Add(new PetCloud.Models.Appointment {
+                                    AppointmentDate = dt,
+                                    Status = "Unavailable",
+                                    AdministeredBy = staffFullName,
+                                    Notes = noteText,
+                                    CreatedAt = DateTime.Now
+                                });
+                                created++;
+                            } else { skipped++; }
+                        }
+                    } else {
+                        var tsStart = TimeSpan.Parse(startTime!);
+                        var tsEnd = TimeSpan.Parse(endTime!);
+                        for (var t = tsStart; t <= tsEnd; t = t.Add(TimeSpan.FromMinutes(5))) {
+                            var dt = date.Add(t);
+                            if (!_context.Appointments.Any(a => a.AppointmentDate == dt)) {
+                                _context.Appointments.Add(new PetCloud.Models.Appointment {
+                                    AppointmentDate = dt,
+                                    Status = "Unavailable",
+                                    AdministeredBy = staffFullName,
+                                    Notes = noteText,
+                                    CreatedAt = DateTime.Now
+                                });
+                                created++;
+                            } else { skipped++; }
+                        }
+                    }
+                }
+
+                _context.SystemLogs.Add(new PetCloud.Models.SystemLog {
+                    ActionType = "Create",
+                    Module = "Unavailability",
+                    Description = $"Set {created} unavailability block(s) for {staffFullName} from {startDate:MMM dd, yyyy} to {endDate:MMM dd, yyyy}.",
+                    PerformedBy = staffFullName,
+                    Timestamp = DateTime.Now
+                });
+                _context.SaveChanges();
+
+                return Json(new { success = true, message = $"{created} slot(s) blocked successfully. {(skipped > 0 ? $"{skipped} skipped (already taken)." : "")}" });
+            } catch (Exception ex) {
+                return Json(new { success = false, message = $"Error: {ex.Message}" });
+            }
+        }
+
+        [HttpGet]
+        public IActionResult GetUnavailabilityBlocks() {
+            if (HttpContext.Session.GetString("UserRole") != "Staff")
+                return Unauthorized();
+
+            var staffName = HttpContext.Session.GetString("UserName") ?? "";
+
+            var blocks = _context.Appointments
+                .Where(a => a.Status == "Unavailable"
+                    && a.AdministeredBy == staffName
+                    && a.AppointmentDate >= DateTime.Today)
+                .OrderBy(a => a.AppointmentDate)
+                .ToList()
+                .GroupBy(a => a.AppointmentDate.Date)
+                .Select(g => new {
+                    date = g.Key.ToString("yyyy-MM-dd"),
+                    dateLabel = g.Key.ToString("MMM dd, yyyy (ddd)"),
+                    staff = staffName,
+                    count = g.Count(),
+                    reason = g.First().Notes,
+                    ids = g.Select(a => a.AppointmentID).ToList()
+                })
+                .ToList();
+
+            return Json(blocks);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult CancelUnavailabilityByDate(DateTime date) {
+            if (HttpContext.Session.GetString("UserRole") != "Staff")
+                return Json(new { success = false, message = "Unauthorized access." });
+
+            var staffName = HttpContext.Session.GetString("UserName") ?? "";
+
+            var blocks = _context.Appointments
+                .Where(a => a.Status == "Unavailable"
+                    && a.AppointmentDate.Date == date.Date
+                    && a.AdministeredBy == staffName)
+                .ToList();
+
+            if (!blocks.Any())
+                return Json(new { success = false, message = "No blocks found for this date." });
+
+            int count = blocks.Count;
+            _context.Appointments.RemoveRange(blocks);
+            _context.SystemLogs.Add(new PetCloud.Models.SystemLog {
+                ActionType = "Delete",
+                Module = "Unavailability",
+                Description = $"Cancelled {count} unavailability block(s) for {staffName} on {date:MMM dd, yyyy}.",
+                PerformedBy = staffName,
+                Timestamp = DateTime.Now
+            });
+            _context.SaveChanges();
+
+            return Json(new { success = true, message = $"{count} block(s) cancelled on {date:MMM dd, yyyy}." });
+        }
+
 
     }
 

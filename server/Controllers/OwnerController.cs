@@ -146,16 +146,16 @@ namespace PetCloud.Controllers {
             var appointmentsForView = allAppointments.Select(a => new Appointment {
                 AppointmentID = a.AppointmentID,
                 AppointmentDate = a.AppointmentDate,
-                Status = a.Pet.OwnerID == ownerId ? a.Status : "Not Available",
+                Status = a.Pet == null ? "Not Available" : (a.Pet.OwnerID == ownerId ? a.Status : "Not Available"),
                 GroupID = a.GroupID,
-                Notes = a.Pet.OwnerID == ownerId ? a.Notes : "Booked by another owner",
+                Notes = a.Pet == null ? "Not Available" : (a.Pet.OwnerID == ownerId ? a.Notes : "Booked by another owner"),
                 Pet = a.Pet,
                 ServiceCategory = a.ServiceCategory,
                 ServiceSubtype = a.ServiceSubtype
             }).ToList();
 
             var pendingGroupCount = allAppointments
-                .Where(a => a.Pet.OwnerID == ownerId && a.Status == "Pending" && a.GroupID != null)
+                .Where(a => a.Pet != null && a.Pet.OwnerID == ownerId && a.Status == "Pending" && a.GroupID != null)
                 .Select(a => a.GroupID)
                 .Distinct()
                 .Count();

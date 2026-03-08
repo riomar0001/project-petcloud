@@ -277,3 +277,16 @@
     .fc-event.draft * {
         pointer-events: none !important;
     }
+
+
+.fc-event.unavailable {
+    background-color: #6c757d !important;
+    border-color: #495057 !important;
+    color: white !important;
+    opacity: 0.85;
+    cursor: not-allowed !important;
+}
+
+    .fc-event.unavailable * {
+        pointer-events: none !important;
+    }
